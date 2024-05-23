@@ -1,0 +1,539 @@
+---
+title: "Analysis of RNA-seq FACS sorted cells"
+subtitle: "Sorted CD3-positive TILs"
+author: "Francesc Castro-Giner"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+params:
+  date: '`r format(Sys.Date(), "%B %d, %Y")`'
+  data_dir: ./data/rnaseq/facs
+  se_file: se_qc.rds
+  output_dir: ./output/rnaseq/facs/immune
+  min_counts: 1
+  min_present_prop: 0.30
+---
+
+## Load libraries, additional functions and data
+
+Setup environment
+```{r setup, include=TRUE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(results='asis', echo=TRUE, message=FALSE, warning=FALSE, error=FALSE, fig.align = 'center', fig.width = 3.5, fig.asp = 0.618, dpi = 600, dev = c("png", "pdf"), fig.showtext = FALSE, engine.opts = list(bash = "-l"))
+
+options(stringsAsFactors = FALSE)
+
+use_seed <- 1100101
+set.seed(use_seed)
+
+dir.create(params$output_dir, recursive = TRUE, showWarnings = FALSE)
+```
+
+Load packages
+```{r load-libraries}
+library(tidyverse)
+library(knitr)
+library(foreach)
+library(magrittr)
+library(DT)
+library(kableExtra)
+library(SummarizedExperiment)
+
+library(edgeR)
+library(scuttle)
+library(ComplexHeatmap)
+library(circlize)
+library(RColorBrewer)
+library(org.Mm.eg.db)
+```
+
+Load ggplot theme
+```{r ggplot-theme}
+source("./configuration/rmarkdown/ggplot_theme.R")
+```
+
+Load ggplot theme
+```{r color-palette}
+source("./configuration/rmarkdown/color_palettes.R")
+```
+
+Load custom functions
+```{r load-functions}
+source('./code/R-functions/dge_wrappers.r')
+source('./code/R-functions/dge_report.r')
+source('./code/R-functions/gse_omnibus.r')
+source('./code/R-functions/gse_report.r')
+clean_msigdb_names <- function(x) x %>% gsub('REACTOME_', '', .) %>% gsub('WP_', '', .) %>% gsub('BIOCARTA_', '', .) %>% gsub('KEGG_', '', .) %>% gsub('PID_', '', .) %>% gsub('GOBP_', '', .) %>% gsub('_', ' ', .)
+```
+
+Load MSigDB files
+```{r load-msigdb}
+gmt_files_symbols <- list(
+  msigdb.m2.cp.m5.bp.custom.signatures = './data/resources/custom_signatures/msigdb_m2_cp-m5_bp-signatures_immune_cells.gmt'
+)
+```
+
+Clean files generated in previous runs
+```{r clean-files}
+rmd_file <- current_input()
+if(!is.null(rmd_file)) {
+  figures_dir <- file.path('./docs/figure',rmd_file)
+  if(dir.exists(figures_dir)) {
+    unlink(file.path(figures_dir, "*"))
+  }
+}
+```
+
+Load Ensembl biomaRt mmusculus data
+```{r load-biomart-genes}
+if(file.exists('./data/resources/ensembl_biomart/mart_mmu_genes.rds')){
+  ensembl_mart_mmu_genes <- readRDS('./data/resources/ensembl_biomart/mart_mmu_genes.rds')
+} else {
+  # httr::set_config(httr::config(ssl_verifypeer = FALSE))
+  ensembl_mart_mmu_genes <-  biomaRt::useEnsembl(
+    biomart="genes", dataset="mmusculus_gene_ensembl",
+    mirror = "useast"
+    )
+  saveRDS(
+    ensembl_mart_mmu_genes, 
+    file = './data/resources/ensembl_biomart/mart_mmu_genes.rds'
+    )
+}
+
+```
+
+## Data wrangling
+
+Load data
+```{r load-data}
+se <- readRDS(file.path(params$data_dir, params$se_file))
+rowData(se[rownames(se) == 'CAS9',])$gene_name <- 'SpCas9'
+rownames(se)[rownames(se) == 'CAS9'] <- 'SpCas9'
+se <- se[,!se$outlier_discard]
+```
+
+Modify sample annotation
+```{r dw-coldata}
+colData(se) %<>% data.frame %>%
+  mutate(
+    condition = NA,
+    condition = ifelse(grepl('Thy1', sample_alias), 'Thy1', condition),
+    condition = ifelse(grepl('Cas9', sample_alias), 'Cas9', condition),
+    cell_type = ifelse(cell_type == 'monocyte_like', 'Monocyte', cell_type),
+    cell_type = ifelse(cell_type == 'neutrophil_like', 'Neutrophil', cell_type),
+    cell_type = ifelse(cell_type == 't_cells', 'T cell', cell_type),
+    cell_type = ifelse(cell_type == 'nk_cells', 'NK', cell_type),
+    cell_type = factor(cell_type, levels = c('Monocyte', 'Neutrophil', 'T cell', 'NK'))
+  ) %>%
+  DataFrame
+```
+
+Filtering out low-abundance features. Keeping those features with at least `r params$min_counts` count in at least `r 100*params$min_present_prop`% of samples of the smallest group.
+```{r dw-subset-feature-abundance}
+use_rows <- filterByExpr(se, group=paste(se$donor, se$cell_type), min.count = params$min_counts, min.prop = params$min_present_prop)
+se <- se[use_rows,]
+
+# Update PerCellQCMetrics
+colData(se) <- colData(se) %>% data.frame %>% dplyr::select(-(sum:subsets_Ribo_percent)) %>% DataFrame
+se <- addPerCellQCMetrics(
+  se,
+  subsets=list(
+    Mito=which(rowData(se)$is.mito),
+    Ribo=which(rowData(se)$is.ribo)
+  ),
+  percent.top = c(1,5,10,20, 50, 100),
+  threshold = 3
+  )
+```
+
+TMM normalization
+```{r dw-tmm}
+norm_method <- "TMM"
+exprs_mat_for_norm <- assay(se, 'counts')
+norm_factors <- calcNormFactors(exprs_mat_for_norm, method = norm_method)
+lib_size <- colSums(exprs_mat_for_norm)/10^6
+se$size_factor <- (norm_factors * lib_size)
+se <- logNormCounts(se, size.factors =se$size_factor)
+se <- logNormCounts(se, size.factors =se$size_factor, log = FALSE)
+```
+
+
+## Data generation
+Configure comparisons and arguments
+```{r conf-comparisons}
+x <- colData(se) %>% data.frame
+comp_list <- list(
+  `dCas9_Thy1--over--Thy1` = list(
+    `dCas9-Thy1` = x %>% 
+      filter(cell_type == 'T cell' & condition == 'Cas9') %>% 
+      pull(sample_alias) %>% 
+      sort,
+    Thy1 = x %>% 
+      filter(cell_type == 'T cell' & condition == 'Thy1') %>% 
+      pull(sample_alias) %>% 
+      sort,
+    batch = 'donor'
+  )
+)
+```
+
+
+### Differential expression analysis
+Run differential expression analysis using EdgeR QLF for multidonor-comparisons
+```{r edgeR-QLF-run, eval = FALSE}
+use_comp <-  comp_list[[1]]
+dge_list <- foreach(use_comp = comp_list) %do%{
+  se_cols <- se$sample_alias %in% unlist(use_comp)
+  use_se <- se[,se_cols]
+  use_se$group <- ifelse(
+    use_se$sample_alias %in% use_comp[[1]],
+    names(use_comp)[1],
+    names(use_comp)[2]
+  )
+  
+  if(is.null(use_comp$batch)) {
+    dge <- edgeR_dge(
+      use_se,
+      # Design configuration for differential expression
+      group_var =  'group',
+      group_sample = names(use_comp)[1],
+      group_ref = names(use_comp)[2],
+      design_formula = "~ group",
+      coef = 'last',
+      # Conversion from SingleCellExperiment/Summarized Experiment to DGEList
+      assay_to_DGEList = 'counts',
+      assay_to_row_filter = "counts",
+      # Feature filtering parameters
+      use_filterByExpr = TRUE,
+      min_counts = params$min_counts,
+      min_present_prop = params$min_present_prop,
+      # EdgeR workflow configuration
+      run_calcNormFactors = 'TMM',
+      estimateDisp_robust = TRUE,
+      estimateDisp_trend.method = "locfit",
+      glm_approach = "QLF",
+      # Output configuration
+      adjust_method = 'BH'
+      )
+    } else if(use_comp$batch == 'donor') {
+      dge <- edgeR_dge(
+        use_se,
+        # Design configuration for differential expression
+        group_var =  'group',
+        group_sample = names(use_comp)[1],
+        group_ref = names(use_comp)[2],
+        batch_vars = 'donor',
+        design_formula = "~ donor + group",
+        coef = 'last',
+        # Conversion from SingleCellExperiment/Summarized Experiment to DGEList
+        assay_to_DGEList = 'counts',
+        assay_to_row_filter = "counts",
+        # Feature filtering parameters
+        use_filterByExpr = TRUE,
+        min_counts = params$min_counts,
+        min_present_prop = params$min_present_prop,
+        # EdgeR workflow configuration
+        run_calcNormFactors = 'TMM',
+        estimateDisp_robust = TRUE,
+        estimateDisp_trend.method = "locfit",
+        glm_approach = "QLF",
+        # Output configuration
+        adjust_method = 'BH'
+        )
+    }
+  
+  
+  # Add gene description
+  gene_desc <- biomaRt::getBM(attributes=c('external_gene_name','description'),
+                              filters = 'external_gene_name',
+                              values = dge$results$gene_name, mart =ensembl_mart_mmu_genes) %>%
+    dplyr::rename('gene_name' = 'external_gene_name') %>%
+    unique
+  
+  
+  use_res <- dge$results %>%  left_join(., gene_desc)
+  dge$results <- use_res %>% 
+    filter(!duplicated(feature)) %>% 
+    mutate(rownames = feature) %>% 
+    column_to_rownames('rownames')
+  
+  return(dge)
+}
+
+names(dge_list) <- names(comp_list)
+detach("package:biomaRt", unload=TRUE)
+
+# Save objects
+saveRDS(dge_list, file = file.path(params$output_dir, 'dge-edgeR_QLF.rds'))
+```
+
+### Functional enrichment
+```{r gse-edgeR-QLF-run, eval = FALSE}
+dge_list <- readRDS(file.path(params$output_dir, 'dge-edgeR_QLF.rds'))
+dge <-  dge_list[[1]]
+gse_list <- list()
+gse_list <- foreach(dge = dge_list) %do%{
+  gse_res <- gse_omnibus(
+    feature_names = dge$results$gene_name,
+    p = dge$results$FDR,
+    fc = dge$results$logFC,
+    fc_thrs = 0.5,
+    gmt_files = gmt_files_symbols,
+    
+    run_GSEA = TRUE,
+    
+    args_gse = list(minGSSize = 10, maxGSSize = 500, pvalueCutoff = 1)
+    )
+  
+   return(gse_res)
+
+}
+names(gse_list) <- names(dge_list)
+
+# Save objects
+saveRDS(gse_list, file = file.path(params$output_dir,'gse_omnibus-edgeR_QLF.rds'))
+```
+
+
+### Load data
+```{r load-dge-data}
+dge_list <- readRDS(file.path(params$output_dir, 'dge-edgeR_QLF.rds'))
+gse_list <- readRDS(file.path(params$output_dir, 'gse_omnibus-edgeR_QLF.rds'))
+```
+
+## Differential expression analysis
+
+### Figure 3D top left: Differential expressed genes in dCas9-Thy1 over Thy1 transduction in sorted CD3-positive TILs
+
+Showing selected genes and genes with a FDR < 0.05 and a absolute log2 fold-change > 1. To calculate the fold-change by model, log normalized counts were aggregated at model and condition using their average (function aggregateAcrossCells). Then the aggregated expression in dCas9-Thy1 was divided by the aggregated expression in Thy1.
+```{r dge-heatmap-fc-dc9thy1--over--thy1, fig.width = 1, fig.asp = 2}
+# Heatmap parameters
+p_thrs <- 0.05
+lfc_thrs <- 1
+# topn <- 50
+max_color_range <- 3 # put the color range to -3 to 3
+
+# Select comparison
+i <- "dCas9_Thy1--over--Thy1"
+use_comp <- comp_list[[i]]
+
+# Select genes to highlight
+use_labels <-  c("Gzmg","Gzmd","Gzme","Gzmf","Ptx3","Nos2","Klra6","Prf1",
+                 "Tcf19","Cd69","Fendrr","Pdcd1","Tigit","Cd28","Cd83","Cxcl2",
+                 "Cr2","Fcmr", 
+                 "Cxcr3", "Ccl5", "Pcna", "Mki67")
+                 
+# Extract samples from comparisons
+use_samples <- unlist(use_comp[1:2])
+
+
+# Add dge_groups annotation
+colData(se) <- colData(se) %>% data.frame %>% 
+  mutate(
+    condition_new = ifelse(sample_alias %in% use_comp[[1]], 
+                           names(use_comp)[1], 
+                           NA),
+    condition_new = ifelse(sample_alias %in% use_comp[[2]], 
+                           names(use_comp)[2], 
+                           condition_new),
+    condition_new = factor(condition_new, levels = names(use_comp)[2:1]),
+    condition_num = as.numeric(condition_new)
+  ) %>% DataFrame
+
+# Average SE by condition
+group_id <- paste(se$donor, se$condition_new)
+
+use_se <- scuttle::aggregateAcrossCells(
+  se, 
+  statistics = "mean", 
+  subset.col = use_samples,
+  ids = group_id,
+  use.assay.type = 'logcounts'
+  )
+
+
+# Arrange samples by condition
+use_annot <- colData(use_se) %>% data.frame %>% 
+  arrange(condition_num, donor)
+use_samples <- use_annot$ids
+
+# Extract DGE results
+use_dge <- dge_list[[i]]$results %>% 
+  mutate(
+    significant = (FDR < p_thrs & abs(logFC) > lfc_thrs),
+    selected = ifelse(gene_name %in% use_labels, TRUE, significant),
+    direction = ifelse(logFC > 0, 'Up', 'Down')
+    ) %>% 
+  filter(selected) %>% 
+  arrange(FDR)
+
+# Extract matrix of expression
+use_se <- use_se[rownames(use_dge), use_samples]
+mat <- assay(use_se, 'logcounts')
+rownames(mat) <- use_dge$gene_name
+
+# Calculate fold-change by donor
+donor_levels <- unique(use_annot$donor)
+fcmat <- foreach(use_donor = donor_levels, .combine = cbind) %do% {
+  s1 <- use_annot %>% 
+    filter(donor == use_donor) %>% 
+    filter(condition_new == names(use_comp)[[1]]) %>% 
+    pull(ids)
+  s2 <- use_annot %>% 
+    filter(donor == use_donor) %>% 
+    filter(condition_new == names(use_comp)[[2]]) %>% 
+    pull(ids)
+  return(mat[,s1]/mat[,s2])
+}
+colnames(fcmat) <- donor_levels
+fcmat[is.na(fcmat)] <- 1
+fcmat[fcmat == Inf] <- max(fcmat[fcmat < Inf])
+fcmat[fcmat == 0] <- min(fcmat[fcmat > 0])
+fcmat <- log2(fcmat)
+
+
+# Row annotation for selected labels
+row_annot_selected_labels <- rowAnnotation(
+  selected = anno_mark(
+    at = match(use_labels, rownames(fcmat)), 
+    labels =use_labels,
+    labels_gp = gpar(fontsize = 6),
+    lines_gp = gpar(lwd = 0.3),
+    padding = unit(0.01, "inches"),
+    link_width = unit(0.1, "inches")
+    )
+  )
+
+
+# Heatmap color
+zmax <- fcmat %>% abs %>% max
+if(!is.null(max_color_range))
+  zmax <- max_color_range
+col_fun <-  colorRamp2(
+  seq(-zmax, zmax, length.out = 11),
+  rev(brewer.pal(11, "RdBu"))
+)
+
+
+# Generate Heatmap
+htz <- Heatmap(
+  fcmat,
+  name= 'log2(fold change)',
+  col = col_fun,
+  show_row_names = FALSE,
+  show_column_names = TRUE,
+  # row_names_gp = gpar(fontsize = 8),
+  column_names_gp = gpar(fontsize = 3),
+  column_names_rot = 0,
+  column_names_side = 'top',
+  cluster_column_slices = FALSE,
+  
+  # top_annotation = column_ha,
+  column_split = colnames(fcmat),
+  column_gap = unit(0.039/3, "inches"),
+  column_title = NULL,
+  cluster_row_slices = FALSE,
+  
+  right_annotation = row_annot_selected_labels,
+  row_split = use_dge$direction,
+  row_gap = unit(0.039/2, "inches"),
+  # left_annotation = row_annot_left,
+  row_title = NULL,
+  
+  cluster_columns = FALSE,
+  show_row_dend = FALSE,
+  
+  # show_heatmap_legend = FALSE,
+  heatmap_legend_param = list(
+    direction = "horizontal",
+    title_gp = gpar(fontsize = 3, fontface = "bold"),
+    labels_gp = gpar(fontsize = 3),
+    legend_width = unit(0.5, "inches"),
+    grid_height = unit(0.03, "inches"),
+    title_position = 'lefttop'
+  )
+)
+
+draw(htz,  heatmap_legend_side = "bottom")
+
+cat("\n\n")
+```
+
+
+## Functional Enrichment
+
+### Figure 3D bottom left: Representative gene-sets enriched in dCas9-Thy1 over Thy1 transduction
+```{r gsea-curated-dot-plot-dc9thy1--over--thy1, fig.width=2.37, fig.asp = 1}
+i <- "dCas9_Thy1--over--Thy1"
+x <- gse_list[[i]]$GSEA[["msigdb.m2.cp.m5.bp.custom.signatures"]]@result
+use_sets <- c(
+  `Focal adhesion` = 'WP_FOCAL_ADHESION',
+  `Cell-extracellular matrix interactions` = 'REACTOME_CELL_EXTRACELLULAR_MATRIX_INTERACTIONS',
+  `T cell costimulation` = 'Mouse_T_cell_costimulation',
+  `T cell dysfunction` = 'Mouse_T_cell_dysfunction',
+  `Th1 activation` = 'Mouse_Th1_activation',
+  `G1/S transition` = 'REACTOME_G1_S_TRANSITION',
+  `DNA strand elongation` = 'GOBP_DNA_STRAND_ELONGATION',
+  `Cell cycle S phase` = 'REACTOME_S_PHASE',
+  `Cytotoxic immune reaction` = 'GOBP_NATURAL_KILLER_CELL_MEDIATED_IMMUNITY',
+  `Mitochondrial translation` = 'GOBP_MITOCHONDRIAL_TRANSLATION'
+)
+
+
+use_gse_res <- gse_list[[i]]$GSEA[["msigdb.m2.cp.m5.bp.custom.signatures"]]@result[use_sets,]
+use_gse_res$ID <- factor(use_gse_res$ID, levels = use_sets)
+levels(use_gse_res$ID) <- names(use_sets)
+
+
+label_func <- default_labeller(30)
+x_max <- range(use_gse_res$NES) %>% abs %>% max
+size_max <- max(-log10(use_gse_res$p.adjust))
+res <- use_gse_res %>% 
+  ggplot(aes(NES, ID, color = NES, size = -log10(p.adjust))) +
+  geom_point() +
+  geom_vline(xintercept = 0, linetype = 'dotted', linewidth = one_pt/4) +
+  scale_y_discrete(labels = label_func) +
+  scale_x_continuous(
+    expand = expansion(mult = c(.1, .1)),
+    limits = c(-x_max, x_max)
+    )+
+  scale_size(range = c(0.1, 2), 
+             limits = c(0,size_max)) +
+  scale_color_distiller(
+    palette = "RdBu",
+    limits = c(-x_max, x_max)
+  ) +
+  labs(
+    x = 'NES',
+    y = '',
+    size =  bquote("-log"[10] ~ .(paste0("(", 'Adjusted P', ")"))),
+    color = 'NES'
+  ) +
+    theme(
+      strip.background = element_blank(),
+      axis.line = element_line(linewidth = one_pt/4, color = 'black'),
+      axis.ticks = element_line(linewidth = one_pt/4, color = 'black'),
+      axis.text = element_text(size=8), 
+      axis.title = element_text(size = 8),
+      legend.title = element_text(size=8),
+      legend.text = element_text(size=8),
+      legend.position="bottom",
+      legend.box = 'vertical'
+      # legend.key.size = unit(0.2, 'inches'),
+      # legend.key.width = unit(0.05, 'inches'),
+      # legend.key.height = unit(0.5, 'inches')
+    )
+res_legend <- get_legend(res)
+print(res + theme(legend.position = 'none'))
+cat("\n\n")
+```
+
+```{r gsea-curated-dot-plot-legend-dc9thy1--over--thy1, fig.width=2.37, fig.asp = 1.5}
+plot_grid(res_legend, ncol = 1, nrow = 1)
+cat("\n\n")
+```
+
+## Stop knitr
+```{r}
+knitr::knit_exit()
+```

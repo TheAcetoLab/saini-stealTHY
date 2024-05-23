@@ -1,7 +1,7 @@
-name: crispr-immunorejection
+name: StealTHY
 output_dir: ../docs
 navbar:
-  title: crispr-immunorejection
+  title: StealTHY
   left:
   - text: Home
     href: index.html
