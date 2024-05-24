@@ -309,11 +309,6 @@ use_assay %>%
 
 Run Kolmogorov-Smirnov test to compare distributions merged by group and create Empirical Cumulative Density Function (ECDF) by comparison.
 ```{r modality-comparisons-ks-ecdf-run}
-use_colors <- c(
-  `Thy1` = '#F7EC13',
-  `Puro`  = '#58595B',
-  `dCas9 + Puro` = 'black'
-  )
 
 i <- names(comp_list_modality)[1]
 ks_test_df <- data.frame()
@@ -429,7 +424,7 @@ modality_test_df %<>%
 ```
 
 ### Supplementary Figure 2D left: Dip test table for Syngeneic models
-```{r test-dip-synergeneic-table}
+```{r test-dip-syngeneic-table}
 modality_test_df %>% 
   filter(!is.na(modality_group)) %>% 
   filter(mouse_model_global == 'immunocompetent') %>% 

@@ -1,0 +1,1420 @@
+---
+title: "CRISPR immunorejection analysis"
+subtitle: "Differential abundance for expressed genes only and using control sgRNA for null distribution and normalization"
+author: "Francesc Castro-Giner"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+params:
+  date: '`r format(Sys.Date(), "%B %d, %Y")`'
+  rawdata_dir: ./data/crispr
+  data_dir: ./output/crispr/mm_2215_sgRNA
+  mageck_dir: mageck_rra_expr
+  se_rnaseq: ./data/rnaseq/p27851_o30659/pipelines/rnaseq_star_featurecounts_cas9/summarizedExperiment/se_gene.rds
+  ncpu: 4
+---
+
+## Load libraries, additional functions and data
+
+Setup environment
+```{r setup, include=TRUE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(results='asis', echo=TRUE, message=FALSE, warning=FALSE, error=FALSE, fig.align = 'center', fig.width = 3.5, fig.asp = 0.618, dpi = 600, dev = c("png", "pdf"), engine.opts = list(bash = "-l"))
+
+options(stringsAsFactors = FALSE)
+
+use_seed <- 1100101
+
+set.seed(use_seed)
+```
+
+<!-- Setup css style -->
+<!-- ```{css style settings, echo = FALSE} -->
+<!-- blockquote { -->
+<!--     padding: 10px 20px; -->
+<!--     margin: 0 0 20px; -->
+<!--     font-size: 14px; -->
+<!--     border-left: 5px solid #eee; -->
+<!-- } -->
+<!-- ``` -->
+
+
+Load packages
+```{r load-libraries}
+library(tidyverse)
+library(showtext)
+library(foreach)
+library(SummarizedExperiment)
+library(DT)
+library(colorblindr)
+library(ggdendro)
+library(RColorBrewer)
+library(circlize)
+library(Hmisc)
+library(ComplexHeatmap)
+library(ineq)
+library(knitr)
+library(kableExtra)
+library(magrittr)
+library(ggrepel)
+library(ggpubr)
+library(ggbeeswarm)
+library(ggridges)
+library(openxlsx)
+library(MAGeCKFlute)
+library(introdataviz)
+```
+
+Load ggplot theme
+```{r ggplot-theme, include=TRUE}
+source("./configuration/rmarkdown/ggplot_theme.R")
+```
+
+Load custom functions
+```{r load-functions}
+source('./code/R-functions/dge_report.r')
+source('./code/R-functions/gse_report.r')
+source('./code/R-functions/geom_split_violin.R')
+```
+
+Clean files generated in previous runs
+```{r clean-files}
+rmd_file <- current_input()
+if(!is.null(rmd_file)) {
+  figures_dir <- file.path('./docs/figure',rmd_file)
+  if(dir.exists(figures_dir)) {
+    unlink(file.path(figures_dir, "*"))
+  }
+}
+```
+
+Load Summarized Experiment object
+```{r load-se}
+se <- readRDS(file.path(params$data_dir, 'se.rds'))
+```
+
+
+## Configure analyses
+List of comparisons
+```{r conf-comparisons}
+x <- colData(se) %>% data.frame
+# x %>% group_by(vector_mmodel) %>% summarise(n = n(), samples = paste(sample_alias, collapse =";")) %>% data.frame
+# x %>% group_by(global_vector_mmodel) %>% summarise(n = n(), samples = paste(sample_alias, collapse =";")) %>% data.frame
+# x %>% group_by(mouse_model_global) %>% summarise(n = n(), samples = paste(sample_alias, collapse =";")) %>% data.frame
+comp_list <- list(
+  A = list(
+    x %>% filter(vector_mmodel == '4T1-KO-Thy1-BALB' & sample_type == 'whole_tumor') %>% pull(sample_alias),
+    x %>% filter(donor == '4T1' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias)
+    ),
+  B = list(
+    x %>% filter(vector_mmodel == '4T1-KO-Thy1-BALB' & sample_type == 'whole_lung') %>% pull(sample_alias),
+    x %>% filter(donor == '4T1' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias)
+    ),
+  C = list(
+    x %>% filter(vector_mmodel == '4T1-KO-Thy1-BALB' & sample_type == 'whole_lung') %>% pull(sample_alias),
+    x %>% filter(vector_mmodel == '4T1-KO-Thy1-BALB' & sample_type == 'whole_tumor') %>% pull(sample_alias)
+    ),
+  D = list(
+    x %>% filter(vector_mmodel == 'MVT1-KO-Thy1-FVB' & sample_type == 'whole_tumor') %>% pull(sample_alias),
+    x %>% filter(donor == 'MVT1' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias)
+    ),
+  E = list(
+    x %>% filter(vector_mmodel == 'MVT1-KO-Thy1-FVB' & sample_type == 'whole_lung') %>% pull(sample_alias),
+    x %>% filter(donor == 'MVT1' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias)
+    ),
+  F = list(
+    x %>% filter(vector_mmodel == 'MVT1-KO-Thy1-FVB' & sample_type == 'whole_lung') %>% pull(sample_alias),
+    x %>% filter(vector_mmodel == 'MVT1-KO-Thy1-FVB' & sample_type == 'whole_tumor') %>% pull(sample_alias)
+    ),
+  G = list(
+    x %>% filter(vector_mmodel == 'Py2T-KO-Thy1-FVB' & sample_type == 'whole_tumor') %>% pull(sample_alias),
+    x %>% filter(donor == 'Py2T' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias)
+    ),
+  H = list(
+    x %>% filter(vector_mmodel == 'Py2T-KO-Thy1-FVB' & sample_type == 'whole_lung') %>% pull(sample_alias),
+    x %>% filter(donor == 'Py2T' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias)
+    ),
+  I = list(
+    x %>% filter(vector_mmodel == 'Py2T-KO-Thy1-FVB' & sample_type == 'whole_lung') %>% pull(sample_alias),
+    x %>% filter(vector_mmodel == 'Py2T-KO-Thy1-FVB' & sample_type == 'whole_tumor') %>% pull(sample_alias)
+    ),
+  J = list(
+    x %>% filter(vector_mmodel %in% list('4T1-KO-Thy1-BALB', 'MVT1-KO-Thy1-FVB', 'Py2T-KO-Thy1-FVB') & sample_type == 'whole_tumor') %>% pull(sample_alias),
+    x %>% filter(vector_mmodel %in% list('4T1-noKO-Thy1-BALB', 'MVT1-noKO-Thy1-FVB', 'Py2T-noKO-Thy1-FVB') & sample_type == 'whole_tumor') %>% pull(sample_alias)
+    ),
+  K = list(
+    x %>% filter(vector_mmodel %in% list('4T1-KO-Thy1-BALB', 'MVT1-KO-Thy1-FVB', 'Py2T-KO-Thy1-FVB') & sample_type == 'whole_tumor') %>% pull(sample_alias),
+    x %>% filter(global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias)
+    ),
+  L = list(
+    x %>% filter(vector_mmodel %in% list('4T1-KO-Thy1-BALB', 'MVT1-KO-Thy1-FVB', 'Py2T-KO-Thy1-FVB') & sample_type == 'whole_lung') %>% pull(sample_alias),
+    x %>% filter(vector_mmodel %in% list('4T1-KO-Thy1-BALB', 'MVT1-KO-Thy1-FVB', 'Py2T-KO-Thy1-FVB') & sample_type == 'whole_tumor') %>% pull(sample_alias)
+    ),
+  M = list(
+    x %>% filter(vector_mmodel == '4T1-KO-Thy1-NSG' & sample_type == 'whole_tumor') %>% pull(sample_alias),
+    x %>% filter(donor == '4T1' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias)
+    ),
+  N = list(
+    x %>% filter(vector_mmodel == '4T1-KO-Thy1-NSG' & sample_type == 'whole_lung') %>% pull(sample_alias),
+    x %>% filter(donor == '4T1' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias)
+    ),
+  O = list(
+    x %>% filter(vector_mmodel == '4T1-KO-Thy1-NSG' & sample_type == 'whole_lung') %>% pull(sample_alias),
+    x %>% filter(vector_mmodel == '4T1-KO-Thy1-NSG' & sample_type == 'whole_tumor') %>% pull(sample_alias)
+    ),
+  P = list(
+    x %>% filter(vector_mmodel == 'MVT1-KO-Thy1-NSG' & sample_type == 'whole_tumor') %>% pull(sample_alias),
+    x %>% filter(donor == 'MVT1' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias)
+    ),
+  Q = list(
+    x %>% filter(vector_mmodel == 'MVT1-KO-Thy1-NSG' & sample_type == 'whole_lung') %>% pull(sample_alias),
+    x %>% filter(donor == 'MVT1' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias)
+    ),
+  R = list(
+    x %>% filter(vector_mmodel == 'MVT1-KO-Thy1-NSG' & sample_type == 'whole_lung') %>% pull(sample_alias),
+    x %>% filter(vector_mmodel == 'MVT1-KO-Thy1-NSG' & sample_type == 'whole_tumor')  %>% pull(sample_alias)
+    ),
+  S = list(
+    x %>% filter(vector_mmodel == 'Py2T-KO-Thy1-NSG' & sample_type == 'whole_tumor') %>% pull(sample_alias),
+    x %>% filter(donor == 'Py2T' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias)
+    ),
+  T = list(
+    x %>% filter(vector_mmodel == 'Py2T-KO-Thy1-NSG' & sample_type == 'whole_lung') %>% pull(sample_alias),
+    x %>% filter(donor == 'Py2T' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias)
+    ),
+  U = list(
+    x %>% filter(vector_mmodel == 'Py2T-KO-Thy1-NSG' & sample_type == 'whole_lung') %>% pull(sample_alias),
+    x %>% filter(vector_mmodel == 'Py2T-KO-Thy1-NSG' & sample_type == 'whole_tumor')  %>% pull(sample_alias)
+    ),
+  V = list(
+    x %>% filter(vector_mmodel %in% list('4T1-KO-Thy1-BALB', 'MVT1-KO-Thy1-FVB', 'Py2T-KO-Thy1-FVB') & sample_type == 'whole_tumor') %>% pull(sample_alias),
+    x %>% filter(vector_mmodel %in% list('4T1-KO-Thy1-NSG', 'MVT1-KO-Thy1-NSG', 'Py2T-KO-Thy1-NSG') & sample_type == 'whole_tumor') %>% pull(sample_alias)
+    ),
+  W = list(
+    x %>% filter(vector_mmodel == '4T1-KO-Thy1-BALB' & sample_type == 'whole_tumor') %>% pull(sample_alias),
+    x %>% filter(vector_mmodel == '4T1-KO-Thy1-NSG' & sample_type == 'whole_tumor') %>% pull(sample_alias)
+    ),
+  X = list(
+    x %>% filter(vector_mmodel == 'MVT1-KO-Thy1-FVB' & sample_type == 'whole_tumor') %>% pull(sample_alias),
+    x %>% filter(vector_mmodel == 'MVT1-KO-Thy1-NSG' & sample_type == 'whole_tumor') %>% pull(sample_alias)
+    ),
+  Y = list(
+    x %>% filter(vector_mmodel == 'Py2T-KO-Thy1-FVB' & sample_type == 'whole_tumor') %>% pull(sample_alias),
+    x %>% filter(vector_mmodel == 'Py2T-KO-Thy1-NSG' & sample_type == 'whole_tumor') %>% pull(sample_alias)
+    ),
+  Z = list(
+    x %>% filter(donor == '4T1' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias),
+    x %>% filter(donor == '4T1' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-pre-Cas9') %>% pull(sample_alias)
+    ),
+  ZA = list(
+    x %>% filter(donor == 'MVT1' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias),
+    x %>% filter(donor == 'MVT1' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-pre-Cas9') %>% pull(sample_alias)
+    ),
+  ZB = list(
+    x %>% filter(donor == 'Py2T' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-pre-Cas9') %>% pull(sample_alias),
+    x %>% filter(donor == 'Py2T' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias)
+    ),
+  ZF = list(
+    x %>% filter(global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-pre-Cas9') %>% pull(sample_alias),
+    x %>% filter(global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias)
+  ),
+  ZG = list(
+    x %>% filter(global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-pre-Cas9') %>% pull(sample_alias),
+    x %>% filter(global_vector_mmodel_invitro_cas9transfection_grouped == 'KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias)
+  ),
+  ZH = list(
+    x %>% filter(vector_mmodel == '4T1-KO-Puro_EF1alpha_SpCas9-BALB' & sample_type == 'whole_tumor') %>% pull(sample_alias),
+    x %>% filter(vector_mmodel == '4T1-KO-lentiguide-Puro-EF1alpha-SpCas9-In vitro' & invitro_type == 'Cas9-BROAD') %>% pull(sample_alias)
+  ),
+  ZI = list(
+    x %>% filter(vector_mmodel == '4T1-KO-Puro_EF1alpha_SpCas9-BALB' & sample_type == 'whole_tumor') %>% pull(sample_alias),
+    x %>% filter(vector_mmodel == '4T1-KO-Puro_EF1alpha_SpCas9-BALB' & sample_type == 'whole_lung') %>% pull(sample_alias)
+  ),
+  ZJ = list(
+    x %>% filter(vector_mmodel == '4T1-KO-Puro_EF1alpha_SpCas9-NSG' & sample_type == 'whole_tumor') %>% pull(sample_alias),
+    x %>% filter(vector_mmodel == '4T1-KO-lentiguide-Puro-EF1alpha-SpCas9-In vitro' & invitro_type == 'Cas9-BROAD') %>% pull(sample_alias)
+  ),
+  ZK = list(
+    x %>% filter(vector_mmodel == '4T1-KO-Puro_EF1alpha_SpCas9-NSG' & sample_type == 'whole_tumor') %>% pull(sample_alias),
+    x %>% filter(vector_mmodel == '4T1-KO-Puro_EF1alpha_SpCas9-NSG' & sample_type == 'whole_lung') %>% pull(sample_alias)
+  ),
+  ZL = list(
+    x %>% filter(vector_mmodel == '4T1-KO-Puro-BALB' & sample_type == 'whole_tumor') %>% pull(sample_alias),
+    x %>% filter(vector_mmodel == '4T1-KO-lentiguide-Puro-In vitro' & invitro_type == 'Puro-resistant') %>% pull(sample_alias)
+  ),
+  ZM = list(
+    x %>% filter(vector_mmodel == 'MVT1-KO-Puro-FVB' & sample_type == 'whole_tumor') %>% pull(sample_alias),
+    x %>% filter(vector_mmodel == 'MVT1-KO-lentiguide-Puro-In vitro' & invitro_type == 'Puro-resistant') %>% pull(sample_alias)
+  ),
+  ZN = list(
+    x %>% filter(vector_mmodel == 'Py2T-KO-Puro-FVB' & sample_type == 'whole_tumor') %>% pull(sample_alias),
+    x %>% filter(vector_mmodel == 'Py2T-KO-lentiguide-Puro-In vitro' & invitro_type == 'Puro-resistant') %>% pull(sample_alias)
+  ),
+  ZO = list(
+    x %>% filter(global_vector_mmodel == 'whole_tumor-KO-Puro-immunocompetent' ) %>% pull(sample_alias),
+    x %>% filter(global_vector_mmodel_invitro == 'bulk-KO-lentiguide-Puro-Invitro-Puro-resistant') %>% pull(sample_alias)
+  ),
+  ZP = list(
+    x %>% filter(global_vector_mmodel == 'whole_tumor-KO-Puro-immunocompetent' ) %>% pull(sample_alias),
+    x %>% filter(global_vector_mmodel == 'whole_lung-KO-Puro-immunocompetent' ) %>% pull(sample_alias)
+  ),
+  ZQ = list(
+    x %>% filter(global_vector_mmodel == 'whole_tumor-KO-Thy1-immunodeficient' ) %>% pull(sample_alias),
+    x %>% filter(global_vector_mmodel == 'whole_lung-KO-Thy1-immunodeficient' ) %>% pull(sample_alias)
+  )
+)
+
+
+
+
+# use_vvm <- x['CRISPRKO_Clone_45',] %>% pull(global_vector_mmodel)
+# x %>% filter(global_vector_mmodel == use_vvm ) %>% 
+#   select(sample_alias, vector_mmodel, starts_with('global'), sample_type, effect_type) %>% 
+#   unique
+# for(i in names(comp_list)) {if(length(comp_list[[i]][[1]]) ==0) print(i)}
+# for(i in names(comp_list)) {if(length(comp_list[[i]][[2]]) ==0) print(i)}
+
+```
+
+```{r conf-comparisons-print}
+data_comp <- foreach(i = names(comp_list), .combine = rbind) %do% {
+  c(
+    Comparison = i,
+    Case = paste(comp_list[[i]][[1]], collapse = " "),
+    Control = paste(comp_list[[i]][[2]], collapse = " ")
+  )
+}
+
+data_comp %>% 
+  datatable(., 
+            rownames = FALSE, 
+            filter = 'top', 
+            caption = 'Comparison of guide abundance. P value by two-sided Wiloxon test',
+            extensions = 'Buttons', 
+            options = list(
+              dom = 'Blfrtip',
+              buttons = c('csv', 'excel'),
+              columnDefs = list(
+                list(width = 120, targets = 1:2)
+              )
+            )
+            )
+
+```
+### Genes to remove
+Remove genes not expressed in the RNA-seq experiment. We consider only non-NSG samples
+```{r rm-genes-conf}
+min_counts <- 1
+min_prop <- 0.30
+
+# Read RNA-seq data
+se_rna <- readRDS(params$se_rnaseq)
+assay(se_rna, 'cpm') <- edgeR::cpm(se_rna)
+
+# CRISPR library genes
+crispr_genes <- unique(rowData(se)$Gene) %>% grep('Non_Target', ., invert = T, value = T)
+
+# RNA-seq : Select genes and non-NSG samples
+use_cols <- colData(se_rna)$mouse_model != 'NSG'
+use_se <- se_rna[rowData(se_rna)$gene_name %in% crispr_genes, use_cols]
+
+# Proportion of samples with min_counts at each group
+use_group <- as.factor(use_se$donor)
+counts_mat <- assay(use_se, 'counts')
+counts_stats <- foreach(i=levels(use_group), .combine = cbind) %do% {
+  use_cols <- use_se$donor == i
+  rowSums(counts_mat[,use_cols] >= min_counts)  / sum(use_cols)
+} %>% data.frame
+colnames(counts_stats) <- levels(use_group)
+counts_stats$all <- rowSums(counts_mat >= min_counts)  / ncol(counts_mat)
+  
+# Keep genes with min_counts threshold in >=min_prop of samples in at least 1 group
+rows_to_keep <- rownames(counts_stats)[rowSums(counts_stats >= min_prop) > 0]
+
+# Change to gene names
+genes_to_keep <- rowData(use_se[rows_to_keep,])$gene_name %>% 
+  unique
+
+# Remove Rosa26 and Cd4 : cannot be expressed by cancer cells
+genes_to_keep <- genes_to_keep[!genes_to_keep %in% c('Gt(ROSA)26Sor', 'Cd4')]
+
+# Define genes to remove
+genes_to_rm <- setdiff(crispr_genes, genes_to_keep)
+
+# Show stats for removed genes
+counts_stats$gene_name <- rowData(use_se[rownames(counts_stats),])$gene_name
+counts_stats %<>% dplyr::select(gene_name, everything()) 
+
+counts_stats_filterByExpr <- counts_stats
+
+# Filter Crispr Data
+keep_gene_guides <- rownames(se)[rowData(se)$Gene %in% genes_to_keep]
+keep_ctrl_guides <- rownames(se)[grepl('Non_Target', rowData(se)$Gene)]
+se <- se[c(keep_gene_guides, keep_ctrl_guides),]
+
+# # Selection of expressed genes. 
+# #   Number of samples = Since large.n (3) < min. group size (12), 
+# #   the MinSampleSize will be 6.6 = large.n + (MinSampleSize-large.n)*min.prop
+# use_rows <- edgeR::filterByExpr(
+#   use_se,
+#   group=use_se$donor, 
+#   lib.size = colSums(assay(se_rna[,use_cols], 'counts')),
+#   min.prop = 0.4,
+#   min.count = 1,
+#   large.n = 3, 
+#   min.total.count = 15
+#   )
+# genes_exprs <- unique(rowData(use_se)$gene_name[use_rows])
+```
+
+Remove genes not expressed in the RNA-seq experiment: we keep genes that have counts above `r min_counts` counts in `r 100*min_prop` % of the samples from at least one group. The group is defined by the cell model. We consider only non-NSG samples for this analysis. additionally we also remove *Gt(ROSA)26Sor* and *Cd4* (they cannot be expressed by cancer cells).
+
+The table below shows the proportion of samples with counts >= `r min_counts`in each group for genes removed (n = `r length(genes_to_rm)``).
+```{r rm-genes-tab}
+counts_stats_filterByExpr %>% 
+  filter(gene_name %in% genes_to_rm) %>% 
+  arrange(desc(all)) %>% 
+  datatable(., 
+            rownames = FALSE, 
+            filter = 'top', 
+            caption = 'Statistics',
+            extensions = 'Buttons', 
+            options = list(
+              dom = 'Blfrtip',
+              buttons = c('csv', 'excel')
+              )) %>% 
+  formatRound(columns = 2:5)
+```
+
+
+```{r rm-genes-compare, eval = FALSE}
+# CRISPR library genes selected by Massimo
+crispr_genes_noexp_massimo <- read.xlsx(
+  './notes/p27851_o30659_genes_not_expressed_massimo.xlsx',
+  startRow = 2,
+  colNames = F
+  ) %>% 
+  pull(X1)
+
+crispr_genes_noexp_massimo[!crispr_genes_noexp_massimo %in% genes_to_rm]
+genes_to_rm[!genes_to_rm %in% crispr_genes_noexp_massimo]
+
+counts_stats_filterByExpr %>% 
+  filter(gene_name %in% crispr_genes_noexp_massimo[!crispr_genes_noexp_massimo %in% genes_to_rm])
+```
+
+
+### Run MAGeCK
+
+Generate MAGeCK test scripts
+```{r generate-mageck-cmds, eval = FALSE}
+out_dir <- file.path(params$data_dir, params$mageck_dir)
+dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+
+# Generate count matrix
+count_mat <- assay(se, 'counts') %>% data.frame(check.names = FALSE) %>% 
+  rownames_to_column('sgRNA') %>% 
+  mutate(Gene = rowData(se)$Gene) %>% 
+  dplyr::select(sgRNA, Gene, everything())
+write_tsv(count_mat, file = file.path(out_dir, 'counts.txt'))
+
+# Generate list of control sgRNA IDs
+non_target_list <- rownames(se) %>% grep('Non_Target', ., value = T) %>% data.frame
+write_tsv(non_target_list, file = file.path(out_dir, 'control_sgrna.txt'), col_names = F)
+
+# Generate mageck commands
+res_cmd <- data.frame('source activate mageckenv')
+res_cmd <- foreach(i=names(comp_list), .combine = rbind) %do% {
+  paste('mageck test -k counts.txt --control-sgrna control_sgrna.txt --norm-method control -t', paste(comp_list[[i]][[1]], collapse = ','),'-c',  paste(comp_list[[i]][[2]], collapse = ','), '-n', i, '\n')
+} %>% data.frame()
+
+res_cmd <- rbind('conda activate mageckenv', res_cmd, 'conda deactivate')
+write_tsv(res_cmd, file.path(out_dir, 'run_mageck_test.sh'), col_names = FALSE)
+```
+
+Load MAGeCK results
+```{r load-mageck}
+gene_summ_files <- list.files(path = file.path(params$data_dir, params$mageck_dir), pattern = 'gene_summary.txt', full.names = TRUE)
+analysis_prefix <- basename(gene_summ_files) %>% gsub(".gene_summary.txt", "", .)
+gene_summ <- foreach(i = gene_summ_files) %do% read.delim(i, check.names = FALSE)
+names(gene_summ) <- analysis_prefix
+
+sgrna_summ_files <- list.files(path = file.path(params$data_dir, params$mageck_dir), pattern = 'sgrna_summary.txt', full.names = TRUE)
+analysis_prefix <- basename(sgrna_summ_files) %>% gsub(".sgrna_summary.txt", "", .)
+sgrna_summ <- foreach(i = sgrna_summ_files) %do% read.delim(i, check.names = FALSE)
+names(sgrna_summ) <- analysis_prefix
+```
+
+
+Run MAGeCKFlute
+```{r run-mageck-flute, eval = FALSE}
+# library(doParallel)
+# registerDoParallel(3)
+
+# foreach(i=names(comp_list)) %dopar% {
+foreach(i=names(comp_list)) %do% {
+  FluteRRA(
+    gene_summ[[i]], 
+    sgrna_summ[[i]], 
+    proj=i, 
+    organism="mmu", 
+    outdir = file.path(params$data_dir, params$mageck_dir)
+  )
+}
+
+stopImplicitCluster()
+```
+
+Load MAGeCKFlute
+```{r load-mageck-flute, eval = FALSE}
+mageck_flute <- foreach(i=names(comp_list)) %do% {
+  use_path <- file.path(params$data_dir, params$mageck_dir,  paste0('MAGeCKFlute_', i),'RRA')
+  lf <- list.files(use_path, pattern = '.txt', full.names = TRUE) %>% 
+    grep('processed_data|omit_essential', ., value = TRUE, invert = TRUE)
+  res <- foreach(j = lf) %do% {
+    read.delim(j, check.names = FALSE)  
+  }
+  names(res) <- basename(lf) %>% gsub('.txt', '', .)
+  res
+}
+names(mageck_flute) <- names(comp_list)
+
+mageck_flute_comb <- foreach(i=names(mageck_flute)) %do% {
+  x <- mageck_flute[[i]]
+  neg_db <- rbind(
+    x$Negative_complex %>% mutate(gset = 'complex'),
+    x$Negative_gobp %>% mutate(gset = 'gobp'),
+    x$Negative_kegg %>% mutate(gset = 'kegg'),
+    x$Negative_reactome %>% mutate(gset = 'reactome')
+  )
+  pos_db <- rbind(
+    x$Positive_complex %>% mutate(gset = 'complex'),
+    x$Positive_gobp %>% mutate(gset = 'gobp'),
+    x$Positive_kegg %>% mutate(gset = 'kegg'),
+    x$Positive_reactome %>% mutate(gset = 'reactome')
+  )
+  list(
+    negative = neg_db,
+    positive = pos_db
+  )
+}
+names(mageck_flute_comb) <- names(mageck_flute)
+
+```
+
+
+
+## Download MAGeCK results
+```{r write-mageck-conf}
+# File name gene summary
+rmd_file <- current_input()
+if(is.null(rmd_file))
+  rmd_file <- 'tmp'
+gene_file_xlsx <- file.path('./docs/file',rmd_file, 'mageck_gene_summary.xlsx')
+sgrna_file_xlsx <- file.path('./docs/file',rmd_file, 'mageck_sgrna_summary.xlsx')
+```
+
+```{r write-mageck-results, eval = TRUE}
+for(i in names(comp_list)) {
+  file_xlsx <- file.path('./docs/file',rmd_file, paste0(i, '_mageck_results.xlsx'))
+  dir.create(dirname(file_xlsx), recursive = TRUE, showWarnings = FALSE)
+  # Generate workbook
+  wb <- createWorkbook()
+  wsn <- 'gene_summ'
+  addWorksheet(wb, wsn)
+  writeData(wb, wsn, gene_summ[[i]])
+  wsn <- 'sgrna_summ'
+  addWorksheet(wb, wsn)
+  # writeData(wb, wsn, sgrna_summ[[i]])
+  # for(wsn in names(mageck_flute[[i]])) {
+  #   addWorksheet(wb, wsn)
+  #   writeData(wb, wsn, mageck_flute[[i]][[wsn]])
+  # }
+  saveWorkbook(wb, file_xlsx, TRUE)
+}
+```
+
+```{r write-mageck-summ--results, eval = TRUE}
+# File name gene summary
+file_xlsx <- gene_file_xlsx
+dir.create(dirname(file_xlsx), recursive = TRUE, showWarnings = FALSE)
+
+# Generate workbook
+wb <- createWorkbook()
+for(i in names(gene_summ)) {
+  addWorksheet(wb, i)
+  writeData(wb, i, gene_summ[[i]])
+}
+saveWorkbook(wb, file_xlsx, TRUE)
+
+# File name sgRNA summary
+file_xlsx <- sgrna_file_xlsx
+dir.create(dirname(file_xlsx), recursive = TRUE, showWarnings = FALSE)
+
+# Generate workbook
+wb <- createWorkbook()
+for(i in names(sgrna_summ)) {
+  addWorksheet(wb, i)
+  writeData(wb, i, sgrna_summ[[i]])
+}
+saveWorkbook(wb, file_xlsx, TRUE)
+```
+
+### Overall summaries
+The tables of results can be downloaded using the following links:
+
+- [**Gene summary results**](`r gsub("docs/", "" , gene_file_xlsx)`)
+
+- [**sgRNA summary results**](`r gsub("docs/", "" , sgrna_file_xlsx)`)
+
+For file format description, visit [MAGeCK output](https://sourceforge.net/p/mageck/wiki/output/)
+
+### Results by comparison
+Download the results by comparison, including gene-set analysis level:
+```{r links-to-results}
+x <- foreach(i=names(comp_list), .combine = c) %do% {
+  file_xlsx <- file.path('./file', rmd_file, paste0(i, '_mageck_results.xlsx'))
+  paste0("[", i, "](", file_xlsx,")", sep = "")
+}
+cat(paste(x, collapse = ' - '), "\n\n")
+```
+
+## Summary of results
+```{r summary-selection}
+res <- foreach(i = names(gene_summ), .combine = rbind) %do% {
+  n_neg <- gene_summ[[i]] %>% filter(`neg|fdr` <= 0.05) %>% nrow
+  n_pos <- gene_summ[[i]] %>% filter(`pos|fdr` <= 0.05) %>% nrow
+  # n_gs_neg <- mageck_flute_comb[[i]]$negative %>% filter(p.adjust <= 0.05) %>% nrow
+  data.frame(
+    negative_genes = gene_summ[[i]] %>% filter(`neg|fdr` <= 0.05) %>% nrow,
+    positive_genes = gene_summ[[i]] %>% filter(`pos|fdr` <= 0.05) %>% nrow,
+    negative_sgrna = sgrna_summ[[i]] %>% filter(FDR <= 0.05 & LFC < 0) %>% nrow,
+    positive_sgrna = sgrna_summ[[i]] %>% filter(FDR <= 0.05 & LFC > 0) %>% nrow
+    # negative_pathways =  mageck_flute_comb[[i]]$negative %>% filter(p.adjust <= 0.05) %>% nrow,
+    # positive_pathways =  mageck_flute_comb[[i]]$positive %>% filter(p.adjust <= 0.05) %>% nrow
+    )
+}  %>% 
+  mutate(comparison = names(gene_summ)) %>% 
+  dplyr::select(comparison, everything())
+
+res %>% 
+  kable(caption = paste('Summary of positive and negative selected genes and pathways with a FDR <= 0.05'), 
+        booktabs = TRUE, row.names = FALSE) %>%
+  kable_styling(full_width = F, bootstrap_options = c("striped", "hover"), font_size = 12)
+```
+
+## Visualization of selection results
+
+### Volcano plots
+```{r volcano-plots, fig.width=10.5}
+plots_res <- foreach(i = gene_summ) %do% {
+  x <- i %>%  ReadRRA(score = 'lfc') %>% dplyr::rename(LFC = Score)
+  plot.volcano(
+    x$LFC,
+    x$FDR,
+    label = x$id,
+    x.lab = expression(paste("lo", g[2],"(Fold change)")), 
+    y.lab = expression(paste("-lo", g[10],"(FDR)")), 
+    point.alpha = 0.6, 
+    hline.type = 3
+  )
+}
+
+plot_grid(plotlist = plots_res, labels =  names(gene_summ))
+```
+
+
+### Rank plots
+In the plots below the genes were ranked using log2 Fold-Change.
+```{r rank-plots, fig.width=16.5}
+plots_res <- foreach(i = gene_summ) %do% {
+  x <- i %>%  ReadRRA(score = 'lfc') %>% dplyr::rename(LFC = Score)
+  gene_list <-  x$LFC %>% set_names( x$id) %>% na.omit
+  RankView(gene_list, top = 5, bottom = 5)
+}
+
+plot_grid(plotlist = plots_res, labels =  names(gene_summ))
+```
+
+
+
+
+
+## Selected genes
+
+```{r selected-genes-conf}
+gene_info <- readxl::read_xlsx('./data/resources/gene_list_for_figure_5c.xlsx')
+
+genes_to_remove <- c('Ccl24', 'Jag1', 'Fgfr4', 'Amh', 'Pten')
+gene_info %<>% filter(!id %in% genes_to_remove)
+
+use_colors <- c(
+  `Immune system cytokines and chemokines` = 'grey',
+  `Immune system cytokines\nand chemokines` = 'grey',
+  
+  `Interferone, TNF and danger/death-inducing signals` = 'black',
+  `Interferon, TNF\nand danger/death-inducing\nsignals` = 'black',
+  `Interferon, TNF and\ndanger/death-inducing\nsignals` = 'black',
+  
+  `TGF-β family related` = 'red',
+  
+  `RTK signaling` = 'blue',
+  `Positive controls` = 'black'
+)
+
+use_fill <- c(
+  `Immune system cytokines and chemokines` = 'grey',
+  `Immune system cytokines\nand chemokines` = 'grey',
+  
+  `Interferone, TNF and danger/death-inducing signals` = 'black',
+  `Interferon, TNF\nand danger/death-inducing\nsignals` = 'black',
+  `Interferon, TNF and\ndanger/death-inducing\nsignals` = 'black',
+  `TGF-β family related` = 'red',
+  
+  `RTK signaling` = 'blue',
+  `Positive controls` = 'white'
+)
+
+use_shape <- c(
+  `Immune system cytokines and chemokines` = 16,
+  `Immune system cytokines\nand chemokines` = 16,
+  
+  `Interferone, TNF and danger/death-inducing signals` = 16,
+  `Interferon, TNF\nand danger/death-inducing\nsignals` = 16,
+  `Interferon, TNF and\ndanger/death-inducing\nsignals` = 16,
+  `TGF-β family related` = 16,
+  
+  `RTK signaling` = 16,
+  `Positive controls` = 1
+)
+
+# grouped comparisons
+grouped_comparisons <- list(
+  `Immunogen-loaded conditions` = c('ZI', 'ZL', 'ZP'),
+  StealTHY = c('C', 'F', 'I', 'L'),
+  `Immunodeficient conditions` = c('ZQ', 'ZK', 'O', 'R', 'U', 'V'),
+  Others = c('J', 'W', 'X', 'Y')
+)
+
+# combined comparisons
+combined_comparisons <- list(
+  `C, F and I` = c('C', 'F', 'I'),
+  `O, R and U` = c('O', 'R', 'U')
+)
+
+# paired comparisons
+paired_comparisons <- list(
+  `StealTHY_all models` = c('L', 'ZQ'),
+  `Cas9_BROAD` = c('ZI', 'ZK'),
+  `4T1` = c('C', 'O'),
+  `MVT1` = c('F', 'R'),
+  `Py2T` = c('I', 'U')
+)
+
+
+
+# comparisons to invert FC: In these old comparisons we did initially, we have inverted the terms (lungs and tumors) with respect to the analysis we did later.  As a result, hits such as Amhr2 appear as upregulated and hits such as Tgfbr2 appear as downregulated. For this reason, all fold changes in the asterisk labeled analysis need to be inverted, so to represent these comparisons similarly to all the others
+invert_fc_comparions <- c('C', 'F', 'I', 'L', 'O', 'R', 'U', 'V')
+
+
+# get gene order based on Comparison L
+gene_levels <- gene_summ[['L']] %>%
+  ReadRRA(score = 'lfc') %>%
+  dplyr::rename(LFC = Score) %>%
+  left_join(gene_info, by = c('id' = 'id')) %>%
+  filter(!is.na(gene_set)) %>%
+  mutate(gene_name = fct_reorder(gene_name, LFC, .desc = TRUE)) %>%
+  pull(gene_name) %>%
+  levels
+```
+
+### Dotplot By condition
+Dotplot of selected genes and signatures by Massimo for Fig. 5C
+```{r dotplot-selected-genes, fig.width=2.37, fig.asp=2.2}
+use_comp <- c("L", "ZI", "ZP", "ZQ","ZK","ZG","J","C","F","I","O","R","U")
+
+# FDR limits
+xfdr <- foreach(i=gene_summ[use_comp], .combine = rbind) %do% {
+  i %>% 
+    ReadRRA(score = 'lfc') %>% 
+    dplyr::rename(LFC = Score) %>% 
+    left_join(gene_info, by = c('id' = 'id')) %>% 
+    filter(!is.na(gene_set)) %>% 
+    pull(FDR) %>% 
+    min
+}
+maxFDR <- -log10(xfdr[,1]) %>% max
+ 
+# Set logFC range for all plots
+xlfc <- foreach(i=gene_summ[use_comp], .combine = rbind) %do% {
+  i %>% 
+    ReadRRA(score = 'lfc') %>% 
+    dplyr::rename(LFC = Score) %>% 
+    left_join(gene_info, by = c('id' = 'id')) %>% 
+    filter(!is.na(gene_set)) %>% 
+    pull(LFC) %>% 
+    abs %>% max
+}
+maxLFC <- max(xlfc[,1])
+
+# Set LFC (x-axis) for comparable plots to "L": ZQ , O, R
+L_comp <- c("L", "ZQ", "C", "O", "R")
+xlfc <- foreach(i=gene_summ[L_comp], .combine = rbind) %do% {
+  i %>% 
+    ReadRRA(score = 'lfc') %>% 
+    dplyr::rename(LFC = Score) %>% 
+    left_join(gene_info, by = c('id' = 'id')) %>% 
+    filter(!is.na(gene_set)) %>% 
+    pull(LFC) %>% 
+    abs %>% max
+}
+L_maxLFC <- max(xlfc[,1])
+L_xlim <- c(-L_maxLFC, L_maxLFC)
+L_breaks <- c(-2.5, -1, 0, 1, 2.5)
+L_labels <- c('-2.5', '-1', '0', '1', '2.5')
+
+# Set LFC (x-axis) for comparable plots to "ZI": ZK, ZP
+ZI_comp <- c("ZI", "ZK", "ZP")
+xlfc <- foreach(i=gene_summ[ZI_comp], .combine = rbind) %do% {
+  i %>% 
+    ReadRRA(score = 'lfc') %>% 
+    dplyr::rename(LFC = Score) %>% 
+    left_join(gene_info, by = c('id' = 'id')) %>% 
+    filter(!is.na(gene_set)) %>% 
+    pull(LFC) %>% 
+    abs %>% max
+}
+ZI_maxLFC <- max(xlfc[,1])
+ZI_xlim <- c(-ZI_maxLFC, ZI_maxLFC)
+ZI_breaks <- c(-5, -2.5, 0, 2.5, 5)
+ZI_labels <- c('-5', '-2.5', '0', '2.5', '5')
+
+i <- use_comp[1]
+for(i in use_comp) {
+  cat("####", i, "\n\n")
+  
+  x <- gene_summ[[i]] %>% 
+    ReadRRA(score = 'lfc') %>% 
+    dplyr::rename(LFC = Score) %>% 
+    left_join(gene_info, by = c('id' = 'id')) %>% 
+    filter(!is.na(gene_set))
+  
+  # Reverse LFC?
+  if(i %in% invert_fc_comparions)
+    x$LFC <- -1*x$LFC
+  
+  x <- x %>% 
+    mutate(
+      gene_name = factor(gene_name, levels = gene_levels),
+      gene_set = ifelse(
+        gene_set == 'Immune system cytokines and chemokines',
+        'Immune system cytokines\nand chemokines',
+        gene_set
+      ),
+      gene_set = ifelse(
+        gene_set == 'Interferone, TNF and danger/death-inducing signals',
+        'Interferon, TNF and\ndanger/death-inducing\nsignals',
+        gene_set
+      ),
+      gene_set = factor(gene_set, names(use_colors))
+      )
+
+                                                
+  xlim <- c(-ceiling(max(abs(x$LFC), na.rm = TRUE)), 
+            ceiling(max(abs(x$LFC), na.rm = TRUE)))
+  size_breaks <- c(0, 0.25, 0.5, 1, 2, ceiling(maxFDR))
+  res <- x %>% 
+    ggplot(aes(LFC, gene_name, color = gene_set, size = -log10(FDR))) +
+    geom_point(aes(shape = gene_set)) +
+    geom_vline(xintercept = 0, linetype = 3) +
+    scale_y_discrete(expand = expansion(add = c(1, 1))) + # add fixed units around each facet to avoid lines over points
+    # scale_x_continuous(
+    #   expand = expansion(add = c(1, 1))
+    #   ) + # add fixed units around each facet to avoid lines over points
+    scale_color_manual(values = use_colors) +
+    scale_size(range = c(0.5, 2.5), 
+               limits = c(0, ceiling(maxFDR)), 
+               breaks = size_breaks,
+               labels = size_breaks %>% as.character # remove trailing 0 from decimals
+               ) +
+    scale_shape_manual(values = use_shape) +
+    # xlim(xlim) +
+    facet_grid(rows = vars(gene_set), scales = 'free_y', space = 'free_y') +
+    theme_facet +
+    theme(
+      # axis.line = element_line(linewidth = one_pt/2, color = 'black'),
+      axis.ticks = element_line(linewidth = one_pt/2, color = 'black'),
+      panel.border = element_rect(linewidth = one_pt/2, color = 'black'),
+      axis.text = element_text(size=8), 
+      axis.title = element_text(size = 8),
+      legend.title = element_text(size=8),
+      legend.text = element_text(size=8),
+      strip.text = element_text(size = 4)
+    ) +
+    labs(
+      x = expression(paste("lo", g[2],"(Fold change)")),
+      y = NULL,
+      size = expression(paste("-lo", g[10],"(FDR)"))
+    ) +
+    guides(color = 'none', shape = 'none')
+  
+  if(i %in% L_comp)
+    res <- res +
+      scale_x_continuous(
+        expand = expansion(add = c(1, 1)), 
+        limits = L_xlim,
+        breaks = L_breaks,
+        labels = L_labels
+      )
+  if(i %in% ZI_comp)
+    res <- res +
+      scale_x_continuous(
+        expand = expansion(add = c(1, 1)), 
+        limits = ZI_xlim,
+        breaks = ZI_breaks,
+        labels = ZI_labels
+      )
+  if(!i %in% c(L_comp, ZI_comp))
+    res <- res +
+      scale_x_continuous(
+        expand = expansion(add = c(1, 1)), 
+        limits = xlim
+      )
+  
+    print(res)
+  cat("\n\n")
+}
+```
+
+### Dotplot By condition (bigger dots)
+Dotplot of selected genes and signatures by Massimo for Fig. 5C
+```{r dotplot-resized-points-selected-genes, fig.width=2.37, fig.asp=2.2}
+use_comp <- c("L", "ZI", "ZP", "ZQ","ZK","ZG","J","C","F","I","O","R","U")
+
+# FDR limits
+xfdr <- foreach(i=gene_summ[use_comp], .combine = rbind) %do% {
+  i %>% 
+    ReadRRA(score = 'lfc') %>% 
+    dplyr::rename(LFC = Score) %>% 
+    left_join(gene_info, by = c('id' = 'id')) %>% 
+    filter(!is.na(gene_set)) %>% 
+    pull(FDR) %>% 
+    min
+}
+maxFDR <- -log10(xfdr[,1]) %>% max
+ 
+# Set logFC range for all plots
+xlfc <- foreach(i=gene_summ[use_comp], .combine = rbind) %do% {
+  i %>% 
+    ReadRRA(score = 'lfc') %>% 
+    dplyr::rename(LFC = Score) %>% 
+    left_join(gene_info, by = c('id' = 'id')) %>% 
+    filter(!is.na(gene_set)) %>% 
+    pull(LFC) %>% 
+    abs %>% max
+}
+maxLFC <- max(xlfc[,1])
+
+# Set LFC (x-axis) for comparable plots to "L": ZQ , O, R
+L_comp <- c("L", "ZQ", "C", "O", "R")
+xlfc <- foreach(i=gene_summ[L_comp], .combine = rbind) %do% {
+  i %>% 
+    ReadRRA(score = 'lfc') %>% 
+    dplyr::rename(LFC = Score) %>% 
+    left_join(gene_info, by = c('id' = 'id')) %>% 
+    filter(!is.na(gene_set)) %>% 
+    pull(LFC) %>% 
+    abs %>% max
+}
+L_maxLFC <- max(xlfc[,1])
+L_xlim <- c(-L_maxLFC, L_maxLFC)
+L_breaks <- c(-2.5, -1, 0, 1, 2.5)
+L_labels <- c('-2.5', '-1', '0', '1', '2.5')
+
+# Set LFC (x-axis) for comparable plots to "ZI": ZK, ZP
+ZI_comp <- c("ZI", "ZK", "ZP")
+xlfc <- foreach(i=gene_summ[ZI_comp], .combine = rbind) %do% {
+  i %>% 
+    ReadRRA(score = 'lfc') %>% 
+    dplyr::rename(LFC = Score) %>% 
+    left_join(gene_info, by = c('id' = 'id')) %>% 
+    filter(!is.na(gene_set)) %>% 
+    pull(LFC) %>% 
+    abs %>% max
+}
+ZI_maxLFC <- max(xlfc[,1])
+ZI_xlim <- c(-ZI_maxLFC, ZI_maxLFC)
+ZI_breaks <- c(-5, -2.5, 0, 2.5, 5)
+ZI_labels <- c('-5', '-2.5', '0', '2.5', '5')
+
+i <- use_comp[1]
+for(i in use_comp) {
+  cat("####", i, "\n\n")
+  
+  x <- gene_summ[[i]] %>% 
+    ReadRRA(score = 'lfc') %>% 
+    dplyr::rename(LFC = Score) %>% 
+    left_join(gene_info, by = c('id' = 'id')) %>% 
+    filter(!is.na(gene_set))
+  
+  # Reverse LFC?
+  if(i %in% invert_fc_comparions)
+    x$LFC <- -1*x$LFC
+  
+  x <- x %>% 
+    mutate(
+      gene_name = factor(gene_name, levels = gene_levels),
+      gene_set = ifelse(
+        gene_set == 'Immune system cytokines and chemokines',
+        'Immune system cytokines\nand chemokines',
+        gene_set
+      ),
+      gene_set = ifelse(
+        gene_set == 'Interferone, TNF and danger/death-inducing signals',
+        'Interferon, TNF and\ndanger/death-inducing\nsignals',
+        gene_set
+      ),
+      gene_set = factor(gene_set, names(use_colors))
+      )
+
+                                                
+  xlim <- c(-ceiling(max(abs(x$LFC), na.rm = TRUE)), 
+            ceiling(max(abs(x$LFC), na.rm = TRUE)))
+  size_breaks <- c(0, 0.25, 0.5, 1, 2, ceiling(maxFDR))
+  res <- x %>% 
+    ggplot(aes(LFC, gene_name, color = gene_set, size = -log10(FDR))) +
+    geom_point(aes(shape = gene_set)) +
+    geom_vline(xintercept = 0, linetype = 3) +
+    scale_y_discrete(expand = expansion(add = c(1, 1))) + # add fixed units around each facet to avoid lines over points
+    # scale_x_continuous(
+    #   expand = expansion(add = c(1, 1))
+    #   ) + # add fixed units around each facet to avoid lines over points
+    scale_color_manual(values = use_colors) +
+    scale_size(range = c(2, 4), 
+               limits = c(0, ceiling(maxFDR)), 
+               breaks = size_breaks,
+               labels = size_breaks %>% as.character # remove trailing 0 from decimals
+               ) +
+    scale_shape_manual(values = use_shape) +
+    # xlim(xlim) +
+    facet_grid(rows = vars(gene_set), scales = 'free_y', space = 'free_y') +
+    theme_facet +
+    theme(
+      # axis.line = element_line(linewidth = one_pt/2, color = 'black'),
+      axis.ticks = element_line(linewidth = one_pt/2, color = 'black'),
+      panel.border = element_rect(linewidth = one_pt/2, color = 'black'),
+      axis.text = element_text(size=8), 
+      axis.title = element_text(size = 8),
+      legend.title = element_text(size=8),
+      legend.text = element_text(size=8),
+      strip.text = element_text(size = 4)
+    ) +
+    labs(
+      x = expression(paste("lo", g[2],"(Fold change)")),
+      y = NULL,
+      size = expression(paste("-lo", g[10],"(FDR)"))
+    ) +
+    guides(color = 'none', shape = 'none')
+  
+  if(i %in% L_comp)
+    res <- res +
+      scale_x_continuous(
+        expand = expansion(add = c(1, 1)), 
+        limits = L_xlim,
+        breaks = L_breaks,
+        labels = L_labels
+      )
+  if(i %in% ZI_comp)
+    res <- res +
+      scale_x_continuous(
+        expand = expansion(add = c(1, 1)), 
+        limits = ZI_xlim,
+        breaks = ZI_breaks,
+        labels = ZI_labels
+      )
+  if(!i %in% c(L_comp, ZI_comp))
+    res <- res +
+      scale_x_continuous(
+        expand = expansion(add = c(1, 1)), 
+        limits = xlim
+      )
+  
+    print(res)
+  cat("\n\n")
+}
+```
+
+
+### Dotplot Combined condition
+Dotplot of selected genes and signatures by Massimo for Fig. 5C. Below we have a single plot for each group of comparisons
+```{r dotplot-selected-genes-combined_conditions, fig.width=2.37, fig.asp=2.2}
+gn <- names(combined_comparisons)[2]
+
+use_comp <- unlist(combined_comparisons) %>% unique()
+# FDR limits
+xfdr <- foreach(i=gene_summ[use_comp], .combine = rbind) %do% {
+  i %>% 
+    ReadRRA(score = 'lfc') %>% 
+    dplyr::rename(LFC = Score) %>% 
+    left_join(gene_info, by = c('id' = 'id')) %>% 
+    filter(!is.na(gene_set)) %>% 
+    pull(FDR) %>% 
+    min
+}
+maxFDR <- -log10(xfdr[,1]) %>% max
+  
+
+# Set logFC range for all plots
+xlfc <- foreach(i=gene_summ[use_comp], .combine = rbind) %do% {
+  i %>% 
+    ReadRRA(score = 'lfc') %>% 
+    dplyr::rename(LFC = Score) %>% 
+    left_join(gene_info, by = c('id' = 'id')) %>% 
+    filter(!is.na(gene_set)) %>% 
+    pull(LFC) %>% 
+    abs %>% max
+}
+maxLFC <- max(xlfc[,1])
+xlim <- c(
+  -ceiling(maxLFC), 
+  ceiling(maxLFC)
+  )
+  
+
+for(gn in names(combined_comparisons)) {
+  cat("####", gn, "\n\n")
+  use_comparisons <- combined_comparisons[[gn]]
+  
+  plot_data <- foreach(i=use_comparisons, .combine = rbind) %do% {
+    x <-  gene_summ[[i]] %>% 
+      ReadRRA(score = 'lfc') %>% 
+      dplyr::rename(LFC = Score)
+    
+    # Reverse LFC?
+    if(i %in% invert_fc_comparions)
+      x$LFC <- -1*x$LFC
+    
+    x %>% 
+      mutate(
+        direction = ifelse(FDR <= 0.10 & LFC > 0, 'up', 'none'),
+        direction = ifelse(FDR <= 0.10 & LFC < 0, 'down', direction),
+        is.significant = FDR <= 0.10,
+        comparison = i
+      ) %>% 
+      left_join(gene_info, by = c('id' = 'id')) %>% 
+      filter(!is.na(gene_set)) %>% 
+      mutate(
+        # gene_name = factor(gene_name, levels = gene_levels),
+        gene_set = ifelse(
+          gene_set == 'Immune system cytokines and chemokines',
+          'Immune system cytokines\nand chemokines',
+          gene_set
+        ),
+        gene_set = ifelse(
+          gene_set == 'Interferone, TNF and danger/death-inducing signals',
+          'Interferon, TNF and\ndanger/death-inducing\nsignals',
+          gene_set
+        ),
+        gene_set = factor(gene_set, names(use_colors))
+        )
+  }
+  
+  plot_data$gene_name <- factor(plot_data$gene_name, levels = gene_levels)
+  
+  size_breaks <- c(0, 0.25, 0.5, 1, ceiling(maxFDR))
+  
+  # Set shapes by comparison and gene set
+  plot_data <- plot_data %>% 
+    mutate(
+      shape_var = ifelse(gene_set == 'Positive controls',
+                         paste0(comparison, '+'), 
+                         comparison)
+    )
+  shape_levels <- plot_data$shape_var %>% unique()
+  use_shapes_plot <- ifelse(grepl(paste0("^", use_comparisons[1]) , shape_levels), 16, NA)
+  use_shapes_plot <- ifelse(grepl(paste0("^", use_comparisons[2]) , shape_levels), 17, use_shapes_plot)
+  use_shapes_plot <- ifelse(grepl(paste0("^", use_comparisons[3]) , shape_levels), 15, use_shapes_plot)
+  use_shapes_plot <- ifelse(grepl(paste0("^", use_comparisons[1], "\\+") , shape_levels), 
+                            1, use_shapes_plot)
+  use_shapes_plot <- ifelse(grepl(paste0("^", use_comparisons[2], "\\+") , shape_levels), 
+                            2, use_shapes_plot)
+  use_shapes_plot <- ifelse(grepl(paste0("^", use_comparisons[3], "\\+") , shape_levels), 
+                            0, use_shapes_plot)
+  names(use_shapes_plot) <- shape_levels
+  
+  res <- plot_data %>% 
+    ggplot(aes(LFC, gene_name, color = gene_set, size = -log10(FDR))) +
+    geom_point(aes(shape = shape_var), alpha = 0.6) +
+    geom_vline(xintercept = 0, linetype = 3) +
+    scale_y_discrete(expand = expansion(add = c(1, 1))) + # add fixed units around each facet to avoid lines over points
+    scale_x_continuous(
+      expand = expansion(add = c(1, 1)),  # add fixed units around each facet to avoid lines over points
+      limits = xlim
+      ) +
+    scale_color_manual(values = use_colors) +
+    scale_size(range = c(0.5, 2.5), 
+               limits = c(0, ceiling(maxFDR)), 
+               breaks = size_breaks,
+               labels = size_breaks %>% as.character # remove trailing 0 from decimals
+               ) +
+    scale_shape_manual(values = use_shapes_plot) +
+    facet_grid(rows = vars(gene_set), scales = 'free_y', space = 'free_y') +
+    theme_facet +
+    theme(
+      # axis.line = element_line(linewidth = one_pt/2, color = 'black'),
+      axis.ticks = element_line(linewidth = one_pt/2, color = 'black'),
+      panel.border = element_rect(linewidth = one_pt/2, color = 'black'),
+      axis.text = element_text(size=8), 
+      axis.title = element_text(size = 8),
+      legend.title = element_text(size=8),
+      legend.text = element_text(size=8),
+      strip.text = element_text(size = 4)
+    ) +
+    labs(
+      x = expression(paste("lo", g[2],"(Fold change)")),
+      y = NULL,
+      size = expression(paste("-lo", g[10],"(FDR)"))
+    ) +
+    guides(color = 'none')
+  print(res)
+  cat("\n\n")
+  
+}
+```
+
+### Dotplot All conditions
+Dotplot of selected genes and signatures by Massimo for Fig. 5C. Below we have a single plot for each group of comparisons
+```{r dotplot-selected-genes-allconditions, fig.asp=1.38, fig.width = 2.8}
+gn <- names(grouped_comparisons)[2]
+for(gn in names(grouped_comparisons)) {
+  cat("####", gn, "\n\n")
+  use_comparisons <- grouped_comparisons[[gn]]
+  plot_data <- foreach(i=use_comparisons, .combine = rbind) %do% {
+    x <-  gene_summ[[i]] %>% 
+      ReadRRA(score = 'lfc') %>% 
+      dplyr::rename(LFC = Score)
+    
+    # Reverse LFC?
+    if(i %in% invert_fc_comparions)
+      x$LFC <- -1*x$LFC
+    
+    x %>% 
+      mutate(
+        direction = ifelse(FDR <= 0.10 & LFC > 0, 'up', 'none'),
+        direction = ifelse(FDR <= 0.10 & LFC < 0, 'down', direction),
+        is.significant = FDR <= 0.10,
+        comparison = i
+      ) %>% 
+      left_join(gene_info, by = c('id' = 'id')) %>% 
+      filter(!is.na(gene_set)) %>% 
+      mutate(
+        # gene_name = factor(gene_name, levels = gene_levels),
+        gene_set = ifelse(
+          gene_set == 'Immune system cytokines and chemokines',
+          'Immune system cytokines\nand chemokines',
+          gene_set
+        ),
+        gene_set = ifelse(
+          gene_set == 'Interferone, TNF and danger/death-inducing signals',
+          'Interferon, TNF\nand danger/death-inducing\nsignals',
+          gene_set
+        ),
+        gene_set = factor(gene_set, names(use_colors))
+        )
+  }
+  
+  # # Set gene order by the average LFC
+  # gene_levels <- plot_data %>% group_by(id) %>% 
+  #   dplyr::summarize(LFC = mean(LFC, na.rm = TRUE)) %>% 
+  #   arrange(desc(LFC)) %>% 
+  #   pull(id)
+  plot_data$id <- factor(plot_data$id, levels = gene_levels)
+  # Plot
+  xlim <- c(-max(abs(plot_data$LFC), na.rm = TRUE), max(abs(plot_data$LFC), na.rm = TRUE))
+  res_plot <- plot_data %>% 
+    ggplot(aes(LFC, gene_name, color = gene_set, size = -log10(FDR))) +
+      geom_point(aes(shape = comparison)) +
+      geom_vline(xintercept = 0, linetype = 3) +
+      scale_y_discrete(expand = expansion(add = c(1, 1))) + # add fixed units around each facet to avoid lines over points
+      scale_color_manual(values = use_colors) +
+      scale_size(range = c(0.5, 2.5), limits = c(0, 4)) +
+      # scale_shape_manual(values = c(16, 17)) +
+      xlim(xlim) +
+      facet_grid(rows = vars(gene_set), scales = 'free_y', space = 'free_y') +
+      theme_facet +
+      theme(
+        axis.text = element_text(size = 5),
+        strip.text = element_text(size = 3)
+      ) +
+      labs(
+        x = expression(paste("lo", g[2],"(Fold change)")),
+        y = NULL,
+        size = expression(paste("-lo", g[10],"(FDR)"))
+      ) #+
+      # guides(color = 'none', shape = 'none')
+  print(res_plot)
+  cat("\n\n")
+}
+
+```
+
+
+### Split violin plot
+```{r violinplot-selected-genes-ic-vs-id, fig.width=3.555, fig.asp=1.4}
+i <- names(gene_summ)[1]
+
+plot_data <- foreach(i=names(gene_summ), .combine = rbind) %do% {
+  xsg <- sgrna_summ[[i]] %>% 
+     select(Gene, sgrna, LFC, FDR) %>% 
+     dplyr::rename(sgLFC = LFC, sgFDR = FDR)
+
+  x <- gene_summ[[i]] %>% 
+    ReadRRA(score = 'lfc') %>% 
+    dplyr::rename(LFC = Score) %>% 
+    mutate(
+      direction = ifelse(FDR <= 0.10 & LFC > 0, 'up', 'none'),
+      direction = ifelse(FDR <= 0.10 & LFC < 0, 'down', direction),
+      is.significant = FDR <= 0.10,
+      comparison = i
+    ) %>% 
+    left_join(gene_info, by = c('id' = 'id')) %>% 
+    filter(!is.na(gene_set)) %>% 
+    mutate(
+      gene_name = factor(gene_name, levels = gene_levels),
+      gene_set = ifelse(
+        gene_set == 'Immune system cytokines and chemokines',
+        'Immune system cytokines\nand chemokines',
+        gene_set
+      ),
+      gene_set = ifelse(
+        gene_set == 'Interferone, TNF and danger/death-inducing signals',
+        'Interferon, TNF and\ndanger/death-inducing\nsignals',
+        gene_set
+      ),
+      gene_set = factor(gene_set, names(use_colors))
+      ) %>% 
+    left_join(xsg, by = c('id' = 'Gene'), relationship = "many-to-many")
+  # Reverse LFC?
+  if(i %in% invert_fc_comparions) {
+    x$LFC <- -1*x$LFC
+    x$sgLFC <- -1*x$sgLFC
+  }
+  return(x)
+  
+}
+
+plot_data$gene_name <- factor(plot_data$gene_name, levels = gene_levels)
+
+use_condition_colors <- c(
+  L = '#F7EC13', 
+  ZQ = '#58595B',
+  ZI = '#F7EC13', 
+  ZK = '#58595B',
+  C = '#F7EC13', 
+  O = '#58595B',
+  F = '#F7EC13', 
+  R = '#58595B',
+  I = '#F7EC13', 
+  U = '#58595B'
+  )
+
+use_xlim <- c(-ceiling(max(abs(plot_data$LFC), na.rm = TRUE)), 
+          ceiling(max(abs(plot_data$LFC), na.rm = TRUE)))
+
+for(gn in names(paired_comparisons)) {
+  cat("####", gn, "\n\n")
+  use_comparisons <- paired_comparisons[[gn]]
+  
+  res <- plot_data %>% 
+    filter(comparison %in% use_comparisons) %>% 
+    ggplot(aes(y = sgLFC, x = gene_name, fill = comparison)) +
+    geom_split_violin(
+      aes(y = sgLFC, x = gene_name, fill = factor(comparison)),
+      alpha = 0.8,
+      draw_quantiles = 0.5,
+      linewidth = one_pt/2,
+      scale = 'width'
+    ) +
+    coord_flip() +
+    geom_hline(yintercept = 0, linetype = 3,linewidth = one_pt/2) +
+    scale_x_discrete(expand = expansion(add = c(1, 1))) +
+    scale_fill_manual(values = use_condition_colors) +
+    ylim(use_xlim) +
+    facet_grid(rows = vars(gene_set), scales = 'free_y', space = 'free_y')+
+    theme_facet +
+    theme(
+      # axis.line = element_line(linewidth = one_pt/2, color = 'black'),
+      axis.ticks = element_line(linewidth = one_pt/2, color = 'black'),
+      panel.border = element_rect(linewidth = one_pt/2, color = 'black'),
+      axis.text = element_text(size=8), 
+      axis.title = element_text(size = 8),
+      legend.title = element_text(size=8),
+      legend.text = element_text(size=8),
+      strip.text = element_text(size = 4),
+      plot.title = element_text(size = 8)
+    ) +
+    labs(
+      y = expression(paste("lo", g[2],"(Fold change)")),
+      x = NULL,
+      title = gn
+    )+
+    guides(color = 'none', 
+           # fill = 'none', 
+           size = 'none')
+  print(res)
+  cat("\n\n")
+}
+
+```
+
+
+## Stop knitr
+```{r stop-knitr}
+knitr::knit_exit()
+```
+
+## Comparison with the original analysis
+```{r comp-vs-original, fig.width=5.2, eval=FALSE}
+gene_summ_files <- list.files(path = file.path(params$data_dir, 'mageck_rra_default'), pattern = 'gene_summary.txt', full.names = TRUE)
+analysis_prefix <- basename(gene_summ_files) %>% gsub(".gene_summary.txt", "", .)
+gene_summ_o <- foreach(i = gene_summ_files) %do% read_tsv(i, show_col_types = FALSE)
+names(gene_summ_o) <- analysis_prefix
+
+i <- names(gene_summ)[1]
+use_data <- foreach(i = names(gene_summ), .combine = rbind) %do% {
+  x1n <- gene_summ[[i]]$`neg|fdr`
+  names(x1n) <- gene_summ[[i]]$id
+  x1p <- gene_summ[[i]]$`pos|fdr`
+  names(x1p) <- gene_summ[[i]]$id
+  x2n <- gene_summ_o[[i]]$`neg|fdr`
+  names(x2n) <- gene_summ_o[[i]]$id
+  x2p <- gene_summ_o[[i]]$`neg|fdr`
+  names(x2p) <- gene_summ_o[[i]]$id
+  x2n <- x2n[names(x1n)]
+  x2p <- x2p[names(x1p)]
+  
+  x1 <- c(x1n, x1p)
+  x2 <- c(x2n, x2p)
+  
+  data.frame(id = names(x1), fdr_o = -log10(x2), fdr = -log10(x1), comp = i)
+}
+
+use_data %>% 
+  mutate(sign = fdr_o >= -log10(0.05) | fdr >= -log10(0.05) ) %>% 
+  ggplot(aes(fdr_o, fdr, color = sign)) +
+    geom_point() +
+    geom_abline(linetype = 2) +
+    geom_hline(yintercept = -log10(0.05), linetype = 3) +
+    geom_vline(xintercept = -log10(0.05), linetype = 3) +
+  scale_color_manual(values = c('grey80', 'firebrick')) +
+    labs(
+      x = 'Original -log10(FDR)',
+      y = 'New -log10(FDR)',
+      color = 'FDR < 0.05'
+    )
+
+```
+
+
+
+
