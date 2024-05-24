@@ -126,7 +126,7 @@ colData(se) %<>% data.frame %>%
 
 Filtering out low-abundance features. Keeping those features with at least `r params$min_counts` count in at least `r 100*params$min_present_prop`% of samples of the smallest group.
 ```{r dw-subset-feature-abundance}
-use_rows <- filterByExpr(se, group=paste(se$donor, se$cell_type), min.count = params$min_counts, min.prop = params$min_present_prop)
+use_rows <- filterByExpr(se, group=paste(se$donor, se$condition), min.count = params$min_counts, min.prop = params$min_present_prop)
 se <- se[use_rows,]
 
 # Update PerCellQCMetrics
@@ -155,7 +155,7 @@ se <- logNormCounts(se, size.factors =se$size_factor, log = FALSE)
 
 
 ## Data generation
-Configure comparisons and arguments
+Configure comparisons and arguments for differential expression
 ```{r conf-comparisons}
 x <- colData(se) %>% data.frame
 comp_list <- list(

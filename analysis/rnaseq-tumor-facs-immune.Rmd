@@ -159,7 +159,7 @@ se <- logNormCounts(se, size.factors =se$size_factor, log = FALSE)
 
 
 ## Data generation
-Configure comparisons and arguments
+Configure comparisons and arguments for differential expression
 ```{r conf-comparisons}
 x <- colData(se) %>% data.frame
 comp_list <- list(

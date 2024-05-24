@@ -40,6 +40,7 @@ library(SummarizedExperiment)
 
 library(edgeR)
 library(scuttle)
+library(scran)
 library(ComplexHeatmap)
 library(circlize)
 library(RColorBrewer)
@@ -152,7 +153,7 @@ se <- logNormCounts(se, size.factors =se$size_factor, log = FALSE)
 
 
 ## Data generation
-Configure comparisons and arguments
+Configure comparisons and arguments for differential expression
 ```{r conf-comparisons}
 x <- colData(se) %>% data.frame
 comp_list <- list(
@@ -533,6 +534,229 @@ cat("\n\n")
 plot_grid(res_legend, ncol = 1, nrow = 1)
 cat("\n\n")
 ```
+
+## Sample clustering
+
+Define groups of samples to analyse and feature to include
+```{r sample-clustering-conf}
+# Groups of samples
+x <- colData(se) %>% data.frame
+clustering_groups <- list(
+  `MVT1` = colData(se) %>% data.frame %>% filter(donor == 'MVT1' & condition != 'Rejection control') %>% pull('sample_alias'),
+  `4T1` = colData(se) %>% data.frame %>% filter(donor == '4T1' & condition != 'Rejection control') %>% pull('sample_alias'),
+  `Py2T` = colData(se) %>% data.frame %>% filter(donor == 'Py2T' & condition != 'Rejection control') %>% pull('sample_alias')
+)
+
+# Define features
+use_features <- rowData(se)$gene_type == 'protein_coding' | rowData(se)$gene_name == 'SpCas9'
+
+# Heatmap colors
+ph_colors <- colorRampPalette(rev(brewer.pal(n = 7, name = "Purples")))(255)
+
+# Set annotation colors
+condition_levels <- se$condition %>% unique
+condition_palette <- get_scater_palette('tableau10medium')[seq_along(condition_levels)] %>%
+  set_names(condition_levels)
+
+# Define annotation
+ann_list <- foreach(comp = clustering_groups) %do% {
+  colData(se) %>% data.frame %>% 
+    filter(sample_alias %in% comp) %>% 
+    dplyr::select(condition)
+}
+names(ann_list) <- names(clustering_groups)
+
+# Define annotation colors
+ann_colors <- list(
+  condition = condition_palette
+  )
+```
+
+Generate a list of HVG for each group
+```{r sample-clustering-hvg-generation}
+hvg_list <- foreach(comp = clustering_groups) %do% {
+  use_se <- se[use_features, comp]
+  # Variance modelling
+  fit_res <- modelGeneVar(use_se)
+  fit_md <- metadata(fit_res)
+  # Define highly variable genes
+  hvg_genes <- getTopHVGs(fit_res, prop = 0.1)
+  hvg_genes
+}
+names(hvg_list) <- names(clustering_groups)
+```
+
+Generate heatmaps of sample distances
+```{r sample-clustering-heatmap-generation}
+comp <- names(clustering_groups)[1]
+# for(comp in names(clustering_groups)) {
+clustering_heatmaps <- foreach(comp = names(clustering_groups)) %do% {
+  use_samples <- clustering_groups[[comp]]
+  ann_df <- ann_list[[comp]]
+  hvg_genes <- hvg_list[[comp]]
+  use_donors <- use_se$donor %>% unique
+  use_se <- se[hvg_genes, use_samples]
+
+  # Calculate Sample distances
+  sample_dist <- dist(t(assay(use_se, 'logcounts')))
+  sample_dist_hvg_matrix <- as.matrix(sample_dist)
+  
+  colnames(sample_dist_hvg_matrix) <- colnames(sample_dist_hvg_matrix) %>% 
+    gsub('MVT1_|4T1_|Py2T_', '', .) %>% 
+    gsub('MVT|4T1|PyT', '', .) %>% 
+    gsub('Cas9BROAD', 'Integrating Cas9 LV', .) %>% 
+    gsub('CD8', 'Apo Cas9 TrCD8(+)', .) %>% 
+    gsub('KO', 'Apo-Cas9 TrCD8(−)', .) %>% 
+    gsub('UT', 'Untransduced', .) %>% 
+    gsub('_FVB', ' ', .) %>% 
+    gsub('_BLB', ' ', .) %>% 
+    gsub('_rep', ' ', .)
+  
+  ht <- Heatmap(
+    sample_dist_hvg_matrix,
+    name = "Euclidean\ndistance",
+    column_title = comp,
+    col = ph_colors,
+    show_row_names = FALSE,
+    show_column_dend = FALSE,
+    row_dend_width = unit(0.2, "inches"),
+    row_dend_gp = gpar(lwd =  one_pt/2),
+    column_names_gp = gpar(fontsize = 2),
+    column_title_gp = gpar(fontsize = 6),
+    heatmap_legend_param = list(
+      direction = "horizontal",
+      title_gp = gpar(fontsize = 3, fontface = "bold"),
+      labels_gp = gpar(fontsize = 3),
+      legend_width = unit(0.5, "inches"),
+      grid_height = unit(0.08, "inches"),
+      at = c(0, 25, 50, 75, 100)
+      )
+  )
+  # draw(ht,  heatmap_legend_side = "bottom")
+}
+names(clustering_heatmaps) <- names(clustering_groups)
+```
+
+### Figure 4G: Sample distances in MVT1 models
+
+Samples obtained from syngeneic hosts, following transplantation of mammary carcinoma cells transduced with integrating dCas9-Thy1 (LV Cas9) or transduced with HK and transfected with Apo-Cas9, then MACS-sorted as TrCD8a-positive and TrCD8a-negative cells
+
+```{r sample-clustering-heatmap-mvt1, fig.width = 2, fig.asp = 1.4}
+draw(clustering_heatmaps[['MVT1']],  heatmap_legend_side = "bottom")
+cat("\n\n")
+```
+
+
+### Supplementary figure 4D left: Sample distances in Py2T model
+
+Samples obtained from syngeneic hosts, following transplantation of mammary carcinoma cells transduced with integrating dCas9-Thy1 (LV Cas9) or transduced with HK and transfected with Apo-Cas9, then MACS-sorted as TrCD8a-positive and TrCD8a-negative cells
+
+```{r sample-clustering-heatmap-py2t, fig.width = 2, fig.asp = 1.4}
+draw(clustering_heatmaps[['Py2T']],  heatmap_legend_side = "bottom")
+cat("\n\n")
+```
+
+### Supplementary figure 4D right: Sample distances in 4T1 model
+
+Samples obtained from syngeneic hosts, following transplantation of mammary carcinoma cells transduced with integrating dCas9-Thy1 (LV Cas9) or transduced with HK and transfected with Apo-Cas9, then MACS-sorted as TrCD8a-positive and TrCD8a-negative cells
+
+```{r sample-clustering-heatmap-4t1, fig.width = 2, fig.asp = 1.4}
+draw(clustering_heatmaps[['4T1']],  heatmap_legend_side = "bottom")
+cat("\n\n")
+```
+
+
+## qRT-PCR validation
+
+Plots configuration
+```{r qrt-pcr-heatmap-conf}
+ph_colors <-colorRamp2(
+  seq(-2, 5, length.out = 7), 
+  rev(brewer.pal(n = 7, name = "Purples"))
+  )
+
+```
+
+Generate heatmap for TrCD8a-positive clones
+```{r qrt-pcr-heatmap-trcd8pos, fig.width = 0.90, fig.asp = 1.4}
+mat <- matrix(
+  c(1.9, 2.02, 4.37, 2.79, 1.48, 0.74, 4.07, 4.33, 4.72, 2.88, 1.33, 2, 3.39, 3.63, 3.61, 0.72),
+  ncol = 4,
+  byrow = TRUE
+)
+
+rownames(mat) <- c('sgCcl2', 'sgFgf7', 'sgEgfr', 'sgFgfr3')
+colnames(mat) <- c('Fgf7', 'Ccl2', 'Egfr', 'Fgfr3')
+
+mat <- mat[c('sgFgf7', 'sgCcl2', 'sgEgfr', 'sgFgfr3'),]
+
+ht_TrCD8a_pos <- Heatmap(
+  mat,
+  column_title = 'TrCD8(+)\n64 hpt',
+  name = "Gene expression",
+  col = ph_colors,
+  cluster_rows = FALSE,
+  cluster_columns = FALSE,
+  row_names_gp = gpar(fontsize = 2),
+  row_names_side = 'left',
+  column_names_gp = gpar(fontsize = 2),
+  column_names_rot = 45,
+  column_title_gp = gpar(fontsize = 3),
+  heatmap_legend_param = list(
+    direction = "horizontal",
+    title_gp = gpar(fontsize = 2, fontface = "bold"),
+    labels_gp = gpar(fontsize = 2),
+    legend_width = unit(0.4, "inches"),
+    grid_height = unit(0.03, "inches")
+  )
+)
+```
+
+Generate heatmap for TrCD8a-negative clones
+```{r qrt-pcr-heatmap-trcd8neg, fig.width = 0.90, fig.asp = 1.4}
+mat <- matrix(
+  c(-1.08, 2.07, 4.93, 3.01, 1.81, -1.65, 2.77, 1.02, 1.68, 0.06, -1.67, 0.87, 3.14, 4.17, 3.21, -1.58),
+  ncol = 4,
+  byrow = TRUE
+)
+rownames(mat) <- c('sgFgf7', 'sgCcl2', 'sgEgfr', 'sgFgfr3')
+colnames(mat) <- c('Fgf7', 'Ccl2', 'Egfr', 'Fgfr3')
+
+mat <- mat[c('sgFgf7', 'sgCcl2', 'sgEgfr', 'sgFgfr3'),]
+
+ht_TrCD8a_neg <- Heatmap(
+  mat,
+  column_title = 'TrCD8(-)\n64 hpt',
+  name = "Gene expression",
+  col = ph_colors,
+  cluster_rows = FALSE,
+  cluster_columns = FALSE,
+  row_names_gp = gpar(fontsize = 2),
+  row_names_side = 'left',
+  column_names_gp = gpar(fontsize = 2),
+  # column_names_rot = 0,
+  column_names_rot = 45,
+  column_title_gp = gpar(fontsize = 3),
+  heatmap_legend_param = list(
+    direction = "horizontal",
+    title_gp = gpar(fontsize = 2, fontface = "bold"),
+    labels_gp = gpar(fontsize = 2),
+    legend_width = unit(0.4, "inches"),
+    grid_height = unit(0.03, "inches")
+  )
+)
+```
+
+
+
+### Figure 4D : qRT-PCR in TrCD8a+ and TrCD8a-
+```{r qrt-pcr-heatmap-combined2, fig.width = 1.80, fig.asp = 0.80}
+ht_list <-  ht_TrCD8a_pos + ht_TrCD8a_neg
+draw(ht_list, heatmap_legend_side = "bottom", merge_legend = TRUE)
+cat("\n\n")
+```
+
+
 
 ## Stop knitr
 ```{r}
