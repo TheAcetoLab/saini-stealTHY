@@ -13,8 +13,10 @@ theme_project <- theme_half_open(
     plot.caption = element_text(size = use_font_size*0.6),
     # axis.line = element_line(linewidth = rel(0.5)),
     # Axis 1pt in illustrator: https://stackoverflow.com/questions/47519624/how-is-the-line-width-size-defined-in-ggplot2
-    axis.line = element_line(linewidth = one_pt, color = 'black'),
-    axis.ticks = element_line(linewidth = rel(1)),
+    # axis.line = element_line(linewidth = one_pt, color = 'black'),
+    # axis.ticks = element_line(linewidth = rel(1)),
+    axis.line = element_line(linewidth = one_pt/4, color = 'black'),
+    axis.ticks = element_line(linewidth = one_pt/4, color = 'black'),
     strip.background = element_blank()
   )
 

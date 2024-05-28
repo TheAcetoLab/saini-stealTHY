@@ -59,3 +59,55 @@ palette_donor <- c(
   MVT1 = '#CDCC5D',
   Py2T = '#F4737A'
   )
+
+
+palette_vector <- c(
+  `Thy1`  = '#F7EC13',
+  `Puro`  = '#58595B',
+  `dCas9+Puro` = 'black'
+)
+
+palette_vector_line <- c(
+  `Thy1` = 'black',
+  `Puro`  = 'white',
+  `dCas9+Puro` = 'white'
+)
+
+
+palette_mmodel <- c(
+  NSG = '#58595B',
+  Syngeneic = '#F7EC13'
+)
+
+palette_mmodel_line <- c(
+  NSG = 'white',
+  Syngeneic = 'black'
+)
+
+
+palette_mmodel_line <- c(
+  `StealTHY syngeneic` = 'black',
+  `StealTHY NSG` = 'white'
+)
+
+palette_vector_mmodel <- c(
+  `StealTHY syngeneic`  = '#F7EC13',
+  `StealTHY NSG`  = '#58595B'
+)
+
+
+palette_immunogen_burden <- c(
+  `HuTHY1`  = '#F7EC13',
+  `GFP`  = '#58595B',
+  `Cas9-HuTHY1`  = '#58595B',
+  `Cas9-GFP` = 'black'
+)
+
+
+palette_hu_stealthy_ko <- c(
+  `huNSG`  = '#F7EC13',
+  `NSG`  = '#58595B'
+)
+
+
+
