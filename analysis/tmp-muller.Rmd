@@ -1,0 +1,436 @@
+---
+title: "CRISPR immunorejection analysis"
+subtitle: "Radar plots"
+author: "Francesc Castro-Giner"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+params:
+  date: '`r format(Sys.Date(), "%B %d, %Y")`'
+  rawdata_dir: ./data/crispr
+  data_dir: ./output/crispr/hsapiens_2180
+  ncpu: 4
+---
+
+## Load libraries, additional functions and data
+
+Setup environment
+```{r setup, include=TRUE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(results='asis', echo=TRUE, message=FALSE, warning=FALSE, error=FALSE, fig.align = 'center', fig.width = 3.5, fig.asp = 0.618, dpi = 600, dev = c("png", "pdf"), engine.opts = list(bash = "-l"))
+
+options(stringsAsFactors = FALSE)
+
+use_seed <- 1100101
+
+set.seed(use_seed)
+```
+
+<!-- Setup css style -->
+<!-- ```{css style settings, echo = FALSE} -->
+<!-- blockquote { -->
+<!--     padding: 10px 20px; -->
+<!--     margin: 0 0 20px; -->
+<!--     font-size: 14px; -->
+<!--     border-left: 5px solid #eee; -->
+<!-- } -->
+<!-- ``` -->
+
+
+Load packages
+```{r load-libraries}
+library(tidyverse)
+library(showtext)
+library(foreach)
+library(SummarizedExperiment)
+library(DT)
+library(colorblindr)
+library(ggdendro)
+library(RColorBrewer)
+library(circlize)
+library(Hmisc)
+library(ComplexHeatmap)
+library(ineq)
+library(knitr)
+library(kableExtra)
+library(magrittr)
+library(ggrepel)
+library(ggmuller)
+```
+
+
+Load ggplot theme
+```{r ggplot-theme, include=TRUE}
+source("./configuration/rmarkdown/ggplot_theme.R")
+```
+
+Load Summarized Experiment object
+```{r load-se}
+se <- readRDS(file.path(params$data_dir, 'se.rds'))
+```
+
+
+## Configure analyses
+List of comparisons by replicate groping by immunogen and mouse model
+```{r conf-comparisons}
+x <- colData(se) %>% data.frame() %>% 
+  filter(immunogen != 'StealTHY') %>% 
+  filter(immunogen != 'Thy') %>% 
+  filter(sample_type != 'In vitro') %>% 
+  mutate(
+    condition = paste(immunogen, mm_model_type, sep = '_')
+  )
+x_loading_control <- colData(se[,'Replacement_Sample']) %>% 
+  data.frame()
+
+comp_list <- list()
+for(i in unique(x$condition)){
+  comp_list[[i]] <- list()
+}
+
+for(i in x$mouse_id) {
+  condition <- x %>% filter(mouse_id == i) %>% pull(condition) %>% unique()
+  sample_ids <- x %>% 
+    filter(mouse_id == i) %>% 
+    arrange(sample_type) %>% 
+    pull(sample_alias)
+  replicate <- x %>% filter(mouse_id == i) %>% pull(replicate) %>% unique()
+  comp_list[[condition]][[replicate]] <- c('Replacement_Sample', sample_ids)
+}
+
+```
+
+Generate muller plots
+```{r run-muller-plots}
+cpm_threshold <- 50000
+
+use_df <- assay(se, 'cpm') %>% data.frame(check.names = FALSE) %>% 
+  rownames_to_column('guide') %>% 
+  mutate(
+    gene = rowData(se)$Gene,
+    gene = ifelse(grepl('Non_Target', gene), 'Non_Target', gene)
+  ) %>%
+  pivot_longer(-c(guide, gene), names_to = 'sample_alias', values_to = 'cpm') %>% 
+  left_join(colData(se) %>% data.frame %>% dplyr::select(sample_alias, sample_type))
+
+i = names(comp_list)[1]
+muller_plots <- foreach(i = names(comp_list)) %do% {
+  j = comp_list[[i]][[1]]
+  foreach(j = comp_list[[i]]) %do% {
+    x <- use_df %>% 
+      filter(sample_alias %in% j) %>% 
+      mutate(
+        sample_alias = factor(sample_alias, j),
+        sample_type = recode(sample_type,
+                         whole_tumor = 'Primary\ntumor',
+                         met_liver = 'Liver\nmacro-mets',
+                         met_lymph = 'LN mets',
+                         whole_lung = 'Whole\nmetastatic\nlung'),
+        sample_type = factor(sample_type, 
+                             levels = c('In vitro', 'Primary\ntumor', 'Whole\nmetastatic\nlung', 'LN mets', 'Liver\nmacro-mets'))
+        )
+    x_guides_keep <- x %>% group_by(sample_alias, sample_type, guide) %>% summarise(cpm = max(cpm)) %>% filter(cpm > cpm_threshold) %>% pull(guide)
+    
+    x %<>% 
+      mutate(
+         guide = ifelse(guide %in%  x_guides_keep, guide, 'low abundant')
+      ) %>% 
+      group_by(sample_alias, sample_type, guide) %>%
+      summarise(cpm = sum(cpm)) %>% 
+      ungroup() %>%
+      mutate(
+        guide = fct_reorder(guide, cpm),
+        guide = relevel(guide, ref = 'low abundant')
+      )
+
+    use_cols <- c(
+      'low abundant' = 'grey80',
+      colorRampPalette(rev(palette_OkabeIto[1:7]))(nlevels(x$guide) - 1) %>% set_names(levels(x$guide)[-1])
+    )
+    x %>% 
+      ggplot( aes(x = sample_type, y = cpm, group = guide, fill = guide)) + 
+      geom_area(colour = alpha("white", 0.1), linewidth = 0.08, alpha = 0.8) +
+      scale_fill_manual(values = use_cols, guide = guide_legend(ncol = 3)) +
+      labs(
+        x = '',
+        y = 'cpm',
+        fill = ''
+      ) +
+      theme(
+        # panel.background = element_rect(fill = "grey90"),
+        plot.margin = margin(0.5, 1.5, 0.5, 0, "cm")
+        ) +
+      scale_x_discrete(expand = c(0, 0)) +
+      scale_y_continuous(expand = c(0, 0))
+  }
+}
+names(muller_plots) <- names(comp_list)
+```
+
+
+Generate radar plots
+```{r utils-radar-plots}
+# coord_polar() but with straight lines
+# Src : https://stackoverflow.com/questions/57209060/how-to-draw-a-radar-plot-in-ggplot-using-polar-coordinates
+coord_straightpolar <- function(theta = 'x', start = 0, direction = 1, clip = "on") {
+  theta <- match.arg(theta, c("x", "y"))
+  r <- if (theta == "x") 
+    "y"
+  else "x"
+  ggproto(NULL, CoordPolar, theta = theta, r = r, start = start,
+          direction = sign(direction), clip = clip,
+          # This is the different bit
+          is_linear = function(){TRUE})
+}
+
+
+# Straight Segment lines for polar plots. used for grid lines
+# Src: https://stackoverflow.com/questions/56146393/r-how-to-combine-straight-lines-of-polygon-and-line-segments-with-polar-coordin
+GeomSegment2 <- ggproto("GeomSegment2",
+                        GeomSegment,
+                        draw_panel = function (data, panel_params, coord, arrow = NULL,
+                                               arrow.fill = NULL, lineend = "butt", 
+                                               linejoin = "round", na.rm = FALSE) {
+                          data <- remove_missing(data, na.rm = na.rm, 
+                                                 c("x", "y", "xend", "yend", "linetype", 
+                                                   "size", "shape"), 
+                                                 name = "geom_segment")                          
+                          if (ggplot2:::empty(data)) 
+                            return(zeroGrob())
+                          # remove option for linear coordinate system
+                          data$group <- 1:nrow(data)
+                          starts <- subset(data, select = c(-xend, -yend))
+                          ends <- plyr::rename(subset(data, select = c(-x, -y)), 
+                                               c(xend = "x", yend = "y"), 
+                                               warn_missing = FALSE)
+                          pieces <- rbind(starts, ends)
+                          pieces <- pieces[order(pieces$group), ]
+                          GeomPath$draw_panel(pieces, panel_params, coord, arrow = arrow, 
+                                              lineend = lineend)
+                        })
+
+geom_segment2 <- function (mapping = NULL, data = NULL, stat = "identity", position = "identity", 
+                           ..., arrow = NULL, arrow.fill = NULL, lineend = "butt", 
+                           linejoin = "round", na.rm = FALSE, show.legend = NA, 
+                           inherit.aes = TRUE) {
+  layer(data = data, mapping = mapping, stat = stat, geom = GeomSegment2, 
+        position = position, show.legend = show.legend, inherit.aes = inherit.aes, 
+        params = list(arrow = arrow, arrow.fill = arrow.fill, 
+                      lineend = lineend, linejoin = linejoin, na.rm = na.rm, 
+                      ...))
+}
+    
+
+```
+
+```{r run-radar-plots}
+cpm_threshold <- 50000
+
+use_df <- assay(se, 'cpm') %>% data.frame(check.names = FALSE) %>% 
+  rownames_to_column('guide') %>% 
+  mutate(
+    gene = rowData(se)$Gene,
+    gene = ifelse(grepl('Non_Target', gene), 'Non_Target', gene)
+  ) %>%
+  pivot_longer(-c(guide, gene), names_to = 'sample_alias', values_to = 'cpm') %>% 
+  left_join(colData(se) %>% data.frame %>% dplyr::select(sample_alias, sample_type))
+
+i = names(comp_list)[1]
+radar_plots <- foreach(i = names(comp_list)) %do% {
+  j = comp_list[[i]][[1]]
+  foreach(j = comp_list[[i]]) %do% {
+    x <- use_df %>% 
+      filter(sample_alias %in% j) %>% 
+      mutate(
+        sample_alias = factor(sample_alias, j),
+        sample_type = recode(sample_type,
+                         whole_tumor = 'Primary\ntumor',
+                         met_liver = 'Liver\nmacro-mets',
+                         met_lymph = 'LN mets',
+                         whole_lung = 'Whole\nmetastatic\nlung'),
+        sample_type = factor(
+          sample_type, 
+          levels = c('In vitro', 'Primary\ntumor', 'Whole\nmetastatic\nlung', 'LN mets', 'Liver\nmacro-mets'))
+        )
+    
+    # Select guides with cpm > cpm_threshold
+    x_guides_keep <- x %>%
+      group_by(sample_alias, sample_type, guide) %>% 
+      summarise(cpm = max(cpm)) %>% 
+      filter(cpm > cpm_threshold) %>% 
+      pull(guide)
+    
+    # Group guides with cpm < cpm_threshold into the low abundant category, and sum counts for low abundnat
+    x %<>% 
+      mutate(
+         guide = ifelse(guide %in%  x_guides_keep, guide, 'low abundant')
+      ) %>% 
+      group_by(sample_alias, sample_type, guide) %>%
+      summarise(cpm = sum(cpm)) %>% 
+      ungroup() %>%
+      mutate(
+        guide = fct_reorder(guide, cpm),
+        guide = relevel(guide, ref = 'low abundant')
+      )
+    
+    # Add in vitro samples as a new category with empty name, to make
+    # radar plot periodic
+    double_x <- rbind(
+      x %>% mutate(sample_type = as.character(sample_type)),
+      x %>% 
+        filter(sample_type == 'In vitro') %>% 
+        mutate(sample_type = '')
+    ) %>% 
+      mutate( 
+        sample_type = factor(sample_type, 
+                             levels = c(levels(x$sample_type), '')
+                             )
+      )
+    
+    
+    # Define colors for guides
+    use_cols <- c(
+      'low abundant' = 'grey80',
+      colorRampPalette(rev(palette_OkabeIto[1:7]))(nlevels(x$guide) - 1) %>% set_names(levels(x$guide)[-1])
+    )
+    
+    
+    # Prepare base radar plot
+    base_radar <- double_x %>% 
+      ggplot( aes(x = sample_type, y = cpm, group = guide, fill = guide)) +
+      geom_area(colour = alpha("white", 0.1), linewidth = 0.08, alpha = 0.8) +
+      scale_fill_manual(values = use_cols, 
+                        guide = guide_legend(ncol = 3)
+                        ) +
+      scale_color_manual(values = use_cols) +
+      scale_x_discrete(expand = expansion(mult = c(0, 0))) +
+      coord_straightpolar(theta = "x") +
+      theme(
+        plot.margin = margin(0, 0, 0, 0, "cm"),
+        axis.text.y = element_blank(),
+        axis.title = element_blank(),
+        axis.ticks = element_blank(),
+        axis.line = element_blank()
+        ) +
+      # guides(fill = 'none') +
+      # Add empty space in the center
+      ylim(-200000, NA)
+    
+    # Generate x grid lines with segment
+    y_coordinates <- c(1000000, 750000, 500000, 250000, 0)
+    grid_data_x <- foreach(ycoord = y_coordinates, .combine = rbind) %do% {
+      foreach(xcoord = 1:(nlevels(double_x$sample_type)-1), .combine = rbind) %do% {
+        data.frame(group = ycoord, ystart = ycoord, yend = ycoord, xstart = xcoord, xend = xcoord+1)
+      }
+    }
+    
+    # Generate y grid lines with segment
+    grid_data_y <- data.frame(
+      group = 1:nlevels(double_x$sample_type),
+      xstart = 1:nlevels(double_x$sample_type),
+      xend = 1:nlevels(double_x$sample_type),
+      ystart = 0,
+      yend = 1000000
+    )
+    
+    # Add grid lines
+    base_radar +
+      geom_segment2(data=grid_data_x, aes(x = xstart, y = ystart, xend = xend, yend = yend, group = group),
+                   colour = "white", alpha=1, linewidth=0.2, inherit.aes = FALSE) +
+      geom_segment2(data=grid_data_y, aes(x = xstart, y = ystart, xend = xend, yend = yend, group = group),
+                   colour = "white", alpha=1, linewidth=0.2, inherit.aes = FALSE) +
+      # Add text showing the value of each grid line
+      annotate("text", 
+               x = rep(nlevels(double_x$sample_type), length(y_coordinates)), 
+               y = y_coordinates, 
+               label = y_coordinates , 
+               color="black", 
+               size=geom_text_size*0.6 , 
+               angle=0, 
+               fontface="plain", 
+               hjust=1)
+    
+  }
+}
+names(radar_plots) <- names(comp_list)
+```
+
+
+## Muller plots
+```{r muller-plots}
+use_names <- names(lapply(muller_plots, length) >= 10)
+
+for(i in use_names) {
+  cat("###", i, "\n")
+  for(j in seq_along(muller_plots[[i]])) {
+    print(muller_plots[[i]][[j]] + theme( legend.position = "none"))
+    cat("\n\n")
+    legend <- cowplot::get_legend((muller_plots[[i]][[j]]))
+    grid.newpage()
+    grid.draw(legend)
+    cat("\n\n")
+    cat("Muller plot representing guide abundance in cpm (Y-axis). Guides with a CPM <", cpm_threshold, "were grouped into the low abundant category (grey)\n\n")
+  }
+  cat("\n")
+}
+
+# 
+# muller_plots[[i]][[j]] 
+# # Almost identical to coord_polar()
+# coord_straightpolar <- function(theta = 'x', start = 0, direction = 1, clip = "on") {
+#   theta <- match.arg(theta, c("x", "y"))
+#   r <- if (theta == "x") 
+#     "y"
+#   else "x"
+#   ggproto(NULL, CoordPolar, theta = theta, r = r, start = start,
+#           direction = sign(direction), clip = clip,
+#           # This is the different bit
+#           is_linear = function(){TRUE})
+# }
+# 
+# muller_plots[[i]][[j]]  + coord_polar(start=0, theta = 'x')
+
+```
+
+## Radar plots
+```{r radar-plots, fig.width = 5.2}
+use_names <- names(lapply(radar_plots, length) >= 10)
+
+for(i in use_names) {
+  cat("###", i, "\n")
+  for(j in seq_along(radar_plots[[i]])) {
+    print(radar_plots[[i]][[j]] + theme( legend.position = "none"))
+    cat("\n\n")
+    legend <- cowplot::get_legend((radar_plots[[i]][[j]]))
+    grid.newpage()
+    grid.draw(legend)
+    cat("\n\n")
+    cat("Radar plot representing guide abundance in cpm. Guides with a CPM <", cpm_threshold, "were grouped into the low abundant category (grey)\n\n")
+  }
+  cat("\n")
+}
+
+# 
+# muller_plots[[i]][[j]] 
+# # Almost identical to coord_polar()
+# coord_straightpolar <- function(theta = 'x', start = 0, direction = 1, clip = "on") {
+#   theta <- match.arg(theta, c("x", "y"))
+#   r <- if (theta == "x") 
+#     "y"
+#   else "x"
+#   ggproto(NULL, CoordPolar, theta = theta, r = r, start = start,
+#           direction = sign(direction), clip = clip,
+#           # This is the different bit
+#           is_linear = function(){TRUE})
+# }
+# 
+# muller_plots[[i]][[j]]  + coord_polar(start=0, theta = 'x')
+
+```
+
+
+## Stop knitr
+```{r stop-knitr}
+knitr::knit_exit()
+```
+

@@ -1,6 +1,6 @@
 ---
 title: "CRISPR immunorejection analysis"
-subtitle: "Differential abundance for expressed genes only and using control sgRNA for null distribution and normalization"
+subtitle: "Compare sgRNA abundance distributions between conditions"
 author: "Francesc Castro-Giner"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 output: workflowr::wflow_html
@@ -9,9 +9,8 @@ editor_options:
 params:
   date: '`r format(Sys.Date(), "%B %d, %Y")`'
   rawdata_dir: ./data/crispr
-  data_dir: ./output/crispr/mm_2215_sgRNA
-  mageck_dir: mageck_rra_expr
-  se_rnaseq: ./data/rnaseq/p27851_o30659/pipelines/rnaseq_star_featurecounts_cas9/summarizedExperiment/se_gene.rds
+  data_dir: ./output/crispr/hsapiens_2180
+  output_dir: ./output/crispr/hsapiens_2180/dist_test
   ncpu: 4
 ---
 
@@ -26,6 +25,8 @@ options(stringsAsFactors = FALSE)
 use_seed <- 1100101
 
 set.seed(use_seed)
+
+dir.create(params$output_dir, recursive = TRUE, showWarnings = FALSE)
 ```
 
 <!-- Setup css style -->
@@ -60,228 +61,1761 @@ library(ggrepel)
 library(ggpubr)
 library(ggbeeswarm)
 library(ggridges)
-library(openxlsx)
-library(MAGeCKFlute)
-library(introdataviz)
 ```
+
 
 Load ggplot theme
 ```{r ggplot-theme, include=TRUE}
 source("./configuration/rmarkdown/ggplot_theme.R")
 ```
 
-Load custom functions
-```{r load-functions}
-source('./code/R-functions/dge_report.r')
-source('./code/R-functions/gse_report.r')
-source('./code/R-functions/geom_split_violin.R')
-```
-
-Clean files generated in previous runs
-```{r clean-files}
-rmd_file <- current_input()
-if(!is.null(rmd_file)) {
-  figures_dir <- file.path('./docs/figure',rmd_file)
-  if(dir.exists(figures_dir)) {
-    unlink(file.path(figures_dir, "*"))
-  }
-}
-```
-
 Load Summarized Experiment object
 ```{r load-se}
 se <- readRDS(file.path(params$data_dir, 'se.rds'))
+se$immunogen_mmmodel <- paste(se$immunogen, se$mm_model_type, sep = '_')
+```
+
+For StealTHY Immunocompetent comparisons we removed replacement samples with low coverage (replicates 8 to 10)
+```{r remove_replacement_samples}
+use_cols <- !colnames(se) %in% c('Replacement_Sample2', 'Replacement_Sample6', 'Replacement_Sample8',
+                    'Replacement_Sample3', 'Replacement_Sample7', 'Replacement_Sample9')
+se <- se[,use_cols]
+```
+
+## Configure tests
+
+
+Run comparison of detected sgRNA and abundance distributions across conditions and sample type (tumor or mets)
+```{r run-comparisons-sample_type-conditions, eval = FALSE}
+use_data <- colData(se) %>% 
+  data.frame %>%
+  mutate(sample_type = factor(sample_type)) %>% 
+  filter(sample_type %in% c('whole_lung', 'whole_tumor'))
+
+# Compare number of guides over 30 immunogen_mmmodel
+use_stas <- use_data %>% group_by(sample_type, immunogen_mmmodel) %>% 
+  summarise(
+    n = n(),
+    mean = mean(guides_over_30),
+    median = median(guides_over_30)
+  )
+comp_guides_detected <- compare_means(guides_over_30 ~ immunogen_mmmodel,  data = use_data, group.by = 'sample_type') %>% 
+  left_join(use_stas, by = c("sample_type", "group1" ="immunogen_mmmodel")) %>% 
+  dplyr::rename(n_group1 = n, mean_group1 = mean, median_group1 = median)%>% 
+  left_join(use_stas, by = c("sample_type", "group2" ="immunogen_mmmodel")) %>% 
+  dplyr::rename(n_group2 = n, mean_group2 = mean, median_group2 = median)
+
+# K-S test to compare distributions.K-S test is two samples comparison (wihtout replicates). Here I am combining all the replicates from the same group
+i <- 1
+comp_abundance_dist <-foreach(i = 1:nrow(comp_guides_detected), .combine = rbind) %do% {
+  x <- comp_guides_detected[i,] %>% dplyr::select(sample_type, group1, group2)
+  use_colData <- colData(se) %>% data.frame %>%  
+      filter(sample_type == x$sample_type & immunogen_mmmodel %in% c(x$group1, x$group2))
+  use_assay <- assay(se[,use_colData$sample_alias], 'cpm') %>% 
+      as.data.frame(check.names = F) %>% 
+      rownames_to_column('guide') %>% 
+      pivot_longer(-guide, names_to = 'sample_alias', values_to = 'cpm') %>% 
+      left_join(use_colData)
+  
+   use_assay <- apply(assay(se[,use_colData$sample_alias], 'cpm'), 2, function(x) sort(x, decreasing = TRUE))  %>% 
+      as.data.frame(check.names = F) %>% 
+      mutate(guide = 1:nrow(se)) %>% 
+      pivot_longer(-guide, names_to = 'sample_alias', values_to = 'cpm') %>% 
+      left_join(use_colData %>% dplyr::select(sample_alias, immunogen_mmmodel)) %>% 
+      group_by(guide, immunogen_mmmodel) %>% 
+      summarise(cpm = mean(cpm))
+  ks.res <- ks.test(cpm ~ immunogen_mmmodel, data = use_assay)
+  use_stas <- use_assay %>% group_by(immunogen_mmmodel) %>% 
+    summarise(
+      n = n(),
+      mean = mean(cpm),
+      median = median(cpm)
+    ) %>% 
+    column_to_rownames('immunogen_mmmodel')
+  x %>% mutate(
+    ks.D = round(ks.res$statistic, 3),
+    p.value = ks.res$p.value,
+    mean_group1 = round(use_stas[x$group1, 'mean'], 2), 
+    median_group1 =  round(use_stas[x$group1, 'median'], 2),
+    mean_group2 =  round(use_stas[x$group2, 'mean'], 2), 
+    median_group2 =  round(use_stas[x$group2, 'median'], 2),
+  )
+}
+
+saveRDS(comp_guides_detected, file = file.path(params$output_dir, 'comp_guides_detected.rds'))
+saveRDS(comp_abundance_dist, file = file.path(params$output_dir, 'comp_abundance_dist.rds'))
+
 ```
 
 
-## Configure analyses
-List of comparisons
-```{r conf-comparisons}
+```{r load-comparisons-sample_type-conditions}
+comp_guides_detected <- readRDS(file.path(params$output_dir, 'comp_guides_detected.rds'))
+comp_abundance_dist <- readRDS(file.path(params$output_dir, 'comp_abundance_dist.rds'))
+```
+
+Run comparison of detected sgRNA and abundance distributions across conditions and sample type (global comparisons)
+```{r run-comparisons-global-conditions, eval = FALSE}
+use_data <- colData(se) %>% 
+  data.frame %>% 
+  filter(sample_type %in% c('whole_lung', 'whole_tumor'))
+
+# Compare number of guides over 30 for vector immunogen_mmmodel
+use_stas <- use_data %>% group_by(immunogen_mmmodel) %>% 
+  summarise(
+    n = n(),
+    mean = mean(guides_over_30),
+    median = median(guides_over_30)
+  )
+comp_guides_detected_global <- compare_means(guides_over_30 ~ immunogen_mmmodel,  data = use_data) %>% 
+  left_join(use_stas, by = c("group1" ="immunogen_mmmodel")) %>% 
+  dplyr::rename(n_group1 = n, mean_group1 = mean, median_group1 = median)%>% 
+  left_join(use_stas, by = c("group2" ="immunogen_mmmodel")) %>% 
+  dplyr::rename(n_group2 = n, mean_group2 = mean, median_group2 = median)
+
+
+# K-S test to compare distributions.K-S test is two samples comparison (wihtout replicates). Here I am combining all the replicates from the same group
+i <- 1
+comp_abundance_dist_global <-foreach(i = 1:nrow(comp_guides_detected_global), .combine = rbind) %do% {
+  x <- comp_guides_detected_global[i,] %>% dplyr::select(group1, group2)
+  use_colData <- colData(se) %>% data.frame %>%  
+      filter(immunogen_mmmodel %in% c(x$group1, x$group2))
+  use_assay <- assay(se[,use_colData$sample_alias], 'cpm') %>% 
+      as.data.frame(check.names = F) %>% 
+      rownames_to_column('guide') %>% 
+      pivot_longer(-guide, names_to = 'sample_alias', values_to = 'cpm') %>% 
+      left_join(use_colData)
+  
+  use_assay <- apply(assay(se[,use_colData$sample_alias], 'cpm'), 2, function(x) sort(x, decreasing = TRUE))  %>% 
+      as.data.frame(check.names = F) %>% 
+      mutate(guide = 1:nrow(se)) %>% 
+      pivot_longer(-guide, names_to = 'sample_alias', values_to = 'cpm') %>% 
+      left_join(use_colData %>% dplyr::select(sample_alias, immunogen_mmmodel)) %>% 
+      group_by(guide, immunogen_mmmodel) %>% 
+      summarise(cpm = mean(cpm))
+  ks.res <- ks.test(cpm ~ immunogen_mmmodel, data = use_assay)
+  use_stas <- use_assay %>% group_by(immunogen_mmmodel) %>% 
+    summarise(
+      n = n(),
+      mean = mean(cpm),
+      median = median(cpm)
+    ) %>% 
+    column_to_rownames('immunogen_mmmodel')
+  x %>% mutate(
+    ks.D = round(ks.res$statistic, 3),
+    p.value = ks.res$p.value,
+    mean_group1 = round(use_stas[x$group1, 'mean'], 2), 
+    median_group1 =  round(use_stas[x$group1, 'median'], 2),
+    mean_group2 =  round(use_stas[x$group2, 'mean'], 2), 
+    median_group2 =  round(use_stas[x$group2, 'median'], 2),
+  )
+}
+
+saveRDS(comp_guides_detected_global, file = file.path(params$output_dir, 'comp_guides_detected_global.rds'))
+saveRDS(comp_abundance_dist_global, file = file.path(params$output_dir, 'comp_abundance_dist_global.rds'))
+
+```
+
+
+```{r load-comparisons-global-conditions}
+comp_guides_detected_global <- readRDS(file.path(params$output_dir, 'comp_guides_detected_global.rds'))
+comp_abundance_dist_global <- readRDS(file.path(params$output_dir, 'comp_abundance_dist_global.rds'))
+```
+
+Define comparisons for primary tumor and metastases
+```{r define-comparisons-sample_type}
+# x <- colData(se) %>% data.frame
+# x$mm_model_type %>% table %>% data.frame
+# x_g <- x %>% group_by(sample_type, immunogen_mmmodel) %>% summarise(n = n(), samples = paste(sample_alias, collapse =";"))
+
+comp_list_by_sample_type <- list(
+  A = list(
+    c('StealTHY_Imm.competent', 'StealTHY_Imm.deficient')
+  )
+)
+# comp_list_by_sample_type = list(
+#   A = list(
+#     IC = x %>% filter(immunogen == 'StealTHY' & mm_model_type == 'Imm.competent') %>% 
+#       # filter(!sample_alias %in% c('Replacement_Sample2', 'Replacement_Sample6', 'Replacement_Sample8')) %>% 
+#       filter(replicate %in% 1:7) %>% 
+#       arrange(replicate) %>% 
+#       pull(sample_alias),
+#     ID = x %>% filter(immunogen == 'StealTHY' & mm_model_type == 'Imm.competent') %>% 
+#       # filter(!sample_alias %in% c('Replacement_Sample3', 'Replacement_Sample7', 'Replacement_Sample9')) %>% 
+#       filter(replicate %in% 1:7) %>% 
+#       arrange(replicate) %>% 
+#       pull(sample_alias)
+#     )
+# )
+```
+
+Define global comparisons
+```{r define-comparisons-global}
+# x <- colData(se) %>% data.frame
+# x$global_immunogen_mmmodel %>% table %>% data.frame
+# x_g <- x %>% group_by(global_immunogen_mmmodel) %>% summarise(n = n(), samples = paste(sample_alias, collapse =";"))
+
+comp_list_global <- list(
+  A = list(
+    c('StealTHY_Imm.competent', 'StealTHY_Imm.deficient')
+  )
+)
+# 
+# comp_list_global <-  list(
+#   A = list(
+#     IC = x %>% filter(immunogen == 'StealTHY' & mm_model_type == 'Imm.competent') %>% 
+#       # filter(!sample_alias %in% c('Replacement_Sample2', 'Replacement_Sample6', 'Replacement_Sample8')) %>% 
+#       filter(replicate %in% 1:7) %>% 
+#       arrange(replicate) %>% 
+#       pull(sample_alias),
+#     ID = x %>% filter(immunogen == 'StealTHY' & mm_model_type == 'Imm.competent') %>% 
+#       # filter(!sample_alias %in% c('Replacement_Sample3', 'Replacement_Sample7', 'Replacement_Sample9')) %>% 
+#       filter(replicate %in% 1:7) %>% 
+#       arrange(replicate) %>% 
+#       pull(sample_alias)
+#     )
+# )
+
+
+# x <- colData(se) %>% data.frame
+# use_vvm <- x['PlatePositionG10',] %>% pull(global_immunogen_mmmodel_invitro_cas9transfection_grouped)
+# x %>% filter(global_immunogen_mmmodel_invitro_cas9transfection_grouped == use_vvm) %>%
+#   select(sample_alias, global_immunogen_mmmodel, global_immunogen_mmmodel_invitro, global_immunogen_mmmodel_invitro_cas9transfection) %>%
+#   unique
+
+
+```
+
+Define comparisons for modality test
+```{r define-comparisons-modality}
+x <- colData(se) %>% data.frame
+
+comp_list_modality <- list(
+  `A.StealTHY_ID--over--StealTHY_IC.tumor` = list(
+    `StealTHY_Imm.deficient` = x %>% filter(immunogen_mmmodel == 'StealTHY_Imm.deficient' & sample_type == 'whole_tumor') %>% pull(sample_alias),
+    `StealTHY_Imm.competent` = x %>% filter(immunogen_mmmodel == 'StealTHY_Imm.competent' & sample_type == 'whole_tumor') %>% pull(sample_alias)
+  ),
+  `B.StealTHY_ID--over--StealTHY_IC.lung` = list(
+    `StealTHY_Imm.deficient` = x %>% filter(immunogen_mmmodel == 'StealTHY_Imm.deficient' & sample_type == 'whole_lung') %>% pull(sample_alias),
+    `StealTHY_Imm.competent` = x %>% filter(immunogen_mmmodel == 'StealTHY_Imm.competent' & sample_type == 'whole_lung') %>% pull(sample_alias)
+  ),
+  
+  `C.StealTHY_IC--over--in_vitro.tumor` = list(
+    `StealTHY_Imm.competent` = x %>% filter(immunogen_mmmodel == 'StealTHY_Imm.competent' & sample_type == 'whole_tumor') %>% pull(sample_alias),
+    `Thy_In_vitro` = x %>% filter(immunogen_mmmodel == 'Thy_In_vitro') %>% pull(sample_alias)
+  ),
+  
+  `D.StealTHY_ID--over--in_vitro.tumor` = list(
+    `StealTHY_Imm.deficient` = x %>% filter(immunogen_mmmodel == 'StealTHY_Imm.deficient' & sample_type == 'whole_tumor') %>% pull(sample_alias),
+    `Thy_In_vitro` = x %>% filter(immunogen_mmmodel == 'Thy_In_vitro') %>% pull(sample_alias)
+  ),
+  
+  `E.no_immunogen--over--GFP.tumor` = list(
+    `no_immunogen_Imm.competent` = x %>% filter(immunogen_mmmodel == 'no_immunogen_Imm.competent' & sample_type == 'whole_tumor') %>% pull(sample_alias),
+    `GFP_Imm.competent` = x %>% filter(immunogen_mmmodel == 'GFP_Imm.competent'  & sample_type == 'whole_tumor') %>% pull(sample_alias)
+  ),
+  `F.no_immunogen--over--dCas9-THY.tumor` = list(
+    `no_immunogen_Imm.competent` = x %>% filter(immunogen_mmmodel == 'no_immunogen_Imm.competent' & sample_type == 'whole_tumor') %>% pull(sample_alias),
+    `dCas9-THY_Imm.competent` = x %>% filter(immunogen_mmmodel == 'dCas9-THY_Imm.competent'  & sample_type == 'whole_tumor') %>% pull(sample_alias)
+  ),
+  `G.no_immunogen--over--GFP_IC.tumor` = list(
+    `no_immunogen_Imm.competent` = x %>% filter(immunogen_mmmodel == 'no_immunogen_Imm.competent' & sample_type == 'whole_tumor') %>% pull(sample_alias),
+    `dCas9-GFP_Imm.competent` = x %>% filter(immunogen_mmmodel == 'dCas9-GFP_Imm.competent'  & sample_type == 'whole_tumor') %>% pull(sample_alias)
+  ),
+  `H.no_immunogen--over--GFP_ID.tumor` = list(
+    `no_immunogen_Imm.competent` = x %>% filter(immunogen_mmmodel == 'no_immunogen_Imm.competent' & sample_type == 'whole_tumor') %>% pull(sample_alias),
+    `dCas9-GFP_Imm.deficient` = x %>% filter(immunogen_mmmodel == 'dCas9-GFP_Imm.deficient'  & sample_type == 'whole_tumor') %>% pull(sample_alias)
+  ),
+  `I.no_immunogen--over--in_vitro.tumor` = list(
+    `no_immunogen_Imm.competent` = x %>% filter(immunogen_mmmodel == 'no_immunogen_Imm.competent' & sample_type == 'whole_tumor') %>% pull(sample_alias),
+    Thy_In_vitro = x %>% filter(immunogen_mmmodel == 'Thy_In_vitro') %>% pull(sample_alias)
+  ),
+  
+  `J.no_immunogen--over--GFP.lung` = list(
+    `no_immunogen_Imm.competent` = x %>% filter(immunogen_mmmodel == 'no_immunogen_Imm.competent' & sample_type == 'whole_lung') %>% pull(sample_alias),
+    `GFP_Imm.competent` = x %>% filter(immunogen_mmmodel == 'GFP_Imm.competent'  & sample_type == 'whole_lung') %>% pull(sample_alias)
+  ),
+  `K.no_immunogen--over--dCas9-THY.lung` = list(
+    `no_immunogen_Imm.competent` = x %>% filter(immunogen_mmmodel == 'no_immunogen_Imm.competent' & sample_type == 'whole_lung') %>% pull(sample_alias),
+    `'dCas9-THY_Imm.competent` = x %>% filter(immunogen_mmmodel == 'dCas9-THY_Imm.competent'  & sample_type == 'whole_lung') %>% pull(sample_alias)
+  ),
+  `L.no_immunogen--over--GFP_IC.lung` = list(
+    `no_immunogen_Imm.competent` = x %>% filter(immunogen_mmmodel == 'no_immunogen_Imm.competent' & sample_type == 'whole_lung') %>% pull(sample_alias),
+    `dCas9-GFP_Imm.competent` = x %>% filter(immunogen_mmmodel == 'dCas9-GFP_Imm.competent'  & sample_type == 'whole_lung') %>% pull(sample_alias)
+  ),
+  `M.no_immunogen--over--GFP_ID.lung` = list(
+    `no_immunogen_Imm.competent` = x %>% filter(immunogen_mmmodel == 'no_immunogen_Imm.competent' & sample_type == 'whole_lung') %>% pull(sample_alias),
+    `dCas9-GFP_Imm.deficient` = x %>% filter(immunogen_mmmodel == 'dCas9-GFP_Imm.deficient'  & sample_type == 'whole_lung') %>% pull(sample_alias)
+  ),
+  `N.no_immunogen--over--in_vitro.lung` = list(
+    `no_immunogen_Imm.competent` = x %>% filter(immunogen_mmmodel == 'no_immunogen_Imm.competent' & sample_type == 'whole_lung') %>% pull(sample_alias),
+    `Thy_In_vitro` = x %>% filter(immunogen_mmmodel == 'Thy_In_vitro') %>% pull(sample_alias)
+  )
+)
+
+```
+
+Additional comparisons to test detected sgRNA and abundance distributions
+```{r conf-comparisons-additional}
 x <- colData(se) %>% data.frame
 # x %>% group_by(vector_mmodel) %>% summarise(n = n(), samples = paste(sample_alias, collapse =";")) %>% data.frame
 # x %>% group_by(global_vector_mmodel) %>% summarise(n = n(), samples = paste(sample_alias, collapse =";")) %>% data.frame
 # x %>% group_by(mouse_model_global) %>% summarise(n = n(), samples = paste(sample_alias, collapse =";")) %>% data.frame
-comp_list <- list(
+# R S
+
+comp_list_additional <- list(
   A = list(
-    x %>% filter(vector_mmodel == '4T1-KO-Thy1-BALB' & sample_type == 'whole_tumor') %>% pull(sample_alias),
-    x %>% filter(donor == '4T1' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias)
+    StealTHY_IC_Lung = x %>% filter(immunogen == 'StealTHY' & mm_model_type == 'Imm.competent' & sample_type == 'whole_lung') %>% 
+      # filter(!sample_alias %in% c('Replacement_Sample3', 'Replacement_Sample7', 'Replacement_Sample9')) %>% 
+      filter(replicate %in% 1:7) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias),
+    StealTHY_IC_Tumor = x %>% filter(immunogen == 'StealTHY' & mm_model_type == 'Imm.competent' & sample_type == 'whole_tumor') %>% 
+      # filter(!sample_alias %in% c('Replacement_Sample2', 'Replacement_Sample6', 'Replacement_Sample8')) %>% 
+      filter(replicate %in% 1:7) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias),
+    paired = TRUE
     ),
   B = list(
-    x %>% filter(vector_mmodel == '4T1-KO-Thy1-BALB' & sample_type == 'whole_lung') %>% pull(sample_alias),
-    x %>% filter(donor == '4T1' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias)
+    StealTHY_ID_Lung = x %>% filter(immunogen == 'StealTHY' & mm_model_type == 'Imm.deficient' & sample_type == 'whole_lung') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias),
+    StealTHY_ID_Tumor = x %>% filter(immunogen == 'StealTHY' & mm_model_type == 'Imm.deficient' & sample_type == 'whole_tumor') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias),
+    paired = TRUE
     ),
   C = list(
-    x %>% filter(vector_mmodel == '4T1-KO-Thy1-BALB' & sample_type == 'whole_lung') %>% pull(sample_alias),
-    x %>% filter(vector_mmodel == '4T1-KO-Thy1-BALB' & sample_type == 'whole_tumor') %>% pull(sample_alias)
+   StealTHY_IC_Tumor = x %>% filter(immunogen == 'StealTHY' & mm_model_type == 'Imm.competent' & sample_type == 'whole_tumor') %>% 
+      # filter(!sample_alias %in% c('Replacement_Sample2', 'Replacement_Sample6', 'Replacement_Sample8')) %>% 
+      filter(replicate %in% 1:7) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias),
+   Thy1_post_Cas9_In_vitro = x %>% filter(description == 'Thy1 post-Cas9 transfection' & mm_model_type == 'In_vitro' & sample_type == 'In vitro') %>% 
+     pull(sample_alias)
     ),
   D = list(
-    x %>% filter(vector_mmodel == 'MVT1-KO-Thy1-FVB' & sample_type == 'whole_tumor') %>% pull(sample_alias),
-    x %>% filter(donor == 'MVT1' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias)
-    ),
+    StealTHY_ID_Tumor = x %>% filter(immunogen == 'StealTHY' & mm_model_type == 'Imm.deficient' & sample_type == 'whole_tumor') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias),
+    Thy1_post_Cas9_In_vitro = x %>% filter(description == 'Thy1 post-Cas9 transfection' & mm_model_type == 'In_vitro' & sample_type == 'In vitro') %>% 
+     pull(sample_alias)
+  ),
   E = list(
-    x %>% filter(vector_mmodel == 'MVT1-KO-Thy1-FVB' & sample_type == 'whole_lung') %>% pull(sample_alias),
-    x %>% filter(donor == 'MVT1' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias)
-    ),
+    StealTHY_ID_Tumor = x %>% filter(immunogen == 'StealTHY' & mm_model_type == 'Imm.deficient' & sample_type == 'whole_tumor') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias),
+    StealTHY_IC_Tumor = x %>% filter(immunogen == 'StealTHY' & mm_model_type == 'Imm.competent' & sample_type == 'whole_tumor') %>% 
+      # filter(!sample_alias %in% c('Replacement_Sample2', 'Replacement_Sample6', 'Replacement_Sample8')) %>% 
+      filter(replicate %in% 1:7) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias)
+  ),
   F = list(
-    x %>% filter(vector_mmodel == 'MVT1-KO-Thy1-FVB' & sample_type == 'whole_lung') %>% pull(sample_alias),
-    x %>% filter(vector_mmodel == 'MVT1-KO-Thy1-FVB' & sample_type == 'whole_tumor') %>% pull(sample_alias)
-    ),
+    StealTHY_ID_Lung = x %>% filter(immunogen == 'StealTHY' & mm_model_type == 'Imm.deficient' & sample_type == 'whole_lung') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias),
+    StealTHY_IC_Lung = x %>% filter(immunogen == 'StealTHY' & mm_model_type == 'Imm.competent' & sample_type == 'whole_lung') %>% 
+      # filter(!sample_alias %in% c('Replacement_Sample3', 'Replacement_Sample7', 'Replacement_Sample9')) %>% 
+      filter(replicate %in% 1:7) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias)
+  ),
   G = list(
-    x %>% filter(vector_mmodel == 'Py2T-KO-Thy1-FVB' & sample_type == 'whole_tumor') %>% pull(sample_alias),
-    x %>% filter(donor == 'Py2T' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias)
-    ),
+    No_immunogen_IC_Tumor = x %>% filter(immunogen == 'no_immunogen' & mm_model_type == 'Imm.competent' & sample_type == 'whole_tumor') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias),
+    Thy1_pre_Cas9_In_vitro = x %>% filter(description == 'Thy1 pre-Cas9 transfection' & mm_model_type == 'In_vitro' & sample_type == 'In vitro') %>% 
+      filter(!sample_alias %in% c('B1Position_HumanPlate2')) %>%
+     pull(sample_alias)
+  ),
   H = list(
-    x %>% filter(vector_mmodel == 'Py2T-KO-Thy1-FVB' & sample_type == 'whole_lung') %>% pull(sample_alias),
-    x %>% filter(donor == 'Py2T' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias)
-    ),
+    GFP_IC_Tumor = x %>% filter(immunogen == 'GFP' & mm_model_type == 'Imm.competent' & sample_type == 'whole_tumor') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias),
+    Thy1_pre_Cas9_In_vitro = x %>% filter(description == 'Thy1 pre-Cas9 transfection' & mm_model_type == 'In_vitro' & sample_type == 'In vitro') %>% 
+      filter(!sample_alias %in% c('B1Position_HumanPlate2')) %>%
+     pull(sample_alias)
+  ),
   I = list(
-    x %>% filter(vector_mmodel == 'Py2T-KO-Thy1-FVB' & sample_type == 'whole_lung') %>% pull(sample_alias),
-    x %>% filter(vector_mmodel == 'Py2T-KO-Thy1-FVB' & sample_type == 'whole_tumor') %>% pull(sample_alias)
-    ),
+    `dCAS9-THY_IC_Tumor` = x %>% filter(immunogen == 'dCas9-THY' & mm_model_type == 'Imm.competent' & sample_type == 'whole_tumor') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias),
+    Thy1_pre_Cas9_In_vitro = x %>% filter(description == 'Thy1 pre-Cas9 transfection' & mm_model_type == 'In_vitro' & sample_type == 'In vitro') %>% 
+      filter(!sample_alias %in% c('B1Position_HumanPlate2')) %>%
+     pull(sample_alias)
+  ),
   J = list(
-    x %>% filter(vector_mmodel %in% list('4T1-KO-Thy1-BALB', 'MVT1-KO-Thy1-FVB', 'Py2T-KO-Thy1-FVB') & sample_type == 'whole_tumor') %>% pull(sample_alias),
-    x %>% filter(vector_mmodel %in% list('4T1-noKO-Thy1-BALB', 'MVT1-noKO-Thy1-FVB', 'Py2T-noKO-Thy1-FVB') & sample_type == 'whole_tumor') %>% pull(sample_alias)
-    ),
+    `dCas9-GFP_IC_Tumor` = x %>% filter(immunogen == 'dCas9-GFP' & mm_model_type == 'Imm.competent' & sample_type == 'whole_tumor') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias),
+    Thy1_pre_Cas9_In_vitro = x %>% filter(description == 'Thy1 pre-Cas9 transfection' & mm_model_type == 'In_vitro' & sample_type == 'In vitro') %>% 
+      filter(!sample_alias %in% c('B1Position_HumanPlate2')) %>%
+     pull(sample_alias)
+  ),
   K = list(
-    x %>% filter(vector_mmodel %in% list('4T1-KO-Thy1-BALB', 'MVT1-KO-Thy1-FVB', 'Py2T-KO-Thy1-FVB') & sample_type == 'whole_tumor') %>% pull(sample_alias),
-    x %>% filter(global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias)
-    ),
+    `dCas9-GFP_ID_Tumor` = x %>% filter(immunogen == 'dCas9-GFP' & mm_model_type == 'Imm.deficient' & sample_type == 'whole_tumor') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias),
+    Thy1_pre_Cas9_In_vitro = x %>% filter(description == 'Thy1 pre-Cas9 transfection' & mm_model_type == 'In_vitro' & sample_type == 'In vitro') %>% 
+      filter(!sample_alias %in% c('B1Position_HumanPlate2')) %>%
+     pull(sample_alias)
+  ),
   L = list(
-    x %>% filter(vector_mmodel %in% list('4T1-KO-Thy1-BALB', 'MVT1-KO-Thy1-FVB', 'Py2T-KO-Thy1-FVB') & sample_type == 'whole_lung') %>% pull(sample_alias),
-    x %>% filter(vector_mmodel %in% list('4T1-KO-Thy1-BALB', 'MVT1-KO-Thy1-FVB', 'Py2T-KO-Thy1-FVB') & sample_type == 'whole_tumor') %>% pull(sample_alias)
-    ),
+    Thy1_post_Cas9_In_vitro = x %>% filter(description == 'Thy1 post-Cas9 transfection' & mm_model_type == 'In_vitro' & sample_type == 'In vitro') %>% 
+     pull(sample_alias),
+    Thy1_pre_Cas9_In_vitro = x %>% filter(description == 'Thy1 pre-Cas9 transfection' & mm_model_type == 'In_vitro' & sample_type == 'In vitro') %>% 
+    filter(!sample_alias %in% c('B1Position_HumanPlate2')) %>%
+     pull(sample_alias)
+  ),
   M = list(
-    x %>% filter(vector_mmodel == '4T1-KO-Thy1-NSG' & sample_type == 'whole_tumor') %>% pull(sample_alias),
-    x %>% filter(donor == '4T1' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias)
-    ),
+    GFP_IC_Tumor = x %>% filter(immunogen == 'GFP' & mm_model_type == 'Imm.competent' & sample_type == 'whole_tumor') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias),
+    No_immunogen_IC_Tumor = x %>% filter(immunogen == 'no_immunogen' & mm_model_type == 'Imm.competent' & sample_type == 'whole_tumor') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias)
+  ),
   N = list(
-    x %>% filter(vector_mmodel == '4T1-KO-Thy1-NSG' & sample_type == 'whole_lung') %>% pull(sample_alias),
-    x %>% filter(donor == '4T1' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias)
-    ),
+    `dCAS9-THY_IC_Tumor` = x %>% filter(immunogen == 'dCas9-THY' & mm_model_type == 'Imm.competent' & sample_type == 'whole_tumor') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias),
+    No_immunogen_IC_Tumor = x %>% filter(immunogen == 'no_immunogen' & mm_model_type == 'Imm.competent' & sample_type == 'whole_tumor') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias)
+  ),
   O = list(
-    x %>% filter(vector_mmodel == '4T1-KO-Thy1-NSG' & sample_type == 'whole_lung') %>% pull(sample_alias),
-    x %>% filter(vector_mmodel == '4T1-KO-Thy1-NSG' & sample_type == 'whole_tumor') %>% pull(sample_alias)
-    ),
+    `dCas9-GFP_IC_Tumor` = x %>% filter(immunogen == 'dCas9-GFP' & mm_model_type == 'Imm.competent' & sample_type == 'whole_tumor') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias),
+    No_immunogen_IC_Tumor = x %>% filter(immunogen == 'no_immunogen' & mm_model_type == 'Imm.competent' & sample_type == 'whole_tumor') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias)
+  ),
   P = list(
-    x %>% filter(vector_mmodel == 'MVT1-KO-Thy1-NSG' & sample_type == 'whole_tumor') %>% pull(sample_alias),
-    x %>% filter(donor == 'MVT1' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias)
-    ),
+    `dCas9-GFP_ID_Tumor` = x %>% filter(immunogen == 'dCas9-GFP' & mm_model_type == 'Imm.deficient' & sample_type == 'whole_tumor') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias),
+    No_immunogen_IC_Tumor = x %>% filter(immunogen == 'no_immunogen' & mm_model_type == 'Imm.competent' & sample_type == 'whole_tumor') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias)
+  ),
   Q = list(
-    x %>% filter(vector_mmodel == 'MVT1-KO-Thy1-NSG' & sample_type == 'whole_lung') %>% pull(sample_alias),
-    x %>% filter(donor == 'MVT1' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias)
-    ),
+    `dCas9-GFP_ID_Tumor` = x %>% filter(immunogen == 'dCas9-GFP' & mm_model_type == 'Imm.deficient' & sample_type == 'whole_tumor') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias),
+    `dCas9-GFP_IC_Tumor` = x %>% filter(immunogen == 'dCas9-GFP' & mm_model_type == 'Imm.competent' & sample_type == 'whole_tumor') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias)
+  ),
+  
+  
   R = list(
-    x %>% filter(vector_mmodel == 'MVT1-KO-Thy1-NSG' & sample_type == 'whole_lung') %>% pull(sample_alias),
-    x %>% filter(vector_mmodel == 'MVT1-KO-Thy1-NSG' & sample_type == 'whole_tumor')  %>% pull(sample_alias)
-    ),
+    GFP_IC_Lung = x %>% filter(immunogen == 'GFP' & mm_model_type == 'Imm.competent' & sample_type == 'whole_lung') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias),
+    No_immunogen_IC_Lung = x %>% filter(immunogen == 'no_immunogen' & mm_model_type == 'Imm.competent' & sample_type == 'whole_lung') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias)
+  ),
   S = list(
-    x %>% filter(vector_mmodel == 'Py2T-KO-Thy1-NSG' & sample_type == 'whole_tumor') %>% pull(sample_alias),
-    x %>% filter(donor == 'Py2T' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias)
-    ),
+    `dCAS9-THY_IC_Lung` = x %>% filter(immunogen == 'dCas9-THY' & mm_model_type == 'Imm.competent' & sample_type == 'whole_lung') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias),
+    No_immunogen_IC_Lung = x %>% filter(immunogen == 'no_immunogen' & mm_model_type == 'Imm.competent' & sample_type == 'whole_lung') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias)
+  ),
   T = list(
-    x %>% filter(vector_mmodel == 'Py2T-KO-Thy1-NSG' & sample_type == 'whole_lung') %>% pull(sample_alias),
-    x %>% filter(donor == 'Py2T' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias)
-    ),
+    `dCas9-GFP_IC_Lung` = x %>% filter(immunogen == 'dCas9-GFP' & mm_model_type == 'Imm.competent' & sample_type == 'whole_lung') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias),
+    No_immunogen_IC_Lung = x %>% filter(immunogen == 'no_immunogen' & mm_model_type == 'Imm.competent' & sample_type == 'whole_lung') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias)
+  ),
   U = list(
-    x %>% filter(vector_mmodel == 'Py2T-KO-Thy1-NSG' & sample_type == 'whole_lung') %>% pull(sample_alias),
-    x %>% filter(vector_mmodel == 'Py2T-KO-Thy1-NSG' & sample_type == 'whole_tumor')  %>% pull(sample_alias)
-    ),
+    `dCas9-GFP_ID_Lung` = x %>% filter(immunogen == 'dCas9-GFP' & mm_model_type == 'Imm.deficient' & sample_type == 'whole_lung') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias),
+    No_immunogen_IC_Lung = x %>% filter(immunogen == 'no_immunogen' & mm_model_type == 'Imm.competent' & sample_type == 'whole_lung') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias)
+  ),
   V = list(
-    x %>% filter(vector_mmodel %in% list('4T1-KO-Thy1-BALB', 'MVT1-KO-Thy1-FVB', 'Py2T-KO-Thy1-FVB') & sample_type == 'whole_tumor') %>% pull(sample_alias),
-    x %>% filter(vector_mmodel %in% list('4T1-KO-Thy1-NSG', 'MVT1-KO-Thy1-NSG', 'Py2T-KO-Thy1-NSG') & sample_type == 'whole_tumor') %>% pull(sample_alias)
-    ),
+    `dCas9-GFP_ID_Lung` = x %>% filter(immunogen == 'dCas9-GFP' & mm_model_type == 'Imm.deficient' & sample_type == 'whole_lung') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias),
+    `dCas9-GFP_IC_Lung` = x %>% filter(immunogen == 'dCas9-GFP' & mm_model_type == 'Imm.competent' & sample_type == 'whole_lung') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias)
+  ),
   W = list(
-    x %>% filter(vector_mmodel == '4T1-KO-Thy1-BALB' & sample_type == 'whole_tumor') %>% pull(sample_alias),
-    x %>% filter(vector_mmodel == '4T1-KO-Thy1-NSG' & sample_type == 'whole_tumor') %>% pull(sample_alias)
-    ),
+    `GFP_IC_Ln` = x %>% filter(immunogen == 'GFP' & mm_model_type == 'Imm.competent' & sample_type == 'met_lymph') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias),
+    No_immunogen_IC_Ln = x %>% filter(immunogen == 'no_immunogen' & mm_model_type == 'Imm.competent' & sample_type == 'met_lymph') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias)
+  ),
   X = list(
-    x %>% filter(vector_mmodel == 'MVT1-KO-Thy1-FVB' & sample_type == 'whole_tumor') %>% pull(sample_alias),
-    x %>% filter(vector_mmodel == 'MVT1-KO-Thy1-NSG' & sample_type == 'whole_tumor') %>% pull(sample_alias)
-    ),
+    `dCas9-THY1_IC_Ln` = x %>% filter(immunogen == 'dCas9-THY' & mm_model_type == 'Imm.competent' & sample_type == 'met_lymph') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias),
+    No_immunogen_IC_Ln = x %>% filter(immunogen == 'no_immunogen' & mm_model_type == 'Imm.competent' & sample_type == 'met_lymph') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias)
+  ),
   Y = list(
-    x %>% filter(vector_mmodel == 'Py2T-KO-Thy1-FVB' & sample_type == 'whole_tumor') %>% pull(sample_alias),
-    x %>% filter(vector_mmodel == 'Py2T-KO-Thy1-NSG' & sample_type == 'whole_tumor') %>% pull(sample_alias)
-    ),
+    `dCas9-GFP_IC_Ln` = x %>% filter(immunogen == 'dCas9-GFP' & mm_model_type == 'Imm.competent' & sample_type == 'met_lymph') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias),
+    No_immunogen_IC_Ln = x %>% filter(immunogen == 'no_immunogen' & mm_model_type == 'Imm.competent' & sample_type == 'met_lymph') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias)
+  ),
   Z = list(
-    x %>% filter(donor == '4T1' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias),
-    x %>% filter(donor == '4T1' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-pre-Cas9') %>% pull(sample_alias)
-    ),
+    `dCas9-GFP_ID_Ln` = x %>% filter(immunogen == 'dCas9-GFP' & mm_model_type == 'Imm.deficient' & sample_type == 'met_lymph') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias),
+    No_immunogen_IC_Ln = x %>% filter(immunogen == 'no_immunogen' & mm_model_type == 'Imm.competent' & sample_type == 'met_lymph') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias)
+  ),
   ZA = list(
-    x %>% filter(donor == 'MVT1' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias),
-    x %>% filter(donor == 'MVT1' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-pre-Cas9') %>% pull(sample_alias)
-    ),
+    `dCas9-GFP_ID_Ln` = x %>% filter(immunogen == 'dCas9-GFP' & mm_model_type == 'Imm.deficient' & sample_type == 'met_lymph') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias),
+    `dCas9-GFP_IC_Ln` = x %>% filter(immunogen == 'dCas9-GFP' & mm_model_type == 'Imm.competent' & sample_type == 'met_lymph') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias)
+  ),
   ZB = list(
-    x %>% filter(donor == 'Py2T' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-pre-Cas9') %>% pull(sample_alias),
-    x %>% filter(donor == 'Py2T' & global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias)
-    ),
-  ZF = list(
-    x %>% filter(global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-pre-Cas9') %>% pull(sample_alias),
-    x %>% filter(global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias)
+    `GFP_IC_Liver` = x %>% filter(immunogen == 'GFP' & mm_model_type == 'Imm.competent' & sample_type == 'met_liver') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias),
+    No_immunogen_IC_Liver = x %>% filter(immunogen == 'no_immunogen' & mm_model_type == 'Imm.competent' & sample_type == 'met_liver') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias)
   ),
-  ZG = list(
-    x %>% filter(global_vector_mmodel_invitro_cas9transfection == 'bulk-KO-Thy1-Invitro-pre-Cas9') %>% pull(sample_alias),
-    x %>% filter(global_vector_mmodel_invitro_cas9transfection_grouped == 'KO-Thy1-Invitro-post-Cas9') %>% pull(sample_alias)
+  ZC = list(
+    `dCas9-THY1_IC_Liver` = x %>% filter(immunogen == 'dCas9-THY' & mm_model_type == 'Imm.competent' & sample_type == 'met_liver') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias),
+    No_immunogen_IC_Liver = x %>% filter(immunogen == 'no_immunogen' & mm_model_type == 'Imm.competent' & sample_type == 'met_liver') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias)
   ),
-  ZH = list(
-    x %>% filter(vector_mmodel == '4T1-KO-Puro_EF1alpha_SpCas9-BALB' & sample_type == 'whole_tumor') %>% pull(sample_alias),
-    x %>% filter(vector_mmodel == '4T1-KO-lentiguide-Puro-EF1alpha-SpCas9-In vitro' & invitro_type == 'Cas9-BROAD') %>% pull(sample_alias)
+  ZD = list(
+    `dCas9-GFP_IC_Liver` = x %>% filter(immunogen == 'dCas9-GFP' & mm_model_type == 'Imm.competent' & sample_type == 'met_liver') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias),
+    No_immunogen_IC_Liver = x %>% filter(immunogen == 'no_immunogen' & mm_model_type == 'Imm.competent' & sample_type == 'met_liver') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias)
   ),
-  ZI = list(
-    x %>% filter(vector_mmodel == '4T1-KO-Puro_EF1alpha_SpCas9-BALB' & sample_type == 'whole_tumor') %>% pull(sample_alias),
-    x %>% filter(vector_mmodel == '4T1-KO-Puro_EF1alpha_SpCas9-BALB' & sample_type == 'whole_lung') %>% pull(sample_alias)
+  ZE = list(
+    `dCas9-GFP_ID_Liver` = x %>% filter(immunogen == 'dCas9-GFP' & mm_model_type == 'Imm.deficient' & sample_type == 'met_liver') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias),
+    No_immunogen_IC_Liver = x %>% filter(immunogen == 'no_immunogen' & mm_model_type == 'Imm.competent' & sample_type == 'met_liver') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias)
   ),
-  ZJ = list(
-    x %>% filter(vector_mmodel == '4T1-KO-Puro_EF1alpha_SpCas9-NSG' & sample_type == 'whole_tumor') %>% pull(sample_alias),
-    x %>% filter(vector_mmodel == '4T1-KO-lentiguide-Puro-EF1alpha-SpCas9-In vitro' & invitro_type == 'Cas9-BROAD') %>% pull(sample_alias)
-  ),
-  ZK = list(
-    x %>% filter(vector_mmodel == '4T1-KO-Puro_EF1alpha_SpCas9-NSG' & sample_type == 'whole_tumor') %>% pull(sample_alias),
-    x %>% filter(vector_mmodel == '4T1-KO-Puro_EF1alpha_SpCas9-NSG' & sample_type == 'whole_lung') %>% pull(sample_alias)
-  ),
-  ZL = list(
-    x %>% filter(vector_mmodel == '4T1-KO-Puro-BALB' & sample_type == 'whole_tumor') %>% pull(sample_alias),
-    x %>% filter(vector_mmodel == '4T1-KO-lentiguide-Puro-In vitro' & invitro_type == 'Puro-resistant') %>% pull(sample_alias)
-  ),
-  ZM = list(
-    x %>% filter(vector_mmodel == 'MVT1-KO-Puro-FVB' & sample_type == 'whole_tumor') %>% pull(sample_alias),
-    x %>% filter(vector_mmodel == 'MVT1-KO-lentiguide-Puro-In vitro' & invitro_type == 'Puro-resistant') %>% pull(sample_alias)
-  ),
-  ZN = list(
-    x %>% filter(vector_mmodel == 'Py2T-KO-Puro-FVB' & sample_type == 'whole_tumor') %>% pull(sample_alias),
-    x %>% filter(vector_mmodel == 'Py2T-KO-lentiguide-Puro-In vitro' & invitro_type == 'Puro-resistant') %>% pull(sample_alias)
-  ),
-  ZO = list(
-    x %>% filter(global_vector_mmodel == 'whole_tumor-KO-Puro-immunocompetent' ) %>% pull(sample_alias),
-    x %>% filter(global_vector_mmodel_invitro == 'bulk-KO-lentiguide-Puro-Invitro-Puro-resistant') %>% pull(sample_alias)
-  ),
-  ZP = list(
-    x %>% filter(global_vector_mmodel == 'whole_tumor-KO-Puro-immunocompetent' ) %>% pull(sample_alias),
-    x %>% filter(global_vector_mmodel == 'whole_lung-KO-Puro-immunocompetent' ) %>% pull(sample_alias)
-  ),
-  ZQ = list(
-    x %>% filter(global_vector_mmodel == 'whole_tumor-KO-Thy1-immunodeficient' ) %>% pull(sample_alias),
-    x %>% filter(global_vector_mmodel == 'whole_lung-KO-Thy1-immunodeficient' ) %>% pull(sample_alias)
+  ZD = list(
+    `dCas9-GFP_ID_Liver` = x %>% filter(immunogen == 'dCas9-GFP' & mm_model_type == 'Imm.deficient' & sample_type == 'met_liver') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias),
+    `dCas9-GFP_IC_Liver` = x %>% filter(immunogen == 'dCas9-GFP' & mm_model_type == 'Imm.competent' & sample_type == 'met_liver') %>% 
+      filter(replicate %in% 1:6) %>% 
+      arrange(replicate) %>% 
+      pull(sample_alias)
   )
 )
 
+```
+
+Run comparison of detected sgRNA and abundance distributions across groups from additional comparisons
+```{r run-comparisons-additional-conditions, eval = FALSE}
+i <- names(comp_list_additional)[1]
+comp_guides_detected <- foreach(i = names(comp_list_additional), .combine = rbind) %do% {
+  comp_i <- comp_list_additional[[i]] 
+  use_data <- colData(se) %>% 
+    data.frame %>% 
+    mutate(
+      group = ifelse(sample_alias %in% comp_i[[1]], names(comp_i)[1], NA),
+      group = ifelse(sample_alias %in% comp_i[[2]], names(comp_i)[2], group)
+    ) %>% 
+    filter(!is.na(group))
+  
+  # Compare number of guides over 30 immunogen_mmmodel
+  use_stas <- use_data %>% group_by(group) %>% 
+    summarise(
+      n = n(),
+      mean = mean(guides_over_30),
+      median = median(guides_over_30)
+    )
+  compare_means(guides_over_30 ~ group,  data = use_data) %>% 
+    left_join(use_stas, by = c("group1" ="group")) %>% 
+    dplyr::rename(n_group1 = n, mean_group1 = mean, median_group1 = median)%>% 
+    left_join(use_stas, by = c("group2" ="group")) %>% 
+    dplyr::rename(n_group2 = n, mean_group2 = mean, median_group2 = median) %>% 
+    mutate(comparison = i) %>% 
+    dplyr::select(comparison, everything())
+}
+
+# K-S test to compare distributions.K-S test is two samples comparison (wihtout replicates). Here I am combining all the replicates from the same group
+comp_abundance_dist <- foreach(i = names(comp_list_additional), .combine = rbind) %do% {
+  x <- comp_guides_detected %>% filter(comparison == i) %>% dplyr::select(group1, group2)
+  comp_i <- comp_list_additional[[i]]
+  
+  use_data <- colData(se) %>% 
+    data.frame %>% 
+    mutate(
+      group = ifelse(sample_alias %in% comp_i[[1]], names(comp_i)[1], NA),
+      group = ifelse(sample_alias %in% comp_i[[2]], names(comp_i)[2], group)
+    ) %>% 
+    filter(!is.na(group))
+   
+  use_assay <- assay(se[,use_data$sample_alias], 'cpm') %>% 
+      as.data.frame(check.names = F) %>% 
+      rownames_to_column('guide') %>% 
+      pivot_longer(-guide, names_to = 'sample_alias', values_to = 'cpm') %>% 
+      left_join(use_data)
+  
+  ks.res <- ks.test(cpm ~ group, data = use_assay)
+  
+  use_stas <- use_assay %>% group_by(group) %>% 
+    summarise(
+      n = n(),
+      mean = mean(cpm),
+      median = median(cpm)
+    ) %>% 
+    column_to_rownames('group')
+  x %>% 
+    mutate(
+      comparison = i,
+      ks.D = round(ks.res$statistic, 3),
+      p.value = format.pval(ks.res$p.value),
+      mean_group1 = round(use_stas[x$group1, 'mean'], 2),
+      median_group1 =  round(use_stas[x$group1, 'median'], 2),
+      mean_group2 =  round(use_stas[x$group2, 'mean'], 2),
+      median_group2 =  round(use_stas[x$group2, 'median'], 2)
+  ) %>% 
+    dplyr::select(comparison, everything())
+}
 
 
-
-# use_vvm <- x['CRISPRKO_Clone_45',] %>% pull(global_vector_mmodel)
-# x %>% filter(global_vector_mmodel == use_vvm ) %>% 
-#   select(sample_alias, vector_mmodel, starts_with('global'), sample_type, effect_type) %>% 
-#   unique
-# for(i in names(comp_list)) {if(length(comp_list[[i]][[1]]) ==0) print(i)}
-# for(i in names(comp_list)) {if(length(comp_list[[i]][[2]]) ==0) print(i)}
+saveRDS(comp_guides_detected, file = file.path(params$output_dir, 'comp_additional_guides_detected.rds'))
+saveRDS(comp_abundance_dist, file = file.path(params$output_dir, 'comp_additional_abundance_dist.rds'))
 
 ```
 
-```{r conf-comparisons-print}
-data_comp <- foreach(i = names(comp_list), .combine = rbind) %do% {
+```{r load-comparisons-additional-conditions}
+comp_guides_detected_additional <- readRDS(file.path(params$output_dir, 'comp_additional_guides_detected.rds'))
+comp_abundance_dist_additional <- readRDS(file.path(params$output_dir, 'comp_additional_abundance_dist.rds'))
+```
+
+
+## Tumor samples
+Analysis 3 : Please perform unpaired comparison tests for (1) the total no. of detected sgRNAs and (2) distribution between the following tumor samples
+```{r test-dist-tumor-conf}
+use_sample_type <- 'whole_tumor'
+comp_list <- comp_list_by_sample_type
+comp_list_unlisted <- foreach(x = comp_list, .combine = c) %do% x
+comp_list_df_double <- foreach(x = comp_list_unlisted, .combine = rbind) %do% {rbind(x, rev(x))} %>% 
+  data.frame %>% 
+  set_names(c('group1', 'group2'))
+use_colData <- colData(se) %>% data.frame %>% 
+    filter(sample_type == use_sample_type)
+```
+
+### Number of detected guides
+
+#### Table
+```{r test-dist-tumor-detected-tab}
+comp_guides_detected %>% 
+  filter(sample_type == use_sample_type) %>% 
+  mutate(
+    p = format.pval(p),
+    p.adj = format.pval(p.adj),
+  ) %>% 
+  dplyr::select(-sample_type, -p.format, -.y.) %>% 
+  inner_join(comp_list_df_double) %>% 
+  datatable(., 
+            rownames = FALSE, 
+            filter = 'top', 
+            caption = 'Comparison of guide abundance. P value by two-sided Wiloxon test',
+            extensions = 'Buttons', 
+            options = list(
+              dom = 'Blfrtip',
+              buttons = c('csv', 'excel')
+            ))
+
+```
+
+#### Boxplot
+```{r test-dist-tumor-detected-boxplot, fig.width=2, fig.asp = 1.5}
+comp_name <-  names(comp_list)[1]
+res_plot <- foreach(comp_name = names(comp_list)) %do% {
+  use_comps <-  comp_list[[comp_name]]
+  use_colData %>% 
+    filter(immunogen_mmmodel %in% unlist(use_comps)) %>% 
+    mutate(immunogen_mmmodel = factor(immunogen_mmmodel, levels = unlist(use_comps))) %>% 
+    ggplot(aes(immunogen_mmmodel, guides_over_30, color = immunogen_mmmodel)) +
+      geom_boxplot(outlier.shape = NA) + 
+      geom_beeswarm() +
+      scale_y_continuous(expand = expansion(0.1)) +
+      scale_color_brewer(type = 'qual', palette = 'Paired') +
+      theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+      stat_compare_means(comparisons = use_comps, method = 'wilcox.test', size = geom_text_size) +
+      labs(
+        x = ''
+      ) +
+      guides(
+        color = 'none'
+      )
+}
+plot_grid(plotlist = res_plot, labels =  names(comp_list), align = 'hv')
+
+
+```
+
+
+### Guide distribution
+
+#### Table
+We compared the distribution of guides abundances for each group using two-sided Kolmogorov-Smirnov (K-S) test. For each sample we ranked guides based on normalized abundance (CPM) distribution. Then the corresponding value for each rank was obtained averaging the CPM in samples from each group. 
+```{r test-dist-tumor-distribution-tab}
+comp_abundance_dist %>% 
+  filter(sample_type == use_sample_type) %>% 
+  mutate(
+    p.value = format.pval(p.value),
+  ) %>% 
+  dplyr::select(-sample_type) %>% 
+  inner_join(comp_list_df_double) %>% 
+  datatable(., 
+            rownames = FALSE, 
+            filter = 'top', 
+            caption = 'Comparison of guide distribution using two-sided Kolmogorov-Smirnov (K-S) test.',
+            extensions = 'Buttons', 
+            options = list(
+              dom = 'Blfrtip',
+              buttons = c('csv', 'excel')
+            ))
+
+```
+
+#### Density plot
+```{r test-dist-tumor-distribution-ridges_plot, fig.asp = 1, fig.width = 5.2}
+use_comps_i <- comp_list_unlisted[1]
+res_plot <- foreach(use_comps_i = comp_list_unlisted) %do% {
+    use_samples <- use_colData %>% 
+      filter(immunogen_mmmodel %in% use_comps_i) %>% 
+      pull(sample_alias)
+    use_assay <- assay(se[,use_samples], 'cpm') %>% 
+      as.data.frame(check.names = F) %>% 
+      rownames_to_column('guide') %>% 
+      pivot_longer(-guide, names_to = 'sample_alias', values_to = 'cpm') %>% 
+      left_join(use_colData)
+    use_assay %>% 
+      # mutate(sample_alias = fct_reorder(sample_alias, use_comps_i)) %>%
+      ggplot(aes(x=cpm + 1, y = sample_alias, fill = immunogen_mmmodel)) +
+      geom_density_ridges(color = 'white', quantile_lines = TRUE) +
+      scale_fill_OkabeIto(alpha = 0.8) +
+      scale_x_log10(expand = c(0, 0)) +
+      scale_y_discrete(expand = c(0, 0)) +
+      labs(y = '') +
+      guides(fill = 'none') +
+      facet_grid(rows = vars(immunogen_mmmodel), scale = 'free_y') +
+      theme_ridges()
+}
+
+
+plot_grid(
+  plotlist = res_plot, 
+  labels = names(comp_list)
+  )
+```
+
+#### Density plot StealTHY IC vs ID
+```{r test-dist-tumor-distribution-ridges_plot-stealthy-ic-id, fig.asp = 0.667, fig.width = 1.5625}
+sample_ord <- rev(c(
+  # 'Replacement_Sample4',
+  'C1Position_HumanPlate2',
+  'C2Position_HumanPlate2',
+  'E2Position_HumanPlate2',
+  'E1Position_HumanPlate2',
+  'G1Position_HumanPlate2',
+  # 'A2Position_HumanPlate2',
+  
+  'C4Position_HumanPlate2',
+  'C3Position_HumanPlate2',
+  'G3Position_HumanPlate2',
+  'E3Position_HumanPlate2',
+  'A4Position_HumanPlate2'
+  # 'A3Position_HumanPlate2',
+  ))
+
+use_comps_i <- comp_list_unlisted[[1]]
+use_samples <- use_colData %>% 
+  filter(immunogen_mmmodel %in% use_comps_i) %>% 
+  pull(sample_alias)
+use_assay <- assay(se[,use_samples], 'cpm') %>% 
+  as.data.frame(check.names = F) %>% 
+  rownames_to_column('guide') %>% 
+  pivot_longer(-guide, names_to = 'sample_alias', values_to = 'cpm') %>% 
+  left_join(use_colData) %>% 
+  filter(sample_alias %in% sample_ord)
+
+use_assay$sample_alias <- factor(use_assay$sample_alias, 
+                                 levels = sample_ord)
+use_colors <- c(
+  StealTHY_Imm.competent = '#F7EC13', StealTHY_Imm.deficient  = '#58595B',
+  IC = '#F7EC13', ID  = '#58595B'
+  )
+use_assay %>%
+  # filter(cpm <= 100000) %>%
+  mutate(
+    immunogen_mmmodel = ifelse(immunogen_mmmodel == 'StealTHY_Imm.competent', 'IC', NA),
+    immunogen_mmmodel = ifelse(immunogen_mmmodel == 'StealTHY_Imm.deficient', 'ID', immunogen_mmmodel)
+    ) %>%
+  # ggplot(aes(x=cpm + 1, y = sample_alias, fill = immunogen_mmmodel, height = ..density..)) +
+  # geom_density_ridges(color = 'black',
+  #                     size = one_pt/4,
+  #                     alpha = 0.8,
+  #                     scale = 4,
+  #                     rel_min_height = 0.005, # set the `rel_min_height` argument to remove tails,
+  #                     stat = "density"
+  #                     ) +
+  ggplot(aes(x=cpm + 1, y = sample_alias, fill = immunogen_mmmodel)) +
+  geom_density_ridges(color = 'black',
+                      size = one_pt/4,
+                      alpha = 0.8,
+                      scale = 4,
+                      rel_min_height = 0.005 # set the `rel_min_height` argument to remove tails
+                      ) +
+  scale_fill_manual(values = use_colors) +
+  scale_x_log10(expand = expansion(mult = c(0, 0))) +
+  scale_y_discrete(expand = c(0.01, 0)) +
+  labs(y = '') +
+  guides(fill = 'none') +
+  # facet_grid(rows = vars(immunogen_mmmodel), scale = 'free_y', space = 'free_y') +
+  theme_ridges(font_size = 3, grid = F) +
+  theme(
+    strip.background = element_blank(),
+    axis.line.x = element_line(linewidth = one_pt/4, color = 'black'),
+    axis.ticks.x = element_line(linewidth = one_pt/4, color = 'black')
+  )
+
+```
+
+#### Cumulative curves
+Showing only top-1000 guides. Bright lines represent the average across the same group
+```{r test-dist-tumor-distribution-cumsum_plot, fig.asp = 0.8}
+use_comps_i <-comp_list_unlisted[[1]]
+res_plot <- foreach(use_comps_i = comp_list_unlisted) %do% {
+    use_samples <- use_colData %>% 
+      filter(immunogen_mmmodel %in% use_comps_i) %>% 
+      pull(sample_alias)
+    use_assay <-  apply(assay(se[,use_samples], 'cpm'), 2, function(x) sort(x, decreasing = TRUE) %>% cumsum)  %>% 
+      as.data.frame(check.names = F) %>% 
+      mutate(guide = 1:nrow(se)) %>% 
+      pivot_longer(-guide, names_to = 'sample_alias', values_to = 'cumsum') %>% 
+      left_join(use_colData)
+    
+    use_assay_average <-  use_assay %>% 
+      group_by(guide, immunogen_mmmodel) %>% 
+      summarise(cumsum = mean(cumsum))
+    
+    use_assay %>% 
+      ggplot(aes(x=guide, y = cumsum, color = immunogen_mmmodel, group = sample_alias)) +
+      geom_line(alpha = 0.3) +
+      geom_line(data =use_assay_average, aes(x=guide, y = cumsum, color = immunogen_mmmodel, group = immunogen_mmmodel), linewidth = 1.2 ) +
+      scale_fill_OkabeIto(alpha = 0.8) +
+      scale_x_continuous(expand = c(0, 0), limits = c(0,1000)) +
+      scale_y_continuous(expand = c(0, 0)) +
+      scale_color_OkabeIto() +
+      labs(
+        y = 'Cumulative sum',
+        x = 'rank',
+        color = ''
+      ) +
+      theme(legend.position = 'top')
+      # guides(color = 'none')
+      # facet_grid(rows = vars(immunogen_mmmodel), scale = 'free_y')
+    
+}
+
+plot_grid(
+  plotlist = res_plot, 
+  labels = names(comp_list)
+  )
+```
+
+### Selected density plots
+
+#### Suppl. Figure 6D with log10 x-axis
+
+```{r test-dist-tumor-distribution-ridges_plot-suppl-fig-6d-log10, fig.asp = 0.667, fig.width = 1.5625}
+
+sample_ord <- rev(c(
+  'A1Position_HumanPlate1',
+  'A2Position_HumanPlate1',
+  'E1Position_HumanPlate1',
+  'E2Position_HumanPlate1',
+  
+  'A4Position_HumanPlate1',
+  'E3Position_HumanPlate1',
+  'E4Position_HumanPlate1',
+  
+  'A5Position_HumanPlate1',
+  'A6Position_HumanPlate1',
+  'E5Position_HumanPlate1',
+  'E6Position_HumanPlate1',
+  
+  'A7Position_HumanPlate1',
+  'A8Position_HumanPlate1',
+  'E7Position_HumanPlate1',
+  'E8Position_HumanPlate1',
+  
+  'A9Position_HumanPlate1',
+  'A10Position_HumanPlate1',
+  'E9Position_HumanPlate1',
+  'E10Position_HumanPlate1'
+  
+  ))
+
+use_assay <- assay(se[,sample_ord], 'cpm') %>% 
+  as.data.frame(check.names = F) %>% 
+  rownames_to_column('guide') %>% 
+  pivot_longer(-guide, names_to = 'sample_alias', values_to = 'cpm') %>% 
+  left_join(use_colData)
+
+
+use_assay$sample_alias <- factor(use_assay$sample_alias, 
+                                 levels = sample_ord)
+
+use_assay <- use_assay %>% 
+  mutate(
+    immunogen_mmmodel = ifelse(immunogen_mmmodel == 'dCas9-GFP_Imm.competent', 'C9-GFP IC', immunogen_mmmodel),
+    immunogen_mmmodel = ifelse(immunogen_mmmodel == 'dCas9-GFP_Imm.deficient', 'C9-GFP ID', immunogen_mmmodel),
+    immunogen_mmmodel = ifelse(immunogen_mmmodel == 'dCas9-THY_Imm.competent', 'C9-THY1 IC', immunogen_mmmodel),
+    immunogen_mmmodel = ifelse(immunogen_mmmodel == 'GFP_Imm.competent', 'GFP IC', immunogen_mmmodel),
+    immunogen_mmmodel = ifelse(immunogen_mmmodel == 'no_immunogen_Imm.competent', 'No Immmunogen IC', immunogen_mmmodel)
+    ) 
+
+use_colors <- c(
+  `dCas9-GFP_Imm.competent` = 'grey80',
+  `dCas9-GFP_Imm.deficient` = 'black',
+  `dCas9-THY_Imm.competent` = 'grey80',
+  `GFP_Imm.competent` = 'black',
+  `no_immunogen_Imm.competent` = '#F7EC13',
+  
+  `C9-GFP IC` = 'grey80',
+  `C9-GFP ID` = 'black',
+  `C9-THY1 IC` = 'grey80',
+  `GFP IC` = 'black',
+  `No Immmunogen IC` = '#F7EC13'
+  )
+
+use_line_colors <- c(
+  `dCas9-GFP_Imm.competent` = 'black',
+  `dCas9-GFP_Imm.deficient` = 'white',
+  `dCas9-THY_Imm.competent` = 'black',
+  `GFP_Imm.competent` = 'white',
+  `no_immunogen_Imm.competent` = 'black',
+  
+  `C9-GFP IC` = 'black',
+  `C9-GFP ID` = 'white',
+  `C9-THY1 IC` = 'black',
+  `GFP IC` = 'white',
+  `No Immmunogen IC` = 'black'
+  )
+
+
+
+
+use_assay %>%
+  ggplot(aes(x=cpm + 1, y = sample_alias, fill = immunogen_mmmodel, color = immunogen_mmmodel)) +
+  geom_density_ridges(
+                      size = one_pt/4,
+                      alpha = 0.8,
+                      scale = 4,
+                      rel_min_height = 0.005 # set the `rel_min_height` argument to remove tails
+                      ) +
+  scale_fill_manual(values = use_colors) +
+  scale_color_manual(values = use_line_colors) +
+  scale_x_log10(expand = expansion(mult = c(0, 0))) +
+  scale_y_discrete(expand = c(0.01, 0)) +
+  labs(y = '') +
+  guides(fill = 'none', color = 'none') +
+  # facet_grid(rows = vars(immunogen_mmmodel), scale = 'free_y', space = 'free_y') +
+  theme_ridges(font_size = 3, grid = F) +
+  theme(
+    strip.background = element_blank(),
+    axis.line.x = element_line(linewidth = one_pt/4, color = 'black'),
+    axis.ticks.x = element_line(linewidth = one_pt/4, color = 'black'),
+    axis.text.y = element_text(size=2),
+    axis.text.x = element_text(size=8)
+  )
+```
+
+#### Suppl. Figure 6D with logicle x-axis
+
+```{r test-dist-tumor-distribution-ridges_plot-suppl-fig-6d-logicle, fig.asp = 0.667, fig.width = 1.5625}
+
+sample_ord <- rev(c(
+  'A1Position_HumanPlate1',
+  'A2Position_HumanPlate1',
+  'E1Position_HumanPlate1',
+  'E2Position_HumanPlate1',
+  
+  'A4Position_HumanPlate1',
+  'E3Position_HumanPlate1',
+  'E4Position_HumanPlate1',
+  
+  'A5Position_HumanPlate1',
+  'A6Position_HumanPlate1',
+  'E5Position_HumanPlate1',
+  'E6Position_HumanPlate1',
+  
+  'A7Position_HumanPlate1',
+  'A8Position_HumanPlate1',
+  'E7Position_HumanPlate1',
+  'E8Position_HumanPlate1',
+  
+  'A9Position_HumanPlate1',
+  'A10Position_HumanPlate1',
+  'E9Position_HumanPlate1',
+  'E10Position_HumanPlate1'
+  
+  ))
+
+use_assay <- assay(se[,sample_ord], 'cpm') %>% 
+  as.data.frame(check.names = F) %>% 
+  rownames_to_column('guide') %>% 
+  pivot_longer(-guide, names_to = 'sample_alias', values_to = 'cpm') %>% 
+  left_join(use_colData)
+
+
+use_assay$sample_alias <- factor(use_assay$sample_alias, 
+                                 levels = sample_ord)
+
+use_assay <- use_assay %>% 
+  mutate(
+    immunogen_mmmodel = ifelse(immunogen_mmmodel == 'dCas9-GFP_Imm.competent', 'C9-GFP IC', immunogen_mmmodel),
+    immunogen_mmmodel = ifelse(immunogen_mmmodel == 'dCas9-GFP_Imm.deficient', 'C9-GFP ID', immunogen_mmmodel),
+    immunogen_mmmodel = ifelse(immunogen_mmmodel == 'dCas9-THY_Imm.competent', 'C9-THY1 IC', immunogen_mmmodel),
+    immunogen_mmmodel = ifelse(immunogen_mmmodel == 'GFP_Imm.competent', 'GFP IC', immunogen_mmmodel),
+    immunogen_mmmodel = ifelse(immunogen_mmmodel == 'no_immunogen_Imm.competent', 'No Immmunogen IC', immunogen_mmmodel)
+    ) 
+
+use_colors <- c(
+  `dCas9-GFP_Imm.competent` = 'grey80',
+  `dCas9-GFP_Imm.deficient` = 'black',
+  `dCas9-THY_Imm.competent` = 'grey80',
+  `GFP_Imm.competent` = 'black',
+  `no_immunogen_Imm.competent` = '#F7EC13',
+  
+  `C9-GFP IC` = 'grey80',
+  `C9-GFP ID` = 'black',
+  `C9-THY1 IC` = 'grey80',
+  `GFP IC` = 'black',
+  `No Immmunogen IC` = '#F7EC13'
+  )
+
+use_line_colors <- c(
+  `dCas9-GFP_Imm.competent` = 'black',
+  `dCas9-GFP_Imm.deficient` = 'white',
+  `dCas9-THY_Imm.competent` = 'black',
+  `GFP_Imm.competent` = 'white',
+  `no_immunogen_Imm.competent` = 'black',
+  
+  `C9-GFP IC` = 'black',
+  `C9-GFP ID` = 'white',
+  `C9-THY1 IC` = 'black',
+  `GFP IC` = 'white',
+  `No Immmunogen IC` = 'black'
+  )
+
+
+
+
+use_assay %>%
+  ggplot(aes(x=cpm + 1, y = sample_alias, fill = immunogen_mmmodel, color = immunogen_mmmodel)) +
+  geom_density_ridges(
+                      size = one_pt/4,
+                      alpha = 0.8,
+                      scale = 4,
+                      rel_min_height = 0.005 # set the `rel_min_height` argument to remove tails
+                      ) +
+  scale_fill_manual(values = use_colors) +
+  scale_color_manual(values = use_line_colors) +
+  ggcyto::scale_x_logicle(t = 1e3, 
+                          expand = expansion(mult = c(0, 0)),
+                          breaks = c(1, 1e2, 1e3, 1e4)) +
+  scale_y_discrete(expand = c(0.01, 0)) +
+  labs(y = '') +
+  guides(fill = 'none', color = 'none') +
+  # facet_grid(rows = vars(immunogen_mmmodel), scale = 'free_y', space = 'free_y') +
+  theme_ridges(font_size = 3, grid = F) +
+  theme(
+    strip.background = element_blank(),
+    axis.line.x = element_line(linewidth = one_pt/4, color = 'black'),
+    axis.ticks.x = element_line(linewidth = one_pt/4, color = 'black'),
+    axis.text.y = element_text(size=2),
+    axis.text.x = element_text(size=8)
+  )
+```
+
+
+## Lung metastasis samples
+Analysis 4 : Please perform unpaired comparison tests for (1) the total no. of detected sgRNAs and (2) distribution between the following lung metastasis samples
+```{r test-dist-lung-conf}
+use_sample_type <- 'whole_lung'
+comp_list <- comp_list_by_sample_type
+comp_list_unlisted <- foreach(x = comp_list, .combine = c) %do% x
+comp_list_df_double <- foreach(x = comp_list_unlisted, .combine = rbind) %do% {rbind(x, rev(x))} %>% 
+  data.frame %>% 
+  set_names(c('group1', 'group2'))
+use_colData <- colData(se) %>% data.frame %>% 
+    filter(sample_type == use_sample_type)
+```
+
+### Number of detected guides
+
+#### Table
+```{r test-dist-lung-detected-tab}
+comp_guides_detected %>% 
+  filter(sample_type == use_sample_type) %>% 
+  mutate(
+    p = format.pval(p),
+    p.adj = format.pval(p.adj),
+  ) %>% 
+  dplyr::select(-sample_type, -p.format, -.y.) %>% 
+  inner_join(comp_list_df_double) %>% 
+  datatable(., 
+            rownames = FALSE, 
+            filter = 'top', 
+            caption = 'Comparison of guide abundance. P value by two-sided Wiloxon test',
+            extensions = 'Buttons', 
+            options = list(
+              dom = 'Blfrtip',
+              buttons = c('csv', 'excel')
+            ))
+
+```
+
+#### Boxplot
+```{r test-dist-lung-detected-boxplot, fig.width=2, fig.asp = 1.5}
+comp_name <-  names(comp_list)[1]
+res_plot <- foreach(comp_name = names(comp_list)) %do% {
+  use_comps <-  comp_list[[comp_name]]
+  use_colData %>% 
+    filter(immunogen_mmmodel %in% unlist(use_comps)) %>% 
+    mutate(immunogen_mmmodel = factor(immunogen_mmmodel, levels = unlist(use_comps))) %>% 
+    ggplot(aes(immunogen_mmmodel, guides_over_30, color = immunogen_mmmodel)) +
+      geom_boxplot(outlier.shape = NA) + 
+      geom_beeswarm() +
+      scale_y_continuous(expand = expansion(0.1)) +
+      scale_color_brewer(type = 'qual', palette = 'Paired') +
+      theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+      stat_compare_means(comparisons = use_comps, method = 'wilcox.test') +
+      labs(
+        x = ''
+      ) +
+      guides(
+        color = 'none'
+      )
+}
+plot_grid(plotlist = res_plot, labels =  names(comp_list))
+```
+
+
+### Guide distribution
+
+#### Table
+We compared the distribution of guides abundances for each group using two-sided Kolmogorov-Smirnov (K-S) test. For each sample we ranked guides based on normalized abundance (CPM) distribution. Then the corresponding value for each rank was obtained averaging the CPM in samples from each group. 
+```{r test-dist-lung-distribution-tab}
+comp_abundance_dist %>% 
+  filter(sample_type == use_sample_type) %>% 
+  mutate(
+    p.value = format.pval(p.value),
+  ) %>% 
+  dplyr::select(-sample_type) %>% 
+  inner_join(comp_list_df_double) %>% 
+  datatable(., 
+            rownames = FALSE, 
+            filter = 'top', 
+            caption = 'Comparison of guide distribution using two-sided Kolmogorov-Smirnov (K-S) test.',
+            extensions = 'Buttons', 
+            options = list(
+              dom = 'Blfrtip',
+              buttons = c('csv', 'excel')
+            ))
+
+```
+
+#### Density plot
+```{r test-dist-lung-distribution-ridges_plot, fig.asp = 1, fig.width = 5.2}
+use_comps_i <- comp_list_unlisted[1]
+res_plot <- foreach(use_comps_i = comp_list_unlisted) %do% {
+    use_samples <- use_colData %>% 
+      filter(immunogen_mmmodel %in% use_comps_i) %>% 
+      pull(sample_alias)
+    use_assay <- assay(se[,use_samples], 'cpm') %>% 
+      as.data.frame(check.names = F) %>% 
+      rownames_to_column('guide') %>% 
+      pivot_longer(-guide, names_to = 'sample_alias', values_to = 'cpm') %>% 
+      left_join(use_colData)
+    use_assay %>% 
+      # mutate(sample_alias = fct_reorder(sample_alias, use_comps_i)) %>%
+      ggplot(aes(x=cpm + 1, y = sample_alias, fill = immunogen_mmmodel)) +
+      geom_density_ridges(color = 'white', quantile_lines = TRUE) +
+      scale_fill_OkabeIto(alpha = 0.8) +
+      scale_x_log10(expand = c(0, 0)) +
+      scale_y_discrete(expand = c(0, 0)) +
+      labs(y = '') +
+      guides(fill = 'none') +
+      facet_grid(rows = vars(immunogen_mmmodel), scale = 'free_y') +
+      theme_ridges()
+}
+
+
+plot_grid(
+  plotlist = res_plot, 
+  labels = names(comp_list)
+  )
+```
+
+#### Density plot StealTHY IC vs ID
+```{r test-dist-lung-distribution-ridges_plot-stealthy-ic-id, fig.asp = 0.667, fig.width = 1.5625}
+sample_ord <- rev(c(
+  # 'Replacement_Sample5',
+  'D1Position_HumanPlate2',
+  'D2Position_HumanPlate2',
+  'F2Position_HumanPlate2',
+  'H1Position_HumanPlate2',
+  'F1Position_HumanPlate2',
+  'B2Position_HumanPlate2',
+  
+  'D4Position_HumanPlate2',
+  'B4Position_HumanPlate2',
+  'H3Position_HumanPlate2',
+  'B3Position_HumanPlate2',
+  'G3Position_HumanPlate2',
+  'D3Position_HumanPlate2',
+  'F3Position_HumanPlate2'
+  ))
+
+use_comps_i <- comp_list_unlisted[[1]]
+use_samples <- use_colData %>% 
+  filter(immunogen_mmmodel %in% use_comps_i) %>% 
+  pull(sample_alias)
+use_assay <- assay(se[,use_samples], 'cpm') %>% 
+  as.data.frame(check.names = F) %>% 
+  rownames_to_column('guide') %>% 
+  pivot_longer(-guide, names_to = 'sample_alias', values_to = 'cpm') %>% 
+  left_join(use_colData) %>% 
+  filter(sample_alias %in% sample_ord)
+
+use_assay$sample_alias <- factor(use_assay$sample_alias, 
+                                 levels = sample_ord)
+use_colors <- c(
+  StealTHY_Imm.competent = '#F7EC13', StealTHY_Imm.deficient  = '#58595B',
+  IC = '#F7EC13', ID  = '#58595B'
+  )
+
+use_assay %>% 
+  filter(cpm <= 100000) %>%
+  mutate(
+    immunogen_mmmodel = ifelse(immunogen_mmmodel == 'StealTHY_Imm.competent', 'IC', NA),
+    immunogen_mmmodel = ifelse(immunogen_mmmodel == 'StealTHY_Imm.deficient', 'ID', immunogen_mmmodel)
+    ) %>%
+  # ggplot(aes(x=cpm + 1, y = sample_alias, fill = immunogen_mmmodel, height = ..density..)) +
+  # geom_density_ridges(color = 'black',
+  #                     size = one_pt/4,
+  #                     alpha = 0.8,
+  #                     scale = 4,
+  #                     rel_min_height = 0.005, # set the `rel_min_height` argument to remove tails,
+  #                     stat = "density"
+  #                     ) +
+  ggplot(aes(x=cpm + 1, y = sample_alias, fill = immunogen_mmmodel)) +
+  geom_density_ridges(color = 'black',
+                      size = one_pt/4,
+                      alpha = 0.8,
+                      scale = 4,
+                      rel_min_height = 0.005 # set the `rel_min_height` argument to remove tails
+                      ) +
+  scale_fill_manual(values = use_colors) +
+  scale_x_log10(expand = expansion(mult = c(0, 0))
+                # breaks = c(1, 10, 1000, 100000)
+                ) +
+  scale_y_discrete(expand = c(0.01, 0)) +
+  labs(y = '') +
+  guides(fill = 'none') +
+  # facet_grid(rows = vars(immunogen_mmmodel), scale = 'free_y', space = 'free_y') +
+  theme_ridges(font_size = 3, grid = F) +
+  theme(
+    strip.background = element_blank(),
+    axis.line.x = element_line(linewidth = one_pt/4, color = 'black'),
+    axis.ticks.x = element_line(linewidth = one_pt/4, color = 'black')
+  )
+```
+
+
+#### Cumulative curves
+Showing only top-1000 guides. Bright lines represent the average across the same group
+```{r test-dist-lung-distribution-cumsum_plot, fig.asp = 0.8}
+use_comps_i <-comp_list_unlisted[[1]]
+res_plot <- foreach(use_comps_i = comp_list_unlisted) %do% {
+    use_samples <- use_colData %>% 
+      filter(immunogen_mmmodel %in% use_comps_i) %>% 
+      pull(sample_alias)
+    use_assay <-  apply(assay(se[,use_samples], 'cpm'), 2, function(x) sort(x, decreasing = TRUE) %>% cumsum)  %>% 
+      as.data.frame(check.names = F) %>% 
+      mutate(guide = 1:nrow(se)) %>% 
+      pivot_longer(-guide, names_to = 'sample_alias', values_to = 'cumsum') %>% 
+      left_join(use_colData)
+    use_assay_average <-  use_assay %>% 
+      group_by(guide, immunogen_mmmodel) %>% 
+      summarise(cumsum = mean(cumsum))
+    
+  use_assay %>% 
+      ggplot(aes(x=guide, y = cumsum, color = immunogen_mmmodel, group = sample_alias)) +
+      geom_line(alpha = 0.3) +
+      geom_line(data =use_assay_average, aes(x=guide, y = cumsum, color = immunogen_mmmodel, group = immunogen_mmmodel), linewidth = 1.2 ) +
+      scale_fill_OkabeIto(alpha = 0.8) +
+      scale_x_continuous(expand = c(0, 0), limits = c(0,1000)) +
+      scale_y_continuous(expand = c(0, 0)) +
+      scale_color_OkabeIto() +
+      labs(
+        y = 'Cumulative sum',
+        x = 'rank',
+        color = ''
+      ) +
+      theme(legend.position = 'top')
+      # guides(color = 'none')
+      # facet_grid(rows = vars(immunogen_mmmodel), scale = 'free_y')
+}
+
+
+plot_grid(
+  plotlist = res_plot, 
+  labels = names(comp_list)
+  )
+```
+
+
+## Gini index
+
+### huTHY-GFP-C9Thy-C9GFP
+```{r test-dist-gini-index-huTHY-GFP-C9Thy-C9GFP, fig.width = 4.2}
+use_colData <- colData(se) %>% data.frame %>% 
+  filter(immunogen != 'no_immunogen') %>% 
+  filter(sample_type != 'In vitro') %>% 
+  mutate(
+    sample_type = factor(sample_type, 
+                         levels = c('whole_tumor', 
+                                    'whole_lung', 
+                                    'met_lymph', 
+                                    'met_liver')
+                         ),
+    sample_type = recode_factor(sample_type,
+                                'whole_tumor' = 'Primary\ntumor',
+                                'whole_lung' = 'Metastasis\nlung',
+                                'met_lymph' = 'Metastasis\nlymphnode',
+                                'met_liver' = 'Metastasis\nliver'
+                                ),
+    immunogen = factor(immunogen, levels = c('StealTHY', 
+                                             'GFP', 
+                                             'dCas9-THY',
+                                             'dCas9-GFP')
+                       ),
+    immunogen = recode_factor(immunogen,
+                                'StealTHY' = 'huThy',
+                                'GFP' = 'GFP',
+                                'dCas9-THY' = 'C9-Thy',
+                                'dCas9-GFP' = 'C9-GFP'
+                                )
+  )
+
+
+
+          
+use_colors <- c(
+  huThy = '#F7EC13',
+  # GFP = '#00f900',
+  GFP = 'black',
+  `C9-Thy`= 'grey80',
+  `C9-GFP` = 'black'
+)
+
+use_shapes <- c(
+  huThy = 21,
+  GFP = 21,
+  `C9-Thy`= 24,
+  `C9-GFP` = 24
+)
+
+use_colData %>% 
+  ggplot(aes(immunogen, gini_index)) +
+  geom_violin(color = 'grey60', scale = "width",
+              draw_quantiles = 0.5,
+              linewidth = one_pt/2) +
+  geom_quasirandom(aes(fill = immunogen, shape = immunogen),
+                   color = 'black',
+                   alpha = 0.8,
+                   size = 1.5,
+                   stroke = one_pt/2, width = 0.5) +
+  scale_fill_manual(values = use_colors) +
+  scale_shape_manual(values = use_shapes) +
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  scale_y_continuous(expand = c(0.05, 0)) +
+  facet_grid(cols = vars(sample_type), scale = 'free', space = 'free') +
+  # facet_grid(cols = vars(sample_type)) +
+  theme_facet +
+  labs(
+    x = '',
+    y = 'Gini index'
+  ) +
+  guides(
+    fill = 'none',
+    shape = 'none'
+  )
+```
+
+### no_immunogen-GFP-C9Thy-C9GFP
+```{r test-dist-gini-index-no_immunogen-GFP-C9Thy-C9GFP, fig.width = 4.2}
+use_colData <- colData(se) %>% data.frame %>% 
+  filter(immunogen != 'StealTHY') %>% 
+  filter(sample_type != 'In vitro') %>% 
+  mutate(
+    sample_type = factor(sample_type, 
+                         levels = c('whole_tumor', 
+                                    'whole_lung', 
+                                    'met_lymph', 
+                                    'met_liver')
+                         ),
+    sample_type = recode_factor(sample_type,
+                                'whole_tumor' = 'Primary\ntumor',
+                                'whole_lung' = 'Metastasis\nlung',
+                                'met_lymph' = 'Metastasis\nlymphnode',
+                                'met_liver' = 'Metastasis\nliver'
+                                ),
+    immunogen = factor(immunogen, levels = c('no_immunogen', 
+                                             'GFP', 
+                                             'dCas9-THY',
+                                             'dCas9-GFP')
+                       ),
+    immunogen = recode_factor(immunogen,
+                                'no_immunogen' = 'No immunogen',
+                                'GFP' = 'GFP',
+                                'dCas9-THY' = 'C9-Thy',
+                                'dCas9-GFP' = 'C9-GFP'
+                                )
+  )
+
+
+
+          
+use_colors <- c(
+  `No immunogen` = '#F7EC13',
+  # GFP = '#00f900',
+  GFP = 'black',
+  `C9-Thy`= 'grey80',
+  `C9-GFP` = 'black'
+)
+
+use_shapes <- c(
+  `No immunogen` = 21,
+  GFP = 21,
+  `C9-Thy`= 24,
+  `C9-GFP` = 24
+)
+
+use_colData %>% 
+  ggplot(aes(immunogen, gini_index)) +
+  geom_violin(color = 'grey60', scale = "width",
+              draw_quantiles = 0.5,
+              linewidth = one_pt/2) +
+  geom_quasirandom(aes(fill = immunogen, shape = immunogen),
+                   color = 'black',
+                   alpha = 0.8,
+                   size = 1.5,
+                   stroke = one_pt/2, width = 0.5) +
+  scale_fill_manual(values = use_colors) +
+  scale_shape_manual(values = use_shapes) +
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  scale_y_continuous(expand = c(0.05, 0)) +
+  facet_grid(cols = vars(sample_type), scale = 'free', space = 'free') +
+  # facet_grid(cols = vars(sample_type)) +
+  theme_facet +
+  labs(
+    x = '',
+    y = 'Gini index'
+  ) +
+  guides(
+    fill = 'none',
+    shape = 'none'
+  )
+```
+
+### huTHY-C9GFP
+```{r test-dist-gini-index-huTHY-C9GFP}
+use_colData <- colData(se) %>% data.frame %>% 
+  filter(immunogen %in% c('StealTHY','dCas9-GFP')) %>% 
+  filter(sample_type != 'In vitro') %>% 
+  mutate(
+    sample_type = factor(sample_type, 
+                         levels = c('whole_tumor', 
+                                    'whole_lung', 
+                                    'met_lymph', 
+                                    'met_liver')
+                         ),
+    sample_type = recode_factor(sample_type,
+                                'whole_tumor' = 'Primary\ntumor',
+                                'whole_lung' = 'Metastasis\nlung',
+                                'met_lymph' = 'Metastasis\nlymphnode',
+                                'met_liver' = 'Metastasis\nliver'
+                                ),
+    immunogen = factor(immunogen, levels = c('StealTHY', 
+                                             'GFP', 
+                                             'dCas9-THY',
+                                             'dCas9-GFP')
+                       ),
+    immunogen = recode_factor(immunogen,
+                                'StealTHY' = 'huThy',
+                                'GFP' = 'GFP',
+                                'dCas9-THY' = 'C9-Thy',
+                                'dCas9-GFP' = 'C9-GFP'
+                                )
+  )
+
+
+
+          
+use_colors <- c(
+  huThy = '#F7EC13',
+  # GFP = '#00f900',
+  GFP = 'black',
+  `C9-Thy`= 'grey80',
+  `C9-GFP` = 'black'
+)
+
+use_shapes <- c(
+  huThy = 21,
+  GFP = 21,
+  `C9-Thy`= 24,
+  `C9-GFP` = 24
+)
+
+use_colData %>% 
+  ggplot(aes(immunogen, gini_index)) +
+  geom_violin(color = 'grey60', scale = "width",
+              draw_quantiles = 0.5,
+              linewidth = one_pt/2) +
+  geom_quasirandom(aes(fill = immunogen, shape = immunogen),
+                   color = 'black',
+                   alpha = 0.8,
+                   size = 1.5,
+                   stroke = one_pt/2, width = 0.5) +
+  scale_fill_manual(values = use_colors) +
+  scale_shape_manual(values = use_shapes) +
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  scale_y_continuous(expand = c(0.05, 0)) +
+  facet_grid(cols = vars(sample_type), scale = 'free', space = 'free') +
+  # facet_grid(cols = vars(sample_type)) +
+  theme_facet +
+  labs(
+    x = '',
+    y = 'Gini index'
+  ) +
+  guides(
+    fill = 'none',
+    shape = 'none'
+  )
+```
+
+
+
+## Modality
+
+### Test for Multimodality
+Different test for modality were performed by sample:
+
+- Hartigans' dip test for unimodality / multimodality. If the p-value is less than 0.05, there's enough evidence to claim that the data are not unimodal (multimodal, at least bimodal).
+
+- LaplacesDemon: test for bimodality, trimodality and number of modes.
+
+- Mousetrap Bimodality test
+
+```{r test-modality}
+library(diptest)
+library(LaplacesDemon)
+library(mousetrap)
+
+use_assay <- assay(se, 'cpm')
+i <- colnames(use_assay)[1]
+modality_test_df <- foreach(i= colnames(use_assay), .combine = rbind) %do%{
+  x <- use_assay[,i]
+  dip.res <- dip.test(x, simulate.p.value = FALSE, B = 2000)
+  data.frame(sample_alias = i,
+    dip.D = dip.res$statistic, #diptest
+    dip.p = dip.res$p.value, #diptest
+    dip.result = ifelse(dip.res$p.value < 0.05, 'multimodal', 'unimodal'), #diptest
+    ld.multimodal = is.multimodal(x), #LaplacesDemon
+    ld.bimodal = is.bimodal(x), #LaplacesDemon
+    ld.trimodal = is.trimodal(x), #LaplacesDemon
+    ld.n.modes = length(Modes(x)$modes), #LaplacesDemon
+    pfister.bimodality.coeff = bimodality_coefficient(x), #mousetrap
+    pfister.bimodal = bimodality_coefficient(x) > 0.555  #mousetrap
+    )
+}
+
+modality_test_df %<>% 
+  left_join(colData(se) %>% data.frame)
+```
+
+#### Hartigan's dip test 
+
+##### Plot
+```{r modality-dip-test-plot, fig.width = 3, fig.asp = 0.666}
+modality_test_df %>% 
+  filter(sample_type %in% c('In vitro', 'whole_tumor', 'whole_lung')) %>%
+  mutate(
+    sample_type = factor(sample_type, levels = c('In vitro', 'whole_tumor', 'whole_lung')),
+    mm_model_type = recode_factor(mm_model_type, `Imm.competent` = 'IC', `Imm.deficient` = 'NSG')
+    ) %>% 
+  ggplot(aes(x = immunogen_mmmodel, y = dip.D)) +
+  geom_boxplot(
+    # alpha = 0.6,
+    linewidth = one_pt/4,
+    outlier.shape = NA) +
+  geom_quasirandom(
+    aes(color =  dip.result),
+    alpha = 0.6,
+    pch = 16,
+    size = 0.7
+    
+  ) +
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  facet_grid(cols = vars(sample_type, mm_model_type), scales = 'free_x', space = 'free_x') +
+  theme_facet +
+  labs(
+    x = '',
+    y = 'Dip test statistic'
+  ) +
+  theme(
+    text = element_text(size=3),
+    axis.text.y =  element_text(size=3),
+    axis.text.x =  element_text(size=3),
+    axis.line = element_line(linewidth = one_pt/4, color = 'black'),
+    axis.ticks = element_line(linewidth = one_pt/4, color = 'black'),
+    panel.border = element_rect(fill =NULL, color = "black",
+                                linewidth = one_pt/4)
+  )
+
+```
+
+##### Summary
+```{r modality-dip-test-summary, fig.width = 3, fig.asp = 0.666}
+modality_test_df %>% 
+  filter(sample_type %in% c('In vitro', 'whole_tumor', 'whole_lung')) %>%
+  mutate(
+    sample_type = factor(sample_type, levels = c('In vitro', 'whole_tumor', 'whole_lung')),
+    mm_model_type = recode_factor(mm_model_type, `Imm.competent` = 'IC', `Imm.deficient` = 'NSG')
+    ) %>% 
+  group_by(sample_type, mm_model_type) %>% 
+  summarise(
+    n = n(),
+    multimodal = sum(dip.result == 'multimodal'),
+    unimodal = sum(dip.result == 'unimodal'),
+    median.dip.D = median(dip.D)
+  ) %>% 
+  kbl(caption = 'Summary stats for Hartigan dip test by model') %>%
+  kable_paper(bootstrap_options = c("striped", "hover", "condensed"), full_width = F)
+```
+
+##### Data
+```{r modality-dip-test-data, fig.width = 3, fig.asp = 0.666}
+modality_test_df %>% 
+  filter(sample_type %in% c('In vitro', 'whole_tumor', 'whole_lung')) %>%
+  mutate(
+    sample_type = factor(sample_type, levels = c('In vitro', 'whole_tumor', 'whole_lung')),
+    mm_model_type = recode_factor(mm_model_type, `Imm.competent` = 'IC', `Imm.deficient` = 'NSG')
+    ) %>% 
+  dplyr::select(sample_alias, sample_type, mm_model_type, dip.D, dip.p, dip.result) %>% 
+  datatable(., 
+            rownames = FALSE, 
+            filter = 'top', 
+            caption = 'Hartigan dip test results by sample',
+            extensions = 'Buttons', 
+            options = list(
+              dom = 'Blfrtip',
+              buttons = c('csv', 'excel')
+            ))
+
+```
+
+
+### Comparisons table
+```{r modality-comparisons-table}
+data_comp <- foreach(i = names(comp_list_modality), .combine = rbind) %do% {
   c(
     Comparison = i,
-    Case = paste(comp_list[[i]][[1]], collapse = " "),
-    Control = paste(comp_list[[i]][[2]], collapse = " ")
+    Case = paste(comp_list_modality[[i]][[1]], collapse = " "),
+    Control = paste(comp_list_modality[[i]][[2]], collapse = " ")
   )
 }
 
@@ -289,7 +1823,7 @@ data_comp %>%
   datatable(., 
             rownames = FALSE, 
             filter = 'top', 
-            caption = 'Comparison of guide abundance. P value by two-sided Wiloxon test',
+            caption = 'Comparison of modality test',
             extensions = 'Buttons', 
             options = list(
               dom = 'Blfrtip',
@@ -301,1118 +1835,534 @@ data_comp %>%
             )
 
 ```
-### Genes to remove
-Remove genes not expressed in the RNA-seq experiment. We consider only non-NSG samples
-```{r rm-genes-conf}
-min_counts <- 1
-min_prop <- 0.30
 
-# Read RNA-seq data
-se_rna <- readRDS(params$se_rnaseq)
-assay(se_rna, 'cpm') <- edgeR::cpm(se_rna)
+### Kolmogorov-Smirnov test
 
-# CRISPR library genes
-crispr_genes <- unique(rowData(se)$Gene) %>% grep('Non_Target', ., invert = T, value = T)
-
-# RNA-seq : Select genes and non-NSG samples
-use_cols <- colData(se_rna)$mouse_model != 'NSG'
-use_se <- se_rna[rowData(se_rna)$gene_name %in% crispr_genes, use_cols]
-
-# Proportion of samples with min_counts at each group
-use_group <- as.factor(use_se$donor)
-counts_mat <- assay(use_se, 'counts')
-counts_stats <- foreach(i=levels(use_group), .combine = cbind) %do% {
-  use_cols <- use_se$donor == i
-  rowSums(counts_mat[,use_cols] >= min_counts)  / sum(use_cols)
-} %>% data.frame
-colnames(counts_stats) <- levels(use_group)
-counts_stats$all <- rowSums(counts_mat >= min_counts)  / ncol(counts_mat)
+Run Kolmogorov-Smirnov test to compare distributions merged by group and create Empirical Cumulative Density Function (ECDF) by comparison.
+```{r modality-comparisons-ks-run}
+i <- names(comp_list_modality)[1]
+ks_test_df <- data.frame()
+ecdf_plots <- list()
+for(i in names(comp_list_modality)) {
+  use_samples <- comp_list_modality[[i]]
+  use_assay_c <- assay(se[,use_samples[[1]]], 'cpm') %>% 
+    data.frame(check.names = F) %>% 
+    rownames_to_column('guide') %>% 
+    pivot_longer(-guide, values_to = 'cpm',names_to = 'sample_alias') %>% 
+    mutate(group = 'case', condition = names(use_samples)[1])
+  use_assay_r <- assay(se[,use_samples[[2]]], 'cpm') %>% 
+    data.frame(check.names = F) %>% 
+    rownames_to_column('guide') %>% 
+    pivot_longer(-guide, values_to = 'cpm',names_to = 'sample_alias') %>% 
+    mutate(group = 'referene', condition = names(use_samples)[2])
+  use_assay <- rbind(use_assay_c, use_assay_r)
   
-# Keep genes with min_counts threshold in >=min_prop of samples in at least 1 group
-rows_to_keep <- rownames(counts_stats)[rowSums(counts_stats >= min_prop) > 0]
+  # Perform the Kolmogorov-Smirnov test
+  ks.res <- ks.test(use_assay_c$cpm, use_assay_r$cpm)
+  ks_test_df <- rbind(
+    ks_test_df,
+      data.frame(
+      comparison = i,
+      case = names(use_samples)[1],
+      reference = names(use_samples)[2],
+      ks.D = ks.res$statistic,
+      ks.P = ks.res$p.value
+    )
+  )
 
-# Change to gene names
-genes_to_keep <- rowData(use_se[rows_to_keep,])$gene_name %>% 
-  unique
+  # Create ECDFs plot Empirical Cumulative Density Function
+  use_colors <- c('red', 'blue') %>% set_names(names(use_samples))
+  ecdf_plots[[i]] <- use_assay %>% 
+    ggplot(aes(x = log(1+cpm), color = condition, group = sample_alias)) +
+    stat_ecdf(geom = 'step', alpha = 0.8, size = one_pt/4) +
+    scale_color_manual(values = use_colors) +
+    labs(x = "log(1+cpm)",
+         color = '',
+         sub = i,
+         caption =paste("Kolmogorov-Smirnov test p-value:", round(ks.res$p.value, 3), "\n",
+                        "Kolmogorov-Smirnov test D:", round(ks.res$statistic, 3))) +
+    theme(
+      text = element_text(size=2),
+      axis.line = element_line(linewidth = one_pt/4, color = 'black'),
+      axis.ticks = element_line(linewidth = one_pt/4, color = 'black'),
+      axis.text.y =  element_text(size=3),
+      axis.text.x =  element_text(size=3),
+      legend.text =  element_text(size=2),
+      legend.title =  element_text(size=2),
+      plot.subtitle = element_text(size=3),
+      plot.caption =  element_text(size=2)
+      
+    )
 
-# Remove Rosa26 and Cd4 : cannot be expressed by cancer cells
-genes_to_keep <- genes_to_keep[!genes_to_keep %in% c('Gt(ROSA)26Sor', 'Cd4')]
-
-# Define genes to remove
-genes_to_rm <- setdiff(crispr_genes, genes_to_keep)
-
-# Show stats for removed genes
-counts_stats$gene_name <- rowData(use_se[rownames(counts_stats),])$gene_name
-counts_stats %<>% dplyr::select(gene_name, everything()) 
-
-counts_stats_filterByExpr <- counts_stats
-
-# Filter Crispr Data
-keep_gene_guides <- rownames(se)[rowData(se)$Gene %in% genes_to_keep]
-keep_ctrl_guides <- rownames(se)[grepl('Non_Target', rowData(se)$Gene)]
-se <- se[c(keep_gene_guides, keep_ctrl_guides),]
-
-# # Selection of expressed genes. 
-# #   Number of samples = Since large.n (3) < min. group size (12), 
-# #   the MinSampleSize will be 6.6 = large.n + (MinSampleSize-large.n)*min.prop
-# use_rows <- edgeR::filterByExpr(
-#   use_se,
-#   group=use_se$donor, 
-#   lib.size = colSums(assay(se_rna[,use_cols], 'counts')),
-#   min.prop = 0.4,
-#   min.count = 1,
-#   large.n = 3, 
-#   min.total.count = 15
-#   )
-# genes_exprs <- unique(rowData(use_se)$gene_name[use_rows])
+}
 ```
 
-Remove genes not expressed in the RNA-seq experiment: we keep genes that have counts above `r min_counts` counts in `r 100*min_prop` % of the samples from at least one group. The group is defined by the cell model. We consider only non-NSG samples for this analysis. additionally we also remove *Gt(ROSA)26Sor* and *Cd4* (they cannot be expressed by cancer cells).
+#### Table K-S
 
-The table below shows the proportion of samples with counts >= `r min_counts`in each group for genes removed (n = `r length(genes_to_rm)``).
-```{r rm-genes-tab}
-counts_stats_filterByExpr %>% 
-  filter(gene_name %in% genes_to_rm) %>% 
-  arrange(desc(all)) %>% 
+
+Kolmogorov-Smirnov test results
+```{r modality-comparisons-ks-table}
+ks_test_df %>% 
   datatable(., 
             rownames = FALSE, 
             filter = 'top', 
-            caption = 'Statistics',
+            caption = 'Results of Kolmogorov-Smirnov test',
+            extensions = 'Buttons', 
+            options = list(
+              dom = 'Blfrtip',
+              buttons = c('csv', 'excel'),
+              columnDefs = list(
+                list(width = 120, targets = 1:3)
+              )
+            )
+            ) %>% 
+    formatRound(columns = c('ks.D'), digits = 3) %>% 
+    formatSignif(columns = c('ks.P'), digits = 3)
+
+```
+
+#### ECDF plots
+
+Empirical Cumulative Density Function (ECDF) plot by comparison
+
+```{r modality-comparisons-ks-ecdf, fig.width = 1.5, fig.asp = 0.66}
+for(i in names(ecdf_plots)) {
+  cat("#####", i, "\n")
+  print(ecdf_plots[[i]])
+  cat("\n\n")
+}
+```
+
+
+
+## Additional comparisons
+
+Run individual test comparisons between hu samples not KO, hence producing individual sgRNA distributions (see excel file)
+```{r test-dist-additional-conf}
+comp_list <- comp_list_additional
+comp_list_unlisted <- foreach(x = comp_list, .combine = c) %do% x
+# comp_list_df_double <- foreach(x = comp_list_unlisted, .combine = rbind) %do% {rbind(x, rev(x))} %>% 
+#   data.frame %>% 
+#   set_names(c('group1', 'group2'))
+use_colData <- colData(se) %>% data.frame 
+
+# Set colors
+group_levels <- map(comp_list, names) %>% unlist %>% sub("^[A-Z]+\\.", "", .) %>% unique
+group_color_palette <- ifelse(grepl('No_immunogen',group_levels), '#F7EC13', NA)
+group_color_palette <- ifelse(grepl('GFP',group_levels), 'grey80', group_color_palette)
+group_color_palette <- ifelse(grepl('Cas9',group_levels), 'black', group_color_palette)
+names(group_color_palette) <- group_levels
+
+group_levels <- map(comp_list, names) %>% unlist %>% sub("^[A-Z]+\\.", "", .) %>% unique
+group_line_color <- ifelse(grepl('No_immunogen',group_levels), 'black', NA)
+group_line_color <- ifelse(grepl('GFP',group_levels), 'black', group_line_color)
+group_line_color <- ifelse(grepl('Cas9',group_levels), 'white', group_line_color)
+names(group_line_color) <- group_levels
+
+```
+
+### Number of detected guides
+
+#### Table
+```{r test-dist-additional-detected-tab}
+comp_guides_detected_additional %>% 
+  mutate(
+    p = format.pval(p),
+    p.adj = format.pval(p.adj),
+  ) %>% 
+  dplyr::select(-p.format, -.y.) %>% 
+  # inner_join(comp_list_df_double) %>% 
+  datatable(., 
+            rownames = FALSE, 
+            filter = 'top', 
+            caption = 'Comparison of guide abundance. P value by two-sided Wiloxon test',
             extensions = 'Buttons', 
             options = list(
               dom = 'Blfrtip',
               buttons = c('csv', 'excel')
-              )) %>% 
-  formatRound(columns = 2:5)
-```
-
-
-```{r rm-genes-compare, eval = FALSE}
-# CRISPR library genes selected by Massimo
-crispr_genes_noexp_massimo <- read.xlsx(
-  './notes/p27851_o30659_genes_not_expressed_massimo.xlsx',
-  startRow = 2,
-  colNames = F
-  ) %>% 
-  pull(X1)
-
-crispr_genes_noexp_massimo[!crispr_genes_noexp_massimo %in% genes_to_rm]
-genes_to_rm[!genes_to_rm %in% crispr_genes_noexp_massimo]
-
-counts_stats_filterByExpr %>% 
-  filter(gene_name %in% crispr_genes_noexp_massimo[!crispr_genes_noexp_massimo %in% genes_to_rm])
-```
-
-
-### Run MAGeCK
-
-Generate MAGeCK test scripts
-```{r generate-mageck-cmds, eval = FALSE}
-out_dir <- file.path(params$data_dir, params$mageck_dir)
-dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
-
-# Generate count matrix
-count_mat <- assay(se, 'counts') %>% data.frame(check.names = FALSE) %>% 
-  rownames_to_column('sgRNA') %>% 
-  mutate(Gene = rowData(se)$Gene) %>% 
-  dplyr::select(sgRNA, Gene, everything())
-write_tsv(count_mat, file = file.path(out_dir, 'counts.txt'))
-
-# Generate list of control sgRNA IDs
-non_target_list <- rownames(se) %>% grep('Non_Target', ., value = T) %>% data.frame
-write_tsv(non_target_list, file = file.path(out_dir, 'control_sgrna.txt'), col_names = F)
-
-# Generate mageck commands
-res_cmd <- data.frame('source activate mageckenv')
-res_cmd <- foreach(i=names(comp_list), .combine = rbind) %do% {
-  paste('mageck test -k counts.txt --control-sgrna control_sgrna.txt --norm-method control -t', paste(comp_list[[i]][[1]], collapse = ','),'-c',  paste(comp_list[[i]][[2]], collapse = ','), '-n', i, '\n')
-} %>% data.frame()
-
-res_cmd <- rbind('conda activate mageckenv', res_cmd, 'conda deactivate')
-write_tsv(res_cmd, file.path(out_dir, 'run_mageck_test.sh'), col_names = FALSE)
-```
-
-Load MAGeCK results
-```{r load-mageck}
-gene_summ_files <- list.files(path = file.path(params$data_dir, params$mageck_dir), pattern = 'gene_summary.txt', full.names = TRUE)
-analysis_prefix <- basename(gene_summ_files) %>% gsub(".gene_summary.txt", "", .)
-gene_summ <- foreach(i = gene_summ_files) %do% read.delim(i, check.names = FALSE)
-names(gene_summ) <- analysis_prefix
-
-sgrna_summ_files <- list.files(path = file.path(params$data_dir, params$mageck_dir), pattern = 'sgrna_summary.txt', full.names = TRUE)
-analysis_prefix <- basename(sgrna_summ_files) %>% gsub(".sgrna_summary.txt", "", .)
-sgrna_summ <- foreach(i = sgrna_summ_files) %do% read.delim(i, check.names = FALSE)
-names(sgrna_summ) <- analysis_prefix
-```
-
-
-Run MAGeCKFlute
-```{r run-mageck-flute, eval = FALSE}
-# library(doParallel)
-# registerDoParallel(3)
-
-# foreach(i=names(comp_list)) %dopar% {
-foreach(i=names(comp_list)) %do% {
-  FluteRRA(
-    gene_summ[[i]], 
-    sgrna_summ[[i]], 
-    proj=i, 
-    organism="mmu", 
-    outdir = file.path(params$data_dir, params$mageck_dir)
-  )
-}
-
-stopImplicitCluster()
-```
-
-Load MAGeCKFlute
-```{r load-mageck-flute, eval = FALSE}
-mageck_flute <- foreach(i=names(comp_list)) %do% {
-  use_path <- file.path(params$data_dir, params$mageck_dir,  paste0('MAGeCKFlute_', i),'RRA')
-  lf <- list.files(use_path, pattern = '.txt', full.names = TRUE) %>% 
-    grep('processed_data|omit_essential', ., value = TRUE, invert = TRUE)
-  res <- foreach(j = lf) %do% {
-    read.delim(j, check.names = FALSE)  
-  }
-  names(res) <- basename(lf) %>% gsub('.txt', '', .)
-  res
-}
-names(mageck_flute) <- names(comp_list)
-
-mageck_flute_comb <- foreach(i=names(mageck_flute)) %do% {
-  x <- mageck_flute[[i]]
-  neg_db <- rbind(
-    x$Negative_complex %>% mutate(gset = 'complex'),
-    x$Negative_gobp %>% mutate(gset = 'gobp'),
-    x$Negative_kegg %>% mutate(gset = 'kegg'),
-    x$Negative_reactome %>% mutate(gset = 'reactome')
-  )
-  pos_db <- rbind(
-    x$Positive_complex %>% mutate(gset = 'complex'),
-    x$Positive_gobp %>% mutate(gset = 'gobp'),
-    x$Positive_kegg %>% mutate(gset = 'kegg'),
-    x$Positive_reactome %>% mutate(gset = 'reactome')
-  )
-  list(
-    negative = neg_db,
-    positive = pos_db
-  )
-}
-names(mageck_flute_comb) <- names(mageck_flute)
+            ))
 
 ```
 
+#### Boxplot
+```{r test-dist-additional-detected-boxplot, fig.width=2, fig.asp = 1.5}
+comp_name <-  names(comp_list)[1]
 
+# res_plot <- foreach(comp_name = names(comp_list)) %do% {
+#   use_comps <-  comp_list[[comp_name]]
+#   use_colData %>% 
+#     mutate(
+#       group = ifelse(sample_alias %in% use_comps[[1]], names(use_comps)[1], NA),
+#       group = ifelse(sample_alias %in% use_comps[[2]], names(use_comps)[2], group),
+#       group = factor(group, levels = names(use_comps)[1:2])
+#     ) %>% 
+#     filter(!is.na(group)) %>% 
+#     ggplot(aes(group, guides_over_30, color = group)) +
+#       geom_boxplot(outlier.shape = NA) + 
+#       geom_beeswarm() +
+#       scale_y_continuous(expand = expansion(0.1)) +
+#       # scale_color_brewer(type = 'qual', palette = 'Paired') +
+#     scale_color_manual(values = group_color_palette) +
+#       theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+#       stat_compare_means(comparisons = list(names(use_comps)[1:2]), method = 'wilcox.test', size = geom_text_size) +
+#       labs(
+#         x = ''
+#       ) +
+#       guides(
+#         color = 'none'
+#       )
+# }
+# names(res_plot) <- names(comp_list)
+# plot_grid(plotlist = res_plot, labels =  names(comp_list), align = 'hv')
 
-## Download MAGeCK results
-```{r write-mageck-conf}
-# File name gene summary
-rmd_file <- current_input()
-if(is.null(rmd_file))
-  rmd_file <- 'tmp'
-gene_file_xlsx <- file.path('./docs/file',rmd_file, 'mageck_gene_summary.xlsx')
-sgrna_file_xlsx <- file.path('./docs/file',rmd_file, 'mageck_sgrna_summary.xlsx')
-```
-
-```{r write-mageck-results, eval = TRUE}
-for(i in names(comp_list)) {
-  file_xlsx <- file.path('./docs/file',rmd_file, paste0(i, '_mageck_results.xlsx'))
-  dir.create(dirname(file_xlsx), recursive = TRUE, showWarnings = FALSE)
-  # Generate workbook
-  wb <- createWorkbook()
-  wsn <- 'gene_summ'
-  addWorksheet(wb, wsn)
-  writeData(wb, wsn, gene_summ[[i]])
-  wsn <- 'sgrna_summ'
-  addWorksheet(wb, wsn)
-  # writeData(wb, wsn, sgrna_summ[[i]])
-  # for(wsn in names(mageck_flute[[i]])) {
-  #   addWorksheet(wb, wsn)
-  #   writeData(wb, wsn, mageck_flute[[i]][[wsn]])
-  # }
-  saveWorkbook(wb, file_xlsx, TRUE)
-}
-```
-
-```{r write-mageck-summ--results, eval = TRUE}
-# File name gene summary
-file_xlsx <- gene_file_xlsx
-dir.create(dirname(file_xlsx), recursive = TRUE, showWarnings = FALSE)
-
-# Generate workbook
-wb <- createWorkbook()
-for(i in names(gene_summ)) {
-  addWorksheet(wb, i)
-  writeData(wb, i, gene_summ[[i]])
-}
-saveWorkbook(wb, file_xlsx, TRUE)
-
-# File name sgRNA summary
-file_xlsx <- sgrna_file_xlsx
-dir.create(dirname(file_xlsx), recursive = TRUE, showWarnings = FALSE)
-
-# Generate workbook
-wb <- createWorkbook()
-for(i in names(sgrna_summ)) {
-  addWorksheet(wb, i)
-  writeData(wb, i, sgrna_summ[[i]])
-}
-saveWorkbook(wb, file_xlsx, TRUE)
-```
-
-### Overall summaries
-The tables of results can be downloaded using the following links:
-
-- [**Gene summary results**](`r gsub("docs/", "" , gene_file_xlsx)`)
-
-- [**sgRNA summary results**](`r gsub("docs/", "" , sgrna_file_xlsx)`)
-
-For file format description, visit [MAGeCK output](https://sourceforge.net/p/mageck/wiki/output/)
-
-### Results by comparison
-Download the results by comparison, including gene-set analysis level:
-```{r links-to-results}
-x <- foreach(i=names(comp_list), .combine = c) %do% {
-  file_xlsx <- file.path('./file', rmd_file, paste0(i, '_mageck_results.xlsx'))
-  paste0("[", i, "](", file_xlsx,")", sep = "")
-}
-cat(paste(x, collapse = ' - '), "\n\n")
-```
-
-## Summary of results
-```{r summary-selection}
-res <- foreach(i = names(gene_summ), .combine = rbind) %do% {
-  n_neg <- gene_summ[[i]] %>% filter(`neg|fdr` <= 0.05) %>% nrow
-  n_pos <- gene_summ[[i]] %>% filter(`pos|fdr` <= 0.05) %>% nrow
-  # n_gs_neg <- mageck_flute_comb[[i]]$negative %>% filter(p.adjust <= 0.05) %>% nrow
-  data.frame(
-    negative_genes = gene_summ[[i]] %>% filter(`neg|fdr` <= 0.05) %>% nrow,
-    positive_genes = gene_summ[[i]] %>% filter(`pos|fdr` <= 0.05) %>% nrow,
-    negative_sgrna = sgrna_summ[[i]] %>% filter(FDR <= 0.05 & LFC < 0) %>% nrow,
-    positive_sgrna = sgrna_summ[[i]] %>% filter(FDR <= 0.05 & LFC > 0) %>% nrow
-    # negative_pathways =  mageck_flute_comb[[i]]$negative %>% filter(p.adjust <= 0.05) %>% nrow,
-    # positive_pathways =  mageck_flute_comb[[i]]$positive %>% filter(p.adjust <= 0.05) %>% nrow
-    )
-}  %>% 
-  mutate(comparison = names(gene_summ)) %>% 
-  dplyr::select(comparison, everything())
-
-res %>% 
-  kable(caption = paste('Summary of positive and negative selected genes and pathways with a FDR <= 0.05'), 
-        booktabs = TRUE, row.names = FALSE) %>%
-  kable_styling(full_width = F, bootstrap_options = c("striped", "hover"), font_size = 12)
-```
-
-## Visualization of selection results
-
-### Volcano plots
-```{r volcano-plots, fig.width=10.5}
-plots_res <- foreach(i = gene_summ) %do% {
-  x <- i %>%  ReadRRA(score = 'lfc') %>% dplyr::rename(LFC = Score)
-  plot.volcano(
-    x$LFC,
-    x$FDR,
-    label = x$id,
-    x.lab = expression(paste("lo", g[2],"(Fold change)")), 
-    y.lab = expression(paste("-lo", g[10],"(FDR)")), 
-    point.alpha = 0.6, 
-    hline.type = 3
-  )
-}
-
-plot_grid(plotlist = plots_res, labels =  names(gene_summ))
-```
-
-
-### Rank plots
-In the plots below the genes were ranked using log2 Fold-Change.
-```{r rank-plots, fig.width=16.5}
-plots_res <- foreach(i = gene_summ) %do% {
-  x <- i %>%  ReadRRA(score = 'lfc') %>% dplyr::rename(LFC = Score)
-  gene_list <-  x$LFC %>% set_names( x$id) %>% na.omit
-  RankView(gene_list, top = 5, bottom = 5)
-}
-
-plot_grid(plotlist = plots_res, labels =  names(gene_summ))
-```
-
-
-
-
-
-## Selected genes
-
-```{r selected-genes-conf}
-gene_info <- readxl::read_xlsx('./data/resources/gene_list_for_figure_5c.xlsx')
-
-genes_to_remove <- c('Ccl24', 'Jag1', 'Fgfr4', 'Amh', 'Pten')
-gene_info %<>% filter(!id %in% genes_to_remove)
-
-use_colors <- c(
-  `Immune system cytokines and chemokines` = 'grey',
-  `Immune system cytokines\nand chemokines` = 'grey',
-  
-  `Interferone, TNF and danger/death-inducing signals` = 'black',
-  `Interferon, TNF\nand danger/death-inducing\nsignals` = 'black',
-  `Interferon, TNF and\ndanger/death-inducing\nsignals` = 'black',
-  
-  `TGF-β family related` = 'red',
-  
-  `RTK signaling` = 'blue',
-  `Positive controls` = 'black'
-)
-
-use_fill <- c(
-  `Immune system cytokines and chemokines` = 'grey',
-  `Immune system cytokines\nand chemokines` = 'grey',
-  
-  `Interferone, TNF and danger/death-inducing signals` = 'black',
-  `Interferon, TNF\nand danger/death-inducing\nsignals` = 'black',
-  `Interferon, TNF and\ndanger/death-inducing\nsignals` = 'black',
-  `TGF-β family related` = 'red',
-  
-  `RTK signaling` = 'blue',
-  `Positive controls` = 'white'
-)
-
-use_shape <- c(
-  `Immune system cytokines and chemokines` = 16,
-  `Immune system cytokines\nand chemokines` = 16,
-  
-  `Interferone, TNF and danger/death-inducing signals` = 16,
-  `Interferon, TNF\nand danger/death-inducing\nsignals` = 16,
-  `Interferon, TNF and\ndanger/death-inducing\nsignals` = 16,
-  `TGF-β family related` = 16,
-  
-  `RTK signaling` = 16,
-  `Positive controls` = 1
-)
-
-# grouped comparisons
-grouped_comparisons <- list(
-  `Immunogen-loaded conditions` = c('ZI', 'ZL', 'ZP'),
-  StealTHY = c('C', 'F', 'I', 'L'),
-  `Immunodeficient conditions` = c('ZQ', 'ZK', 'O', 'R', 'U', 'V'),
-  Others = c('J', 'W', 'X', 'Y')
-)
-
-# combined comparisons
-combined_comparisons <- list(
-  `C, F and I` = c('C', 'F', 'I'),
-  `O, R and U` = c('O', 'R', 'U')
-)
-
-# paired comparisons
-paired_comparisons <- list(
-  `StealTHY_all models` = c('L', 'ZQ'),
-  `Cas9_BROAD` = c('ZI', 'ZK'),
-  `4T1` = c('C', 'O'),
-  `MVT1` = c('F', 'R'),
-  `Py2T` = c('I', 'U')
-)
-
-
-
-# comparisons to invert FC: In these old comparisons we did initially, we have inverted the terms (lungs and tumors) with respect to the analysis we did later.  As a result, hits such as Amhr2 appear as upregulated and hits such as Tgfbr2 appear as downregulated. For this reason, all fold changes in the asterisk labeled analysis need to be inverted, so to represent these comparisons similarly to all the others
-invert_fc_comparions <- c('C', 'F', 'I', 'L', 'O', 'R', 'U', 'V')
-
-
-# get gene order based on Comparison L
-gene_levels <- gene_summ[['L']] %>%
-  ReadRRA(score = 'lfc') %>%
-  dplyr::rename(LFC = Score) %>%
-  left_join(gene_info, by = c('id' = 'id')) %>%
-  filter(!is.na(gene_set)) %>%
-  mutate(gene_name = fct_reorder(gene_name, LFC, .desc = TRUE)) %>%
-  pull(gene_name) %>%
-  levels
-```
-
-### Dotplot By condition
-Dotplot of selected genes and signatures by Massimo for Fig. 5C
-```{r dotplot-selected-genes, fig.width=2.37, fig.asp=2.2}
-use_comp <- c("L", "ZI", "ZP", "ZQ","ZK","ZG","J","C","F","I","O","R","U")
-
-# FDR limits
-xfdr <- foreach(i=gene_summ[use_comp], .combine = rbind) %do% {
-  i %>% 
-    ReadRRA(score = 'lfc') %>% 
-    dplyr::rename(LFC = Score) %>% 
-    left_join(gene_info, by = c('id' = 'id')) %>% 
-    filter(!is.na(gene_set)) %>% 
-    pull(FDR) %>% 
-    min
-}
-maxFDR <- -log10(xfdr[,1]) %>% max
- 
-# Set logFC range for all plots
-xlfc <- foreach(i=gene_summ[use_comp], .combine = rbind) %do% {
-  i %>% 
-    ReadRRA(score = 'lfc') %>% 
-    dplyr::rename(LFC = Score) %>% 
-    left_join(gene_info, by = c('id' = 'id')) %>% 
-    filter(!is.na(gene_set)) %>% 
-    pull(LFC) %>% 
-    abs %>% max
-}
-maxLFC <- max(xlfc[,1])
-
-# Set LFC (x-axis) for comparable plots to "L": ZQ , O, R
-L_comp <- c("L", "ZQ", "C", "O", "R")
-xlfc <- foreach(i=gene_summ[L_comp], .combine = rbind) %do% {
-  i %>% 
-    ReadRRA(score = 'lfc') %>% 
-    dplyr::rename(LFC = Score) %>% 
-    left_join(gene_info, by = c('id' = 'id')) %>% 
-    filter(!is.na(gene_set)) %>% 
-    pull(LFC) %>% 
-    abs %>% max
-}
-L_maxLFC <- max(xlfc[,1])
-L_xlim <- c(-L_maxLFC, L_maxLFC)
-L_breaks <- c(-2.5, -1, 0, 1, 2.5)
-L_labels <- c('-2.5', '-1', '0', '1', '2.5')
-
-# Set LFC (x-axis) for comparable plots to "ZI": ZK, ZP
-ZI_comp <- c("ZI", "ZK", "ZP")
-xlfc <- foreach(i=gene_summ[ZI_comp], .combine = rbind) %do% {
-  i %>% 
-    ReadRRA(score = 'lfc') %>% 
-    dplyr::rename(LFC = Score) %>% 
-    left_join(gene_info, by = c('id' = 'id')) %>% 
-    filter(!is.na(gene_set)) %>% 
-    pull(LFC) %>% 
-    abs %>% max
-}
-ZI_maxLFC <- max(xlfc[,1])
-ZI_xlim <- c(-ZI_maxLFC, ZI_maxLFC)
-ZI_breaks <- c(-5, -2.5, 0, 2.5, 5)
-ZI_labels <- c('-5', '-2.5', '0', '2.5', '5')
-
-i <- use_comp[1]
-for(i in use_comp) {
-  cat("####", i, "\n\n")
-  
-  x <- gene_summ[[i]] %>% 
-    ReadRRA(score = 'lfc') %>% 
-    dplyr::rename(LFC = Score) %>% 
-    left_join(gene_info, by = c('id' = 'id')) %>% 
-    filter(!is.na(gene_set))
-  
-  # Reverse LFC?
-  if(i %in% invert_fc_comparions)
-    x$LFC <- -1*x$LFC
-  
-  x <- x %>% 
+for(comp_name in names(comp_list)) {
+  cat("#####", comp_name, "\n\n")
+  use_comps <-  comp_list[[comp_name]]
+  res <- use_colData %>% 
     mutate(
-      gene_name = factor(gene_name, levels = gene_levels),
-      gene_set = ifelse(
-        gene_set == 'Immune system cytokines and chemokines',
-        'Immune system cytokines\nand chemokines',
-        gene_set
-      ),
-      gene_set = ifelse(
-        gene_set == 'Interferone, TNF and danger/death-inducing signals',
-        'Interferon, TNF and\ndanger/death-inducing\nsignals',
-        gene_set
-      ),
-      gene_set = factor(gene_set, names(use_colors))
-      )
-
-                                                
-  xlim <- c(-ceiling(max(abs(x$LFC), na.rm = TRUE)), 
-            ceiling(max(abs(x$LFC), na.rm = TRUE)))
-  size_breaks <- c(0, 0.25, 0.5, 1, 2, ceiling(maxFDR))
-  res <- x %>% 
-    ggplot(aes(LFC, gene_name, color = gene_set, size = -log10(FDR))) +
-    geom_point(aes(shape = gene_set)) +
-    geom_vline(xintercept = 0, linetype = 3) +
-    scale_y_discrete(expand = expansion(add = c(1, 1))) + # add fixed units around each facet to avoid lines over points
-    # scale_x_continuous(
-    #   expand = expansion(add = c(1, 1))
-    #   ) + # add fixed units around each facet to avoid lines over points
-    scale_color_manual(values = use_colors) +
-    scale_size(range = c(0.5, 2.5), 
-               limits = c(0, ceiling(maxFDR)), 
-               breaks = size_breaks,
-               labels = size_breaks %>% as.character # remove trailing 0 from decimals
-               ) +
-    scale_shape_manual(values = use_shape) +
-    # xlim(xlim) +
-    facet_grid(rows = vars(gene_set), scales = 'free_y', space = 'free_y') +
-    theme_facet +
-    theme(
-      # axis.line = element_line(linewidth = one_pt/2, color = 'black'),
-      axis.ticks = element_line(linewidth = one_pt/2, color = 'black'),
-      panel.border = element_rect(linewidth = one_pt/2, color = 'black'),
-      axis.text = element_text(size=8), 
-      axis.title = element_text(size = 8),
-      legend.title = element_text(size=8),
-      legend.text = element_text(size=8),
-      strip.text = element_text(size = 4)
-    ) +
-    labs(
-      x = expression(paste("lo", g[2],"(Fold change)")),
-      y = NULL,
-      size = expression(paste("-lo", g[10],"(FDR)"))
-    ) +
-    guides(color = 'none', shape = 'none')
-  
-  if(i %in% L_comp)
-    res <- res +
-      scale_x_continuous(
-        expand = expansion(add = c(1, 1)), 
-        limits = L_xlim,
-        breaks = L_breaks,
-        labels = L_labels
-      )
-  if(i %in% ZI_comp)
-    res <- res +
-      scale_x_continuous(
-        expand = expansion(add = c(1, 1)), 
-        limits = ZI_xlim,
-        breaks = ZI_breaks,
-        labels = ZI_labels
-      )
-  if(!i %in% c(L_comp, ZI_comp))
-    res <- res +
-      scale_x_continuous(
-        expand = expansion(add = c(1, 1)), 
-        limits = xlim
-      )
-  
-    print(res)
-  cat("\n\n")
-}
-```
-
-### Dotplot By condition (bigger dots)
-Dotplot of selected genes and signatures by Massimo for Fig. 5C
-```{r dotplot-resized-points-selected-genes, fig.width=2.37, fig.asp=2.2}
-use_comp <- c("L", "ZI", "ZP", "ZQ","ZK","ZG","J","C","F","I","O","R","U")
-
-# FDR limits
-xfdr <- foreach(i=gene_summ[use_comp], .combine = rbind) %do% {
-  i %>% 
-    ReadRRA(score = 'lfc') %>% 
-    dplyr::rename(LFC = Score) %>% 
-    left_join(gene_info, by = c('id' = 'id')) %>% 
-    filter(!is.na(gene_set)) %>% 
-    pull(FDR) %>% 
-    min
-}
-maxFDR <- -log10(xfdr[,1]) %>% max
- 
-# Set logFC range for all plots
-xlfc <- foreach(i=gene_summ[use_comp], .combine = rbind) %do% {
-  i %>% 
-    ReadRRA(score = 'lfc') %>% 
-    dplyr::rename(LFC = Score) %>% 
-    left_join(gene_info, by = c('id' = 'id')) %>% 
-    filter(!is.na(gene_set)) %>% 
-    pull(LFC) %>% 
-    abs %>% max
-}
-maxLFC <- max(xlfc[,1])
-
-# Set LFC (x-axis) for comparable plots to "L": ZQ , O, R
-L_comp <- c("L", "ZQ", "C", "O", "R")
-xlfc <- foreach(i=gene_summ[L_comp], .combine = rbind) %do% {
-  i %>% 
-    ReadRRA(score = 'lfc') %>% 
-    dplyr::rename(LFC = Score) %>% 
-    left_join(gene_info, by = c('id' = 'id')) %>% 
-    filter(!is.na(gene_set)) %>% 
-    pull(LFC) %>% 
-    abs %>% max
-}
-L_maxLFC <- max(xlfc[,1])
-L_xlim <- c(-L_maxLFC, L_maxLFC)
-L_breaks <- c(-2.5, -1, 0, 1, 2.5)
-L_labels <- c('-2.5', '-1', '0', '1', '2.5')
-
-# Set LFC (x-axis) for comparable plots to "ZI": ZK, ZP
-ZI_comp <- c("ZI", "ZK", "ZP")
-xlfc <- foreach(i=gene_summ[ZI_comp], .combine = rbind) %do% {
-  i %>% 
-    ReadRRA(score = 'lfc') %>% 
-    dplyr::rename(LFC = Score) %>% 
-    left_join(gene_info, by = c('id' = 'id')) %>% 
-    filter(!is.na(gene_set)) %>% 
-    pull(LFC) %>% 
-    abs %>% max
-}
-ZI_maxLFC <- max(xlfc[,1])
-ZI_xlim <- c(-ZI_maxLFC, ZI_maxLFC)
-ZI_breaks <- c(-5, -2.5, 0, 2.5, 5)
-ZI_labels <- c('-5', '-2.5', '0', '2.5', '5')
-
-i <- use_comp[1]
-for(i in use_comp) {
-  cat("####", i, "\n\n")
-  
-  x <- gene_summ[[i]] %>% 
-    ReadRRA(score = 'lfc') %>% 
-    dplyr::rename(LFC = Score) %>% 
-    left_join(gene_info, by = c('id' = 'id')) %>% 
-    filter(!is.na(gene_set))
-  
-  # Reverse LFC?
-  if(i %in% invert_fc_comparions)
-    x$LFC <- -1*x$LFC
-  
-  x <- x %>% 
-    mutate(
-      gene_name = factor(gene_name, levels = gene_levels),
-      gene_set = ifelse(
-        gene_set == 'Immune system cytokines and chemokines',
-        'Immune system cytokines\nand chemokines',
-        gene_set
-      ),
-      gene_set = ifelse(
-        gene_set == 'Interferone, TNF and danger/death-inducing signals',
-        'Interferon, TNF and\ndanger/death-inducing\nsignals',
-        gene_set
-      ),
-      gene_set = factor(gene_set, names(use_colors))
-      )
-
-                                                
-  xlim <- c(-ceiling(max(abs(x$LFC), na.rm = TRUE)), 
-            ceiling(max(abs(x$LFC), na.rm = TRUE)))
-  size_breaks <- c(0, 0.25, 0.5, 1, 2, ceiling(maxFDR))
-  res <- x %>% 
-    ggplot(aes(LFC, gene_name, color = gene_set, size = -log10(FDR))) +
-    geom_point(aes(shape = gene_set)) +
-    geom_vline(xintercept = 0, linetype = 3) +
-    scale_y_discrete(expand = expansion(add = c(1, 1))) + # add fixed units around each facet to avoid lines over points
-    # scale_x_continuous(
-    #   expand = expansion(add = c(1, 1))
-    #   ) + # add fixed units around each facet to avoid lines over points
-    scale_color_manual(values = use_colors) +
-    scale_size(range = c(2, 4), 
-               limits = c(0, ceiling(maxFDR)), 
-               breaks = size_breaks,
-               labels = size_breaks %>% as.character # remove trailing 0 from decimals
-               ) +
-    scale_shape_manual(values = use_shape) +
-    # xlim(xlim) +
-    facet_grid(rows = vars(gene_set), scales = 'free_y', space = 'free_y') +
-    theme_facet +
-    theme(
-      # axis.line = element_line(linewidth = one_pt/2, color = 'black'),
-      axis.ticks = element_line(linewidth = one_pt/2, color = 'black'),
-      panel.border = element_rect(linewidth = one_pt/2, color = 'black'),
-      axis.text = element_text(size=8), 
-      axis.title = element_text(size = 8),
-      legend.title = element_text(size=8),
-      legend.text = element_text(size=8),
-      strip.text = element_text(size = 4)
-    ) +
-    labs(
-      x = expression(paste("lo", g[2],"(Fold change)")),
-      y = NULL,
-      size = expression(paste("-lo", g[10],"(FDR)"))
-    ) +
-    guides(color = 'none', shape = 'none')
-  
-  if(i %in% L_comp)
-    res <- res +
-      scale_x_continuous(
-        expand = expansion(add = c(1, 1)), 
-        limits = L_xlim,
-        breaks = L_breaks,
-        labels = L_labels
-      )
-  if(i %in% ZI_comp)
-    res <- res +
-      scale_x_continuous(
-        expand = expansion(add = c(1, 1)), 
-        limits = ZI_xlim,
-        breaks = ZI_breaks,
-        labels = ZI_labels
-      )
-  if(!i %in% c(L_comp, ZI_comp))
-    res <- res +
-      scale_x_continuous(
-        expand = expansion(add = c(1, 1)), 
-        limits = xlim
-      )
-  
-    print(res)
-  cat("\n\n")
-}
-```
-
-
-### Dotplot Combined condition
-Dotplot of selected genes and signatures by Massimo for Fig. 5C. Below we have a single plot for each group of comparisons
-```{r dotplot-selected-genes-combined_conditions, fig.width=2.37, fig.asp=2.2}
-gn <- names(combined_comparisons)[2]
-
-use_comp <- unlist(combined_comparisons) %>% unique()
-# FDR limits
-xfdr <- foreach(i=gene_summ[use_comp], .combine = rbind) %do% {
-  i %>% 
-    ReadRRA(score = 'lfc') %>% 
-    dplyr::rename(LFC = Score) %>% 
-    left_join(gene_info, by = c('id' = 'id')) %>% 
-    filter(!is.na(gene_set)) %>% 
-    pull(FDR) %>% 
-    min
-}
-maxFDR <- -log10(xfdr[,1]) %>% max
-  
-
-# Set logFC range for all plots
-xlfc <- foreach(i=gene_summ[use_comp], .combine = rbind) %do% {
-  i %>% 
-    ReadRRA(score = 'lfc') %>% 
-    dplyr::rename(LFC = Score) %>% 
-    left_join(gene_info, by = c('id' = 'id')) %>% 
-    filter(!is.na(gene_set)) %>% 
-    pull(LFC) %>% 
-    abs %>% max
-}
-maxLFC <- max(xlfc[,1])
-xlim <- c(
-  -ceiling(maxLFC), 
-  ceiling(maxLFC)
-  )
-  
-
-for(gn in names(combined_comparisons)) {
-  cat("####", gn, "\n\n")
-  use_comparisons <- combined_comparisons[[gn]]
-  
-  plot_data <- foreach(i=use_comparisons, .combine = rbind) %do% {
-    x <-  gene_summ[[i]] %>% 
-      ReadRRA(score = 'lfc') %>% 
-      dplyr::rename(LFC = Score)
-    
-    # Reverse LFC?
-    if(i %in% invert_fc_comparions)
-      x$LFC <- -1*x$LFC
-    
-    x %>% 
-      mutate(
-        direction = ifelse(FDR <= 0.10 & LFC > 0, 'up', 'none'),
-        direction = ifelse(FDR <= 0.10 & LFC < 0, 'down', direction),
-        is.significant = FDR <= 0.10,
-        comparison = i
-      ) %>% 
-      left_join(gene_info, by = c('id' = 'id')) %>% 
-      filter(!is.na(gene_set)) %>% 
-      mutate(
-        # gene_name = factor(gene_name, levels = gene_levels),
-        gene_set = ifelse(
-          gene_set == 'Immune system cytokines and chemokines',
-          'Immune system cytokines\nand chemokines',
-          gene_set
-        ),
-        gene_set = ifelse(
-          gene_set == 'Interferone, TNF and danger/death-inducing signals',
-          'Interferon, TNF and\ndanger/death-inducing\nsignals',
-          gene_set
-        ),
-        gene_set = factor(gene_set, names(use_colors))
-        )
-  }
-  
-  plot_data$gene_name <- factor(plot_data$gene_name, levels = gene_levels)
-  
-  size_breaks <- c(0, 0.25, 0.5, 1, ceiling(maxFDR))
-  
-  # Set shapes by comparison and gene set
-  plot_data <- plot_data %>% 
-    mutate(
-      shape_var = ifelse(gene_set == 'Positive controls',
-                         paste0(comparison, '+'), 
-                         comparison)
-    )
-  shape_levels <- plot_data$shape_var %>% unique()
-  use_shapes_plot <- ifelse(grepl(paste0("^", use_comparisons[1]) , shape_levels), 16, NA)
-  use_shapes_plot <- ifelse(grepl(paste0("^", use_comparisons[2]) , shape_levels), 17, use_shapes_plot)
-  use_shapes_plot <- ifelse(grepl(paste0("^", use_comparisons[3]) , shape_levels), 15, use_shapes_plot)
-  use_shapes_plot <- ifelse(grepl(paste0("^", use_comparisons[1], "\\+") , shape_levels), 
-                            1, use_shapes_plot)
-  use_shapes_plot <- ifelse(grepl(paste0("^", use_comparisons[2], "\\+") , shape_levels), 
-                            2, use_shapes_plot)
-  use_shapes_plot <- ifelse(grepl(paste0("^", use_comparisons[3], "\\+") , shape_levels), 
-                            0, use_shapes_plot)
-  names(use_shapes_plot) <- shape_levels
-  
-  res <- plot_data %>% 
-    ggplot(aes(LFC, gene_name, color = gene_set, size = -log10(FDR))) +
-    geom_point(aes(shape = shape_var), alpha = 0.6) +
-    geom_vline(xintercept = 0, linetype = 3) +
-    scale_y_discrete(expand = expansion(add = c(1, 1))) + # add fixed units around each facet to avoid lines over points
-    scale_x_continuous(
-      expand = expansion(add = c(1, 1)),  # add fixed units around each facet to avoid lines over points
-      limits = xlim
-      ) +
-    scale_color_manual(values = use_colors) +
-    scale_size(range = c(0.5, 2.5), 
-               limits = c(0, ceiling(maxFDR)), 
-               breaks = size_breaks,
-               labels = size_breaks %>% as.character # remove trailing 0 from decimals
-               ) +
-    scale_shape_manual(values = use_shapes_plot) +
-    facet_grid(rows = vars(gene_set), scales = 'free_y', space = 'free_y') +
-    theme_facet +
-    theme(
-      # axis.line = element_line(linewidth = one_pt/2, color = 'black'),
-      axis.ticks = element_line(linewidth = one_pt/2, color = 'black'),
-      panel.border = element_rect(linewidth = one_pt/2, color = 'black'),
-      axis.text = element_text(size=8), 
-      axis.title = element_text(size = 8),
-      legend.title = element_text(size=8),
-      legend.text = element_text(size=8),
-      strip.text = element_text(size = 4)
-    ) +
-    labs(
-      x = expression(paste("lo", g[2],"(Fold change)")),
-      y = NULL,
-      size = expression(paste("-lo", g[10],"(FDR)"))
-    ) +
-    guides(color = 'none')
-  print(res)
-  cat("\n\n")
-  
-}
-```
-
-### Dotplot All conditions
-Dotplot of selected genes and signatures by Massimo for Fig. 5C. Below we have a single plot for each group of comparisons
-```{r dotplot-selected-genes-allconditions, fig.asp=1.38, fig.width = 2.8}
-gn <- names(grouped_comparisons)[2]
-for(gn in names(grouped_comparisons)) {
-  cat("####", gn, "\n\n")
-  use_comparisons <- grouped_comparisons[[gn]]
-  plot_data <- foreach(i=use_comparisons, .combine = rbind) %do% {
-    x <-  gene_summ[[i]] %>% 
-      ReadRRA(score = 'lfc') %>% 
-      dplyr::rename(LFC = Score)
-    
-    # Reverse LFC?
-    if(i %in% invert_fc_comparions)
-      x$LFC <- -1*x$LFC
-    
-    x %>% 
-      mutate(
-        direction = ifelse(FDR <= 0.10 & LFC > 0, 'up', 'none'),
-        direction = ifelse(FDR <= 0.10 & LFC < 0, 'down', direction),
-        is.significant = FDR <= 0.10,
-        comparison = i
-      ) %>% 
-      left_join(gene_info, by = c('id' = 'id')) %>% 
-      filter(!is.na(gene_set)) %>% 
-      mutate(
-        # gene_name = factor(gene_name, levels = gene_levels),
-        gene_set = ifelse(
-          gene_set == 'Immune system cytokines and chemokines',
-          'Immune system cytokines\nand chemokines',
-          gene_set
-        ),
-        gene_set = ifelse(
-          gene_set == 'Interferone, TNF and danger/death-inducing signals',
-          'Interferon, TNF\nand danger/death-inducing\nsignals',
-          gene_set
-        ),
-        gene_set = factor(gene_set, names(use_colors))
-        )
-  }
-  
-  # # Set gene order by the average LFC
-  # gene_levels <- plot_data %>% group_by(id) %>% 
-  #   dplyr::summarize(LFC = mean(LFC, na.rm = TRUE)) %>% 
-  #   arrange(desc(LFC)) %>% 
-  #   pull(id)
-  plot_data$id <- factor(plot_data$id, levels = gene_levels)
-  # Plot
-  xlim <- c(-max(abs(plot_data$LFC), na.rm = TRUE), max(abs(plot_data$LFC), na.rm = TRUE))
-  res_plot <- plot_data %>% 
-    ggplot(aes(LFC, gene_name, color = gene_set, size = -log10(FDR))) +
-      geom_point(aes(shape = comparison)) +
-      geom_vline(xintercept = 0, linetype = 3) +
-      scale_y_discrete(expand = expansion(add = c(1, 1))) + # add fixed units around each facet to avoid lines over points
-      scale_color_manual(values = use_colors) +
-      scale_size(range = c(0.5, 2.5), limits = c(0, 4)) +
-      # scale_shape_manual(values = c(16, 17)) +
-      xlim(xlim) +
-      facet_grid(rows = vars(gene_set), scales = 'free_y', space = 'free_y') +
-      theme_facet +
-      theme(
-        axis.text = element_text(size = 5),
-        strip.text = element_text(size = 3)
-      ) +
-      labs(
-        x = expression(paste("lo", g[2],"(Fold change)")),
-        y = NULL,
-        size = expression(paste("-lo", g[10],"(FDR)"))
-      ) #+
-      # guides(color = 'none', shape = 'none')
-  print(res_plot)
-  cat("\n\n")
-}
-
-```
-
-
-### Split violin plot
-```{r violinplot-selected-genes-ic-vs-id, fig.width=3.555, fig.asp=1.4}
-i <- names(gene_summ)[1]
-
-plot_data <- foreach(i=names(gene_summ), .combine = rbind) %do% {
-  xsg <- sgrna_summ[[i]] %>% 
-     select(Gene, sgrna, LFC, FDR) %>% 
-     dplyr::rename(sgLFC = LFC, sgFDR = FDR)
-
-  x <- gene_summ[[i]] %>% 
-    ReadRRA(score = 'lfc') %>% 
-    dplyr::rename(LFC = Score) %>% 
-    mutate(
-      direction = ifelse(FDR <= 0.10 & LFC > 0, 'up', 'none'),
-      direction = ifelse(FDR <= 0.10 & LFC < 0, 'down', direction),
-      is.significant = FDR <= 0.10,
-      comparison = i
+      group = ifelse(sample_alias %in% use_comps[[1]], names(use_comps)[1], NA),
+      group = ifelse(sample_alias %in% use_comps[[2]], names(use_comps)[2], group),
+      group = factor(group, levels = names(use_comps)[1:2])
     ) %>% 
-    left_join(gene_info, by = c('id' = 'id')) %>% 
-    filter(!is.na(gene_set)) %>% 
-    mutate(
-      gene_name = factor(gene_name, levels = gene_levels),
-      gene_set = ifelse(
-        gene_set == 'Immune system cytokines and chemokines',
-        'Immune system cytokines\nand chemokines',
-        gene_set
-      ),
-      gene_set = ifelse(
-        gene_set == 'Interferone, TNF and danger/death-inducing signals',
-        'Interferon, TNF and\ndanger/death-inducing\nsignals',
-        gene_set
-      ),
-      gene_set = factor(gene_set, names(use_colors))
-      ) %>% 
-    left_join(xsg, by = c('id' = 'Gene'), relationship = "many-to-many")
-  # Reverse LFC?
-  if(i %in% invert_fc_comparions) {
-    x$LFC <- -1*x$LFC
-    x$sgLFC <- -1*x$sgLFC
-  }
-  return(x)
-  
-}
-
-plot_data$gene_name <- factor(plot_data$gene_name, levels = gene_levels)
-
-use_condition_colors <- c(
-  L = '#F7EC13', 
-  ZQ = '#58595B',
-  ZI = '#F7EC13', 
-  ZK = '#58595B',
-  C = '#F7EC13', 
-  O = '#58595B',
-  F = '#F7EC13', 
-  R = '#58595B',
-  I = '#F7EC13', 
-  U = '#58595B'
-  )
-
-use_xlim <- c(-ceiling(max(abs(plot_data$LFC), na.rm = TRUE)), 
-          ceiling(max(abs(plot_data$LFC), na.rm = TRUE)))
-
-for(gn in names(paired_comparisons)) {
-  cat("####", gn, "\n\n")
-  use_comparisons <- paired_comparisons[[gn]]
-  
-  res <- plot_data %>% 
-    filter(comparison %in% use_comparisons) %>% 
-    ggplot(aes(y = sgLFC, x = gene_name, fill = comparison)) +
-    geom_split_violin(
-      aes(y = sgLFC, x = gene_name, fill = factor(comparison)),
-      alpha = 0.8,
-      draw_quantiles = 0.5,
-      linewidth = one_pt/2,
-      scale = 'width'
-    ) +
-    coord_flip() +
-    geom_hline(yintercept = 0, linetype = 3,linewidth = one_pt/2) +
-    scale_x_discrete(expand = expansion(add = c(1, 1))) +
-    scale_fill_manual(values = use_condition_colors) +
-    ylim(use_xlim) +
-    facet_grid(rows = vars(gene_set), scales = 'free_y', space = 'free_y')+
-    theme_facet +
-    theme(
-      # axis.line = element_line(linewidth = one_pt/2, color = 'black'),
-      axis.ticks = element_line(linewidth = one_pt/2, color = 'black'),
-      panel.border = element_rect(linewidth = one_pt/2, color = 'black'),
-      axis.text = element_text(size=8), 
-      axis.title = element_text(size = 8),
-      legend.title = element_text(size=8),
-      legend.text = element_text(size=8),
-      strip.text = element_text(size = 4),
-      plot.title = element_text(size = 8)
-    ) +
-    labs(
-      y = expression(paste("lo", g[2],"(Fold change)")),
-      x = NULL,
-      title = gn
-    )+
-    guides(color = 'none', 
-           # fill = 'none', 
-           size = 'none')
+    filter(!is.na(group)) %>% 
+    ggplot(aes(group, guides_over_30, color = group)) +
+      geom_boxplot(outlier.shape = NA) + 
+      geom_beeswarm() +
+      scale_y_continuous(expand = expansion(0.1)) +
+      # scale_color_brewer(type = 'qual', palette = 'Paired') +
+    scale_color_manual(values = group_color_palette) +
+      theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+      stat_compare_means(comparisons = list(names(use_comps)[1:2]), method = 'wilcox.test', size = geom_text_size) +
+      labs(
+        x = '', 
+        title = comp_name
+      ) +
+      guides(
+        color = 'none'
+      )
   print(res)
   cat("\n\n")
 }
+```
+
+
+### Guide distribution
+
+#### Table
+We compared the distribution of guides abundances for each group using two-sided Kolmogorov-Smirnov (K-S) test. For each sample we ranked guides based on normalized abundance (CPM) distribution. Then the corresponding value for each rank was obtained averaging the CPM in samples from each group. 
+```{r test-dist-additional-distribution-tab}
+comp_abundance_dist %>% 
+  mutate(
+    p.value = format.pval(p.value),
+  ) %>% 
+  datatable(., 
+            rownames = FALSE, 
+            filter = 'top', 
+            caption = 'Comparison of guide distribution using two-sided Kolmogorov-Smirnov (K-S) test.',
+            extensions = 'Buttons', 
+            options = list(
+              dom = 'Blfrtip',
+              buttons = c('csv', 'excel')
+            ))
 
 ```
 
+#### Density plots
+```{r test-dist-additional-distribution-ridges_plot, fig.asp = 0.667, fig.width = 1.5625}
+for(comp_name in names(comp_list)) {
+  cat("#####", comp_name, "\n\n")
+  use_comps <-  comp_list[[comp_name]]
+  chunk_colData <- use_colData %>% 
+    mutate(
+      group = ifelse(sample_alias %in% use_comps[[1]], names(use_comps)[1], NA),
+      group = ifelse(sample_alias %in% use_comps[[2]], names(use_comps)[2], group),
+      group = factor(group, levels = names(use_comps)[1:2]),
+    ) %>% 
+    filter(!is.na(group)) 
+  use_assay <- assay(se[,chunk_colData$sample_alias], 'cpm') %>% 
+    as.data.frame(check.names = F) %>% 
+    rownames_to_column('guide') %>% 
+    pivot_longer(-guide, names_to = 'sample_alias', values_to = 'cpm') %>% 
+    left_join(chunk_colData) %>% 
+    mutate(
+      sample_alias = factor(sample_alias, levels = use_comps %>% unlist()),
+    )
+    
+  
+  res <- use_assay %>%
+    ggplot(aes(x=cpm + 1, y = sample_alias, fill = group, color = group)) +
+    geom_density_ridges(
+                        size = one_pt/4,
+                        alpha = 0.8,
+                        scale = 4,
+                        rel_min_height = 0.005 # set the `rel_min_height` argument to remove tails
+                        ) +
+    scale_fill_manual(values = group_color_palette) +
+    scale_color_manual(values = group_line_color) +
+    scale_x_log10(expand = expansion(mult = c(0, 0))) +
+    scale_y_discrete(expand = c(0.01, 0)) +
+    labs(y = '', title = comp_name) +
+    guides(fill = 'none', color = 'none') +
+    # facet_grid(rows = vars(immunogen_mmmodel), scale = 'free_y', space = 'free_y') +
+    theme_ridges(font_size = 3, grid = F) +
+    theme(
+      strip.background = element_blank(),
+      axis.line.x = element_line(linewidth = one_pt/4, color = 'black'),
+      axis.ticks.x = element_line(linewidth = one_pt/4, color = 'black'),
+      axis.text.y = element_text(size=2),
+      axis.text.x = element_text(size=8),
+      
+      plot.title = element_text(size=8)
+    ) +
+    facet_grid(rows = vars(group), scales = 'free_y', space = 'free_y')
+  
+  print(res)
+  cat("\n\n")
+}
+```
 
 ## Stop knitr
-```{r stop-knitr}
+```{r}
 knitr::knit_exit()
 ```
 
-## Comparison with the original analysis
-```{r comp-vs-original, fig.width=5.2, eval=FALSE}
-gene_summ_files <- list.files(path = file.path(params$data_dir, 'mageck_rra_default'), pattern = 'gene_summary.txt', full.names = TRUE)
-analysis_prefix <- basename(gene_summ_files) %>% gsub(".gene_summary.txt", "", .)
-gene_summ_o <- foreach(i = gene_summ_files) %do% read_tsv(i, show_col_types = FALSE)
-names(gene_summ_o) <- analysis_prefix
 
-i <- names(gene_summ)[1]
-use_data <- foreach(i = names(gene_summ), .combine = rbind) %do% {
-  x1n <- gene_summ[[i]]$`neg|fdr`
-  names(x1n) <- gene_summ[[i]]$id
-  x1p <- gene_summ[[i]]$`pos|fdr`
-  names(x1p) <- gene_summ[[i]]$id
-  x2n <- gene_summ_o[[i]]$`neg|fdr`
-  names(x2n) <- gene_summ_o[[i]]$id
-  x2p <- gene_summ_o[[i]]$`neg|fdr`
-  names(x2p) <- gene_summ_o[[i]]$id
-  x2n <- x2n[names(x1n)]
-  x2p <- x2p[names(x1p)]
-  
-  x1 <- c(x1n, x1p)
-  x2 <- c(x2n, x2p)
-  
-  data.frame(id = names(x1), fdr_o = -log10(x2), fdr = -log10(x1), comp = i)
+
+
+## Global comparisons
+Analysis 5 : Please perform unpaired comparison tests for (1) the total no. of detected sgRNAs and (2) distribution between the following global summaries 
+```{r test-dist-global-conf}
+# comp_list <- comp_list_global
+# comp_list_unlisted <- foreach(x = comp_list, .combine = c) %do% x
+# comp_list_df_double <- foreach(x = comp_list_unlisted, .combine = rbind) %do% {rbind(x, rev(x))} %>% 
+#   data.frame %>% 
+#   set_names(c('group1', 'group2'))
+# 
+# 
+# comp_list_2 <- comp_list_global_2
+# comp_list_unlisted_2 <- foreach(x = comp_list_2, .combine = c) %do% x
+# comp_list_df_double_2 <- foreach(x = comp_list_unlisted_2, .combine = rbind) %do% {rbind(x, rev(x))} %>% 
+#   data.frame %>% 
+#   set_names(c('group1', 'group2'))
+comp_list <- comp_list_global
+comp_list_unlisted <- foreach(x = comp_list, .combine = c) %do% x
+comp_list_df_double <- foreach(x = comp_list_unlisted, .combine = rbind) %do% {rbind(x, rev(x))} %>%
+  data.frame %>%
+  set_names(c('group1', 'group2'))
+
+
+use_colData <- colData(se) %>% data.frame
+
+```
+
+### Number of detected guides
+
+#### Table
+```{r test-dist-global-detected-tab}
+comp_guides_detected %>% 
+  filter(sample_type == use_sample_type) %>% 
+  mutate(
+    p = format.pval(p),
+    p.adj = format.pval(p.adj),
+  ) %>% 
+  dplyr::select(-sample_type, -p.format, -.y.) %>% 
+  inner_join(comp_list_df_double) %>% 
+  datatable(., 
+            rownames = FALSE, 
+            filter = 'top', 
+            caption = 'Comparison of guide abundance. P value by two-sided Wiloxon test',
+            extensions = 'Buttons', 
+            options = list(
+              dom = 'Blfrtip',
+              buttons = c('csv', 'excel')
+            ))
+
+```
+
+#### Boxplot
+```{r test-dist-global-detected-boxplot, fig.width=2, fig.asp = 1.5}
+comp_name <-  names(comp_list)[1]
+res_plot <- foreach(comp_name = names(comp_list)) %do% {
+  use_comps <-  comp_list[[comp_name]]
+  use_colData %>% 
+    filter(immunogen_mmmodel %in% unlist(use_comps)) %>% 
+    mutate(immunogen_mmmodel = factor(immunogen_mmmodel, levels = unlist(use_comps))) %>% 
+    ggplot(aes(immunogen_mmmodel, guides_over_30, color = immunogen_mmmodel)) +
+      geom_boxplot(outlier.shape = NA) + 
+      geom_beeswarm() +
+      scale_y_continuous(expand = expansion(0.1)) +
+      scale_color_brewer(type = 'qual', palette = 'Paired') +
+      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+      stat_compare_means(comparisons = use_comps, method = 'wilcox.test') +
+      labs(
+        x = ''
+      ) +
+      guides(
+        color = 'none'
+      )
+}
+plot_grid(plotlist = res_plot, labels =  names(comp_list), align = 'hv')
+```
+
+
+### Guide distribution
+
+#### Table
+We compared the distribution of guides abundances for each group using two-sided Kolmogorov-Smirnov (K-S) test. For each sample we ranked guides based on normalized abundance (CPM) distribution. Then the corresponding value for each rank was obtained averaging the CPM in samples from each group. 
+```{r test-dist-global-distribution-tab}
+comp_abundance_dist %>% 
+  filter(sample_type == use_sample_type) %>% 
+  mutate(
+    p.value = format.pval(p.value),
+  ) %>% 
+  dplyr::select(-sample_type) %>% 
+  inner_join(comp_list_df_double) %>% 
+  datatable(., 
+            rownames = FALSE, 
+            filter = 'top', 
+            caption = 'Comparison of guide distribution using two-sided Kolmogorov-Smirnov (K-S) test.',
+            extensions = 'Buttons', 
+            options = list(
+              dom = 'Blfrtip',
+              buttons = c('csv', 'excel')
+            ))
+
+```
+
+#### Density plot
+```{r test-dist-global-distribution-ridges_plot, fig.asp = 1, fig.width = 5.2}
+use_comps_i <- comp_list_unlisted[1]
+res_plot <- foreach(use_comps_i = comp_list_unlisted) %do% {
+    use_samples <- use_colData %>% 
+      filter(immunogen_mmmodel %in% use_comps_i) %>% 
+      pull(sample_alias)
+    use_assay <- assay(se[,use_samples], 'cpm') %>% 
+      as.data.frame(check.names = F) %>% 
+      rownames_to_column('guide') %>% 
+      pivot_longer(-guide, names_to = 'sample_alias', values_to = 'cpm') %>% 
+      left_join(use_colData)
+    use_assay %>% 
+      # mutate(sample_alias = fct_reorder(sample_alias, use_comps_i)) %>%
+      ggplot(aes(x=cpm + 1, y = sample_alias, fill = immunogen_mmmodel)) +
+      geom_density_ridges(color = 'white', quantile_lines = TRUE) +
+      scale_fill_OkabeIto(alpha = 0.8) +
+      scale_x_log10(expand = c(0, 0)) +
+      scale_y_discrete(expand = c(0, 0)) +
+      labs(y = '') +
+      guides(fill = 'none') +
+      facet_grid(rows = vars(immunogen_mmmodel), scale = 'free_y') +
+      theme_ridges()
 }
 
-use_data %>% 
-  mutate(sign = fdr_o >= -log10(0.05) | fdr >= -log10(0.05) ) %>% 
-  ggplot(aes(fdr_o, fdr, color = sign)) +
-    geom_point() +
-    geom_abline(linetype = 2) +
-    geom_hline(yintercept = -log10(0.05), linetype = 3) +
-    geom_vline(xintercept = -log10(0.05), linetype = 3) +
-  scale_color_manual(values = c('grey80', 'firebrick')) +
-    labs(
-      x = 'Original -log10(FDR)',
-      y = 'New -log10(FDR)',
-      color = 'FDR < 0.05'
-    )
 
+plot_grid(
+  plotlist = res_plot, ncol = 3, 
+  labels = paste0(rep(names(comp_list), 3) %>% sort, 1:3)
+  )
+```
+
+#### Density plot StealTHY IC vs ID
+```{r test-dist-global-distribution-ridges_plot-stealthy-ic-id, fig.asp = 0.667, fig.width = 1.5625}
+use_comps_i <- comp_list_unlisted[[1]]
+use_samples <- use_colData %>% 
+  filter(immunogen_mmmodel %in% use_comps_i) %>% 
+  pull(sample_alias)
+use_assay <- assay(se[,use_samples], 'cpm') %>% 
+  as.data.frame(check.names = F) %>% 
+  rownames_to_column('guide') %>% 
+  pivot_longer(-guide, names_to = 'sample_alias', values_to = 'cpm') %>% 
+  left_join(use_colData)
+sample_ord <- rev(c(
+  'Replacement_Sample4',
+  'C1Position_HumanPlate2',
+  'C2Position_HumanPlate2',
+  'E2Position_HumanPlate2',
+  'E1Position_HumanPlate2',
+  'G1Position_HumanPlate2',
+  'A2Position_HumanPlate2',
+  
+  'C4Position_HumanPlate2',
+  'C3Position_HumanPlate2',
+  'G3Position_HumanPlate2',
+  'E3Position_HumanPlate2',
+  'A4Position_HumanPlate2',
+  'A3Position_HumanPlate2'
+  ))
+use_assay$sample_alias <- factor(use_assay$sample_alias, 
+                                 levels = sample_ord)
+use_colors <- c(
+  StealTHY_Imm.competent = '#F7EC13', StealTHY_Imm.deficient  = '#58595B',
+  IC = '#F7EC13', ID  = '#58595B'
+  )
+use_assay %>% 
+  # filter(cpm <= 100000) %>% 
+  mutate(
+    immunogen_mmmodel = ifelse(immunogen_mmmodel == 'StealTHY_Imm.competent', 'IC', NA),
+    immunogen_mmmodel = ifelse(immunogen_mmmodel == 'StealTHY_Imm.deficient', 'ID', immunogen_mmmodel)
+    ) %>% 
+  ggplot(aes(x=cpm + 1, y = sample_alias, fill = immunogen_mmmodel, height = ..density..)) +
+  geom_density_ridges(color = 'black', 
+                      size = one_pt/4, 
+                      alpha = 0.8, 
+                      scale = 4,
+                      rel_min_height = 0.005, # set the `rel_min_height` argument to remove tails,
+                      stat = "density"
+                      ) +
+  scale_fill_manual(values = use_colors) +
+  scale_x_log10(expand = expansion(mult = c(0, 0))
+                # breaks = c(1, 10, 1000, 100000)
+                ) +
+  scale_y_discrete(expand = c(0.01, 0)) +
+  labs(y = '') +
+  guides(fill = 'none') +
+  # facet_grid(rows = vars(immunogen_mmmodel), scale = 'free_y', space = 'free_y') +
+  theme_ridges(font_size = 3, grid = F) +
+  theme(
+    strip.background = element_blank(),
+    axis.line.x = element_line(linewidth = one_pt/4, color = 'black')
+  )
+```
+
+#### Cumulative curves
+Showing only top-1000 guides. Bright lines represent the average across the same group
+```{r test-dist-global-distribution-cumsum_plot, fig.asp = 0.8}
+use_comps_i <-comp_list_unlisted[[1]]
+res_plot <- foreach(use_comps_i = comp_list_unlisted) %do% {
+    use_samples <- use_colData %>% 
+      filter(immunogen_mmmodel %in% use_comps_i) %>% 
+      pull(sample_alias)
+    use_assay <-  apply(assay(se[,use_samples], 'cpm'), 2, function(x) sort(x, decreasing = TRUE) %>% cumsum)  %>% 
+      as.data.frame(check.names = F) %>% 
+      mutate(guide = 1:nrow(se)) %>% 
+      pivot_longer(-guide, names_to = 'sample_alias', values_to = 'cumsum') %>% 
+      left_join(use_colData)
+    use_assay_average <-  use_assay %>% 
+      group_by(guide, immunogen_mmmodel) %>% 
+      summarise(cumsum = mean(cumsum))
+    
+  use_assay %>% 
+      ggplot(aes(x=guide, y = cumsum, color = immunogen_mmmodel, group = sample_alias)) +
+      geom_line(alpha = 0.3) +
+      geom_line(data =use_assay_average, aes(x=guide, y = cumsum, color = immunogen_mmmodel, group = immunogen_mmmodel), linewidth = 1.2 ) +
+      scale_fill_OkabeIto(alpha = 0.8) +
+      scale_x_continuous(expand = c(0, 0), limits = c(0,1000)) +
+      scale_y_continuous(expand = c(0, 0)) +
+      scale_color_OkabeIto() +
+      labs(
+        y = 'Cumulative sum',
+        x = 'rank',
+        color = ''
+      ) +
+      theme(legend.position = 'top')
+      # guides(color = 'none')
+      # facet_grid(rows = vars(immunogen_mmmodel), scale = 'free_y')
+}
+
+
+plot_grid(
+  plotlist = res_plot, 
+  labels = names(comp_list)
+  )
 ```
 
 

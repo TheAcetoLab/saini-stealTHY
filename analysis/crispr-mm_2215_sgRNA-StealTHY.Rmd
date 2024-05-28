@@ -13,11 +13,6 @@ params:
   output_dir: ./output/crispr/mm_2215_sgRNA
   mageck_dir: mageck_rra_expr
   ne_mageck_dir: mageck_rra
-  #date: '`r format(Sys.Date(), "%B %d, %Y")`'
-  #rawdata_dir: ./data/crispr
-  #data_dir: ./data/crispr/mm_2215_sgRNA
-  #output_dir: ./output/crispr/mm_2215_sgRNA/dist_test
-  # ncpu: 4#
 ---
 
 ## Load libraries, additional functions and data

@@ -8,11 +8,6 @@ editor_options:
   chunk_output_type: console
 params:
   data_dir: ./data/crispr/mm_2215_sgRNA
-  #date: '`r format(Sys.Date(), "%B %d, %Y")`'
-  #rawdata_dir: ./data/crispr
-  #data_dir: ./data/crispr/mm_2215_sgRNA
-  #output_dir: ./output/crispr/mm_2215_sgRNA/dist_test
-  # ncpu: 4#
 ---
 
 ## Load libraries, additional functions and data
@@ -228,7 +223,7 @@ use_assay %>%
   facet_wrap2(vars(group), ncol = 2,
                      scales = 'free_y',
                      axes = "x") +
-  theme_ridges(font_size = 8, grid = F) +
+  theme_ridges(font_size = 3, grid = F) +
   theme(
     strip.background = element_blank(),
     axis.line.x = element_line(linewidth = one_pt/4, color = 'black'),
