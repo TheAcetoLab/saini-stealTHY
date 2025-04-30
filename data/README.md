@@ -1,3 +1,3 @@
 # Data
 
-Save raw data files here.
+This folder containts raw data files.

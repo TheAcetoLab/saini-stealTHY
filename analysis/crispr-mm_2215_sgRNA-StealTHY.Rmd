@@ -49,24 +49,6 @@ library(ggbeeswarm)
 library(ggpubr)
 
 library(MAGeCKFlute)
-
-# library(showtext)
-
-# library(DT)
-# library(colorblindr)
-# library(ggdendro)
-# library(RColorBrewer)
-# library(circlize)
-# library(Hmisc)
-# library(ComplexHeatmap)
-# library(ineq)
-
-# library(kableExtra)
-# library(magrittr)
-# library(ggrepel)
-# library(ggpubr)
-# library(ggbeeswarm)
-# library(ggridges)
 ```
 
 Load ggplot theme
