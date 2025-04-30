@@ -1,0 +1,403 @@
+---
+title: "StealTHY CRISPR screen"
+subtitle: "Mouse libray (n = 2215) - Reviewer 2 Observation C"
+author: "Francesc Castro-Giner"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+params:
+  data_dir: ./data/crispr/mm_2215_sgRNA
+  output_dir: ./output/crispr/mm_2215_sgRNA
+  mageck_dir: mageck_rra_r2oC
+---
+
+## Load libraries, additional functions and data
+
+Setup environment
+```{r setup, include=TRUE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(results='asis', echo=TRUE, message=FALSE, warning=FALSE, error=FALSE, fig.align = 'center', fig.width = 3.5, fig.asp = 0.618, dpi = 600, dev = c("png", "pdf"), fig.showtext = FALSE, engine.opts = list(bash = "-l"))
+
+options(stringsAsFactors = FALSE)
+
+use_seed <- 1100101
+
+set.seed(use_seed)
+
+# dir.create(params$output_dir, recursive = TRUE, showWarnings = FALSE)
+```
+
+Load packages
+```{r load-libraries}
+library(tidyverse)
+library(knitr)
+library(foreach)
+library(magrittr)
+library(DT)
+library(kableExtra)
+library(diptest)
+library(SummarizedExperiment)
+
+library(ggridges)
+library(ggh4x)
+library(patchwork)
+library(colorblindr)
+library(ggbeeswarm)
+library(ggpubr)
+
+library(MAGeCKFlute)
+```
+
+Load ggplot theme
+```{r ggplot-theme}
+source("./configuration/rmarkdown/ggplot_theme.R")
+```
+
+Load ggplot theme
+```{r color-palette}
+source("./configuration/rmarkdown/color_palettes.R")
+```
+
+Load Summarized Experiment object
+```{r load-se}
+se <- readRDS(file.path(params$data_dir, 'se.rds'))
+```
+
+Filter samples used for this analysis
+```{r dw-sel-cols}
+use_cols <- colData(se) %>% 
+  data.frame %>% 
+  rownames
+
+se <- se[,use_cols]
+```
+
+Data wrangling
+```{r dw-colData}
+chunk_colData <- colData(se) %>% data.frame %>%
+  mutate(
+    vector_short = ifelse(vector_short == 'Puro_EF1alpha_SpCas9', 
+                          'Cas9+Puro', vector_short),
+    vector_short = factor(vector_short, levels = c('Thy1', 'Puro', 'Cas9+Puro')),
+    mouse_model_short = case_match(mouse_model_global,
+                                   'immunodeficient' ~ 'NSG',
+                                   'immunocompetent' ~ 'Syngeneic'
+                                   ),
+    mouse_model_short = factor(mouse_model_short, levels = c('NSG', 'Syngeneic')),
+    vector_mhost = paste0(vector_short, ', ', mouse_model_short),
+    model_vector_mhost = paste0(donor,', ', vector_short, ', ', mouse_model_short),
+    sample_type = ifelse(cancer_type %in% c('Breast', 'CRC'),
+                         case_match(sample_type, 
+                             'whole_tumor' ~ 'Primary tumor', 
+                             'whole_lung' ~ 'Lung mets',
+                             'bulk' ~ 'Bulk',
+                             'cell_culture' ~ 'Cell culture'),
+                         sample_type
+                         ),
+        sample_type = ifelse(cancer_type %in% c('NSCLC'),
+                         case_match(sample_type, 
+                             'met_liver' ~ 'Liver mets', 
+                             'whole_lung' ~ 'Primary tumor',
+                             'bulk' ~ 'Bulk',
+                             'cell_culture' ~ 'Cell culture'),
+                         sample_type
+                         ),
+    
+    sample_type = factor(sample_type, levels = c('Primary tumor', 'Lung mets', 'Liver mets', 'Bulk', 'Cell culture'))
+    
+  )
+
+colData(se) <- chunk_colData %>% DataFrame
+```
+
+## Configure analyses
+
+### MAGeCK analysis
+
+#### List of comparisons
+List of comparisons for differential abundance using MAGeCK
+```{r mageck-comparisons-definition}
+x <- colData(se) %>% data.frame
+mageck_comp_list <- list(
+  `StealTHY KO Syngeneic CMT167` = list(
+    `Primary tumor` = x %>% filter(vector_mmodel == 'CMT167-KO-Thy1-C57BL6' & sample_type == 'Primary tumor' ) %>% pull(sample_alias),
+    `Liver mets` = x %>% filter(vector_mmodel == 'CMT167-KO-Thy1-C57BL6' & sample_type == 'Liver mets' ) %>% pull(sample_alias)
+    ),
+  `StealTHY KO Syngeneic LLC1` = list(
+    `Primary tumor` = x %>% filter(vector_mmodel == 'LLC1-KO-Thy1-C57BL6' & sample_type == 'Primary tumor' ) %>% pull(sample_alias),
+    `Liver mets` = x %>% filter(vector_mmodel == 'LLC1-KO-Thy1-C57BL6' & sample_type == 'Liver mets' ) %>% pull(sample_alias)
+    ),
+  `StealTHY KO Syngeneic CT26` = list(
+    `Primary tumor` = x %>% filter(vector_mmodel == 'CT26-KO-Thy1-BALB' & sample_type == 'Primary tumor' ) %>% pull(sample_alias),
+    `Liver mets` = x %>% filter(vector_mmodel == 'CT26-KO-Thy1-BALB' & sample_type == 'Lung mets' ) %>% pull(sample_alias)
+    )
+)
+
+
+mageck_comp_list_names <- names(mageck_comp_list) 
+names(mageck_comp_list_names) <- names(mageck_comp_list) %>% gsub(" ", "_",.) %>% tolower
+```
+
+```{r mageck-comparisons-table}
+data_comp <- foreach(i = names(mageck_comp_list), .combine = rbind) %do% {
+  c(
+    Comparison = i,
+    Case = paste(mageck_comp_list[[i]][[1]], collapse = " "),
+    Control = paste(mageck_comp_list[[i]][[2]], collapse = " ")
+  )
+}
+
+data_comp %>% 
+  datatable(., 
+            rownames = FALSE, 
+            filter = 'top', 
+            caption = 'List of comparisons for MAGeCK analysis',
+            extensions = 'Buttons', 
+            options = list(
+              dom = 'Blfrtip',
+              buttons = c('csv', 'excel'),
+              columnDefs = list(
+                list(width = 120, targets = 1:2)
+              )
+            )
+            )
+
+```
+
+#### Run MAGeCK
+
+Generate MAGeCK test scripts. To generate the script files change `eval = FALSE` to `eval = TRUE` in the chunk options.
+
+The scripts must be run in the terminal, inside the path `r file.path(params$output_dir, params$ne_mageck_dir)`. The script will activate the mageck environment and run the test for each comparison. The results will be saved in the same directory.
+```{r generate-mageck-cmds, eval = FALSE}
+chunk_se <- se
+out_dir <- file.path(params$output_dir, params$mageck_dir)
+dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+
+# Generate count matrix
+count_mat <- assay(chunk_se, 'counts') %>% data.frame(check.names = FALSE) %>% 
+  rownames_to_column('sgRNA') %>% 
+  mutate(Gene = rowData(chunk_se)$Gene) %>% 
+  dplyr::select(sgRNA, Gene, everything())
+write_tsv(count_mat, file = file.path(out_dir, 'counts.txt'))
+
+# Generate list of control sgRNA IDs
+non_target_list <- rownames(chunk_se) %>% grep('Non_Target', ., value = T) %>% data.frame
+write_tsv(non_target_list, file = file.path(out_dir, 'control_sgrna.txt'), col_names = F)
+
+# Generate mageck commands
+res_cmd <- data.frame('source activate mageckenv')
+res_cmd <- foreach(i=names(mageck_comp_list), .combine = rbind) %do% {
+  paste('mageck test -k counts.txt --control-sgrna control_sgrna.txt --norm-method control -t', paste(mageck_comp_list[[i]][[1]], collapse = ','),'-c',  paste(mageck_comp_list[[i]][[2]], collapse = ','), '-n', tolower(gsub(" ", "_", i)), '\n')
+} %>% data.frame()
+
+res_cmd <- rbind('conda activate mageckenv', res_cmd, 'conda deactivate')
+write_tsv(res_cmd, file.path(out_dir, 'run_mageck_test.sh'), col_names = FALSE)
+```
+
+#### Load MAGeCK results
+```{r load-mageck}
+gene_summ_files <- list.files(path = file.path(params$output_dir, params$mageck_dir), pattern = 'gene_summary.txt', full.names = TRUE)
+analysis_prefix <- basename(gene_summ_files) %>% gsub(".gene_summary.txt", "", .)
+gene_summ <- foreach(i = gene_summ_files) %do% read.delim(i, check.names = FALSE)
+names(gene_summ) <- analysis_prefix
+
+sgrna_summ_files <- list.files(path = file.path(params$output_dir, params$mageck_dir), pattern = 'sgrna_summary.txt', full.names = TRUE)
+analysis_prefix <- basename(sgrna_summ_files) %>% gsub(".sgrna_summary.txt", "", .)
+sgrna_summ <- foreach(i = sgrna_summ_files) %do% read.delim(i, check.names = FALSE)
+names(sgrna_summ) <- analysis_prefix
+
+gene_summ_files <- list.files(path = file.path(params$output_dir, params$mageck_dir), pattern = 'gene_summary.txt', full.names = TRUE)
+analysis_prefix <- basename(gene_summ_files) %>% gsub(".gene_summary.txt", "", .)
+gene_summ <- foreach(i = gene_summ_files) %do% read.delim(i, check.names = FALSE)
+names(gene_summ) <- analysis_prefix
+
+
+gene_summ_files <- list.files(path = file.path('./output/crispr/mm_2215_sgRNA', 'mageck_rra_expr'), pattern = 'gene_summary.txt', full.names = TRUE)
+analysis_prefix <- basename(gene_summ_files) %>% gsub(".gene_summary.txt", "", .)
+gene_summ_5C <- foreach(i = gene_summ_files) %do% read.delim(i, check.names = FALSE)
+names(gene_summ_5C) <- analysis_prefix
+```
+
+
+## Differential abundance analysis
+```{r da-selected-genes-conf}
+gene_info <- readxl::read_xlsx('./data/resources/selected_gene_list/gene_list_for_figure_5c.xlsx')
+
+use_colors <- c(
+  `Immune system cytokines and chemokines` = 'grey',
+  `Immune system cytokines\nand chemokines` = 'grey',
+  
+  `Interferone, TNF and danger/death-inducing signals` = 'black',
+  `Interferon, TNF\nand danger/death-inducing\nsignals` = 'black',
+  `Interferon, TNF and\ndanger/death-inducing\nsignals` = 'black',
+  
+  `TGF-β family related` = 'red',
+  
+  `RTK signaling` = 'blue',
+  `Positive controls` = 'black'
+)
+
+use_fill <- c(
+  `Immune system cytokines and chemokines` = 'grey',
+  `Immune system cytokines\nand chemokines` = 'grey',
+  
+  `Interferone, TNF and danger/death-inducing signals` = 'black',
+  `Interferon, TNF\nand danger/death-inducing\nsignals` = 'black',
+  `Interferon, TNF and\ndanger/death-inducing\nsignals` = 'black',
+  `TGF-β family related` = 'red',
+  
+  `RTK signaling` = 'blue',
+  `Positive controls` = 'white'
+)
+
+use_shape <- c(
+  `Immune system cytokines and chemokines` = 16,
+  `Immune system cytokines\nand chemokines` = 16,
+  
+  `Interferone, TNF and danger/death-inducing signals` = 16,
+  `Interferon, TNF\nand danger/death-inducing\nsignals` = 16,
+  `Interferon, TNF and\ndanger/death-inducing\nsignals` = 16,
+  `TGF-β family related` = 16,
+  
+  `RTK signaling` = 16,
+  `Positive controls` = 1
+)
+
+# get gene order based on Original figure
+# gene_levels <- gene_summ_5C[['stealthy_ko_syngeneic']] %>%
+#   ReadRRA(score = 'lfc') %>%
+#   dplyr::rename(LFC = Score) %>%
+#   left_join(gene_info, by = c('id' = 'id')) %>%
+#   filter(!is.na(gene_set)) %>%
+#   mutate(gene_name = fct_reorder(gene_name, LFC, .desc = FALSE)) %>%
+#   pull(gene_name) %>%
+#   levels
+gene_levels <- rev(gene_info$id)
+```
+
+### Differential abundance of selected genes
+Differential abundance of selected genes in carcinoma cells subjected to StealTHY KO or Cas9+Puro
+
+```{r da-selected-genes-dotplot, fig.width=2.37, fig.asp=2.2}
+use_comp <- names(gene_summ)
+
+# FDR limits
+xfdr <- foreach(i=gene_summ[use_comp], .combine = rbind) %do% {
+  i %>% 
+    ReadRRA(score = 'lfc') %>% 
+    dplyr::rename(LFC = Score) %>% 
+    left_join(gene_info, by = c('id' = 'id')) %>% 
+    filter(!is.na(gene_set)) %>% 
+    pull(FDR) %>% 
+    min
+}
+maxFDR <- -log10(xfdr[,1]) %>% max
+ 
+# Set LFC (x-axis) for comparable plots to "stealthy_ko_syngeneic": "stealthy_ko_nsg"
+# stealthy_comp <- c("stealthy_ko_syngeneic", "stealthy_ko_nsg")
+# xlfc <- foreach(i=gene_summ_5C[stealthy_comp], .combine = rbind) %do% {
+#   i %>% 
+#     ReadRRA(score = 'lfc') %>% 
+#     dplyr::rename(LFC = Score) %>% 
+#     left_join(gene_info, by = c('id' = 'id')) %>% 
+#     filter(!is.na(gene_set)) %>% 
+#     pull(LFC) %>% 
+#     abs %>% max
+# }
+# stealthy_maxLFC <- max(xlfc[,1])
+# stealthy_xlim <- c(-stealthy_maxLFC, stealthy_maxLFC)
+# stealthy_breaks <- c(-2.5, -1, 0, 1, 2.5)
+# stealthy_labels <- c('-2.5', '-1', '0', '1', '2.5')
+
+xlfc <- foreach(i=gene_summ, .combine = rbind) %do% {
+  i %>%
+    ReadRRA(score = 'lfc') %>%
+    dplyr::rename(LFC = Score) %>%
+    left_join(gene_info, by = c('id' = 'id')) %>%
+    filter(!is.na(gene_set)) %>%
+    pull(LFC) %>%
+    abs %>% max
+}
+maxLFC <- ceiling(max(xlfc[,1]))
+xlim <- c(-maxLFC, maxLFC)
+xbreaks <- c(-6, -2.5, 0, 2.5, 6)
+xlabels <- c('-6', '-2.5', '0', '2.5', '6')
+
+i <- use_comp[1]
+for(i in use_comp)  {
+  cat("####", mageck_comp_list_names[i], "\n\n")
+  
+  x <- gene_summ[[i]] %>% 
+    ReadRRA(score = 'lfc') %>% 
+    dplyr::rename(LFC = Score) %>% 
+    left_join(gene_info, by = c('id' = 'id')) %>% 
+    filter(!is.na(gene_set)) %>% 
+    mutate(
+      gene_name = factor(gene_name, levels = gene_levels),
+      gene_set = ifelse(
+        gene_set == 'Immune system cytokines and chemokines',
+        'Immune system cytokines\nand chemokines',
+        gene_set
+      ),
+      gene_set = ifelse(
+        gene_set == 'Interferone, TNF and danger/death-inducing signals',
+        'Interferon, TNF and\ndanger/death-inducing\nsignals',
+        gene_set
+      ),
+      gene_set = factor(gene_set, names(use_colors))
+      )
+  # xlim <- c(-ceiling(max(abs(x$LFC), na.rm = TRUE)), 
+  #           ceiling(max(abs(x$LFC), na.rm = TRUE)))
+  # size_breaks <- c(0, 0.25, 0.5, 1, 2, ceiling(maxFDR))
+  size_breaks <- c(0, 0.25, 0.5, ceiling(maxFDR))
+  res <- x %>% 
+    ggplot(aes(LFC, gene_name, color = gene_set, size = -log10(FDR))) +
+    geom_point(aes(shape = gene_set)) +
+    geom_vline(xintercept = 0, linetype = 3, linewidth = one_pt/2) +
+    scale_y_discrete(expand = expansion(add = c(1, 1))) + # add fixed units around each facet to avoid lines over points
+    # scale_x_continuous(
+    #   expand = expansion(add = c(1, 1))
+    #   ) + # add fixed units around each facet to avoid lines over points
+    scale_color_manual(values = use_colors) +
+    scale_size(range = c(0.5, 2.5), 
+               limits = c(0, ceiling(maxFDR)), 
+               breaks = size_breaks,
+               labels = size_breaks %>% as.character # remove trailing 0 from decimals
+               ) +
+    scale_shape_manual(values = use_shape) +
+    scale_x_continuous(
+        expand = expansion(add = c(1, 1))
+        ) +
+    facet_grid(rows = vars(gene_set), scales = 'free_y', space = 'free_y') +
+    theme_facet +
+    theme(
+      # axis.line = element_line(linewidth = one_pt/2, color = 'black'),
+      axis.ticks = element_line(linewidth = one_pt/2, color = 'black'),
+      panel.border = element_rect(linewidth = one_pt/2, color = 'black'),
+      axis.text = element_text(size=8), 
+      axis.title = element_text(size = 8),
+      legend.title = element_text(size=8),
+      legend.text = element_text(size=8),
+      strip.text = element_text(size = 4)
+    ) +
+    labs(
+      x = expression(paste("lo", g[2],"(Fold change)")),
+      y = NULL,
+      size = expression(paste("-lo", g[10],"(FDR)")),
+      title = 
+    ) +
+    guides(color = 'none', shape = 'none')
+  
+  res <- res +
+    scale_x_continuous(
+      expand = expansion(add = c(1, 1)), 
+      limits = xlim,
+      breaks = xbreaks,
+      labels = xlabels
+    )
+  
+  print(res)
+  cat('\n\n')
+}
+```
