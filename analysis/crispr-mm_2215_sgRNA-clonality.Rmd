@@ -563,8 +563,128 @@ wrap_plots(muller_plots, ncol = 1)
 ```
 
 
-## Stop knitr
-```{r}
-knitr::knit_exit()
+## Complexity dynamics
+
+### Figure 2D: Complexity dynamics in primary tumors and lung metastases
+```{r complexity-dynamics-1}
+chunk_data <- colData(se) %>% data.frame %>%
+  filter(sample_type %in% c('Primary tumor', 'Lung mets')) %>% 
+  filter(!is.na(vector_short)) %>% 
+  filter(effect_type_short == 'noKO') %>% 
+  mutate(
+    guides_over_30_pct = guides_over_30 / 2215
+  )
+
+use_comparisons <- list(
+  c("Thy1", "Puro"), 
+  c("Puro", "dCas9+Puro"),
+  c("Thy1", "dCas9+Puro")
+)
+
+
+
+chunk_data %>% 
+  ggplot(aes(vector_short, guides_over_30_pct,
+             color = vector_short,
+             fill = vector_short)) +
+  geom_quasirandom(shape = 21, 
+                   alpha = 0.8, 
+                   color = 'black', 
+                   size = 1, 
+                   stroke=one_pt/4
+                   ) +
+  scale_fill_manual(values = palette_vector) +
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1)
+    ) +
+  facet_grid2(sample_type ~ mouse_model_short,
+              axes = "all",
+              scales = 'free_y'
+              ) +
+  guides(fill = 'none', color = 'none') +
+  labs(
+    y = 'Percentage of guides',
+    x = ''
+  ) +
+  stat_compare_means(
+    comparisons = use_comparisons,
+    method = 'wilcox.test',
+    size = 0.4*geom_text_size,
+    bracket.size = one_pt/4
+  )
 ```
+
+Same plot, with P.adjust at panel level
+```{r complexity-dynamics-padj-panel}
+chunk_data %>% 
+  ggplot(aes(vector_short, guides_over_30_pct,
+             color = vector_short,
+             fill = vector_short)) +
+  geom_quasirandom(shape = 21, 
+                   alpha = 0.8, 
+                   color = 'black', 
+                   size = 1, 
+                   stroke=one_pt/4
+                   ) +
+  scale_fill_manual(values = palette_vector) +
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1)
+    ) +
+  facet_grid2(sample_type ~ mouse_model_short,
+              axes = "all",
+              scales = 'free_y'
+              ) +
+  guides(fill = 'none', color = 'none') +
+  labs(
+    y = 'Percentage of guides',
+    x = ''
+  ) +
+  geom_pwc(
+    method = "wilcox_test", 
+    label = "p.adj.format",
+    p.adjust.method = "holm", 
+    p.adjust.by = "panel",
+    label.size = 0.4*geom_text_size,
+    size = one_pt/4
+  )
+```
+
+Same plot, with P.adjust at group level
+```{r complexity-dynamics-padj-group}
+chunk_data %>% 
+  ggplot(aes(vector_short, guides_over_30_pct,
+             color = vector_short,
+             fill = vector_short)) +
+  geom_quasirandom(shape = 21, 
+                   alpha = 0.8, 
+                   color = 'black', 
+                   size = 1, 
+                   stroke=one_pt/4
+                   ) +
+  scale_fill_manual(values = palette_vector) +
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1)
+    ) +
+  facet_grid2(sample_type ~ mouse_model_short,
+              axes = "all",
+              scales = 'free_y'
+              ) +
+  guides(fill = 'none', color = 'none') +
+  labs(
+    y = 'Percentage of guides',
+    x = ''
+  ) +
+  geom_pwc(
+    method = "wilcox_test", 
+    label = "p.adj.format",
+    p.adjust.method = "holm", 
+    p.adjust.by = "group",
+    label.size = 0.4*geom_text_size,
+    size = one_pt/4
+  )
+```
+
 

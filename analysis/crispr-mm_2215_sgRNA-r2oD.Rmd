@@ -204,19 +204,19 @@ Define selected comparisons for muller plots
 x <- colData(se) %>% data.frame
 
 comp_list_muller <- list(
-  `CMT167 Syngeneic dCas9 + Puro` = list(
+  `Comp 4. CMT167 Syngeneic dCas9 + Puro` = list(
     `CMT167 Syngeneic dCas9 + Puro 3` = c('dC9BL6_LungIV_C167_3',	'dC9BL6_LiverIV_C167_3'),
     `CMT167 Syngeneic dCas9 + Puro 5` = c('dC9BL6_LungIV_C167_5',	'dC9BL6_LiverIV_C167_5')
   ),
   
-  `LLC1 Syngeneic dCas9 + Puro` = list(
+  `Comp 5. LLC1 Syngeneic dCas9 + Puro` = list(
     `LLC1 Syngeneic dCas9 + Puro 1` = c('dC9BL6_LungIV_LLC1_1',	'dC9BL6_LiverIV_LLC1_1'),
     `LLC1 Syngeneic dCas9 + Puro 3` = c('dC9BL6_LungIV_LLC1_3',	'dC9BL6_LiverIV_LLC1_3'),
     `LLC1 Syngeneic dCas9 + Puro 4` = c('dC9BL6_LungIV_LLC1_4',	'dC9BL6_LiverIV_LLC1_4'),
     `LLC1 Syngeneic dCas9 + Puro 5` = c('dC9BL6_LungIV_LLC1_5',	'dC9BL6_LiverIV_LLC1_5')
   ),
   
-  `CMT167 NSG dCas9 + Puro` = list(
+  `Comp 6. CMT167 NSG dCas9 + Puro` = list(
     # `CMT167 NSG dCas9 + Puro 1` = c('dC9NSG_LungIV_C167_1',	'dC9NSG_LiverIV_C167_1'),
     `CMT167 NSG dCas9 + Puro 2` = c('dC9NSG_LungIV_C167_2',	'dC9NSG_LiverIV_C167_2'),
     `CMT167 NSG dCas9 + Puro 3` = c('dC9NSG_LungIV_C167_3',	'dC9NSG_LiverIV_C167_3'),
@@ -224,7 +224,7 @@ comp_list_muller <- list(
     `CMT167 NSG dCas9 + Puro 5` = c('dC9NSG_LungIV_C167_5',	'dC9NSG_LiverIV_C167_5')
   ),
   
-  `LLC1 NSG dCas9 + Puro` = list(
+  `Comp 7. LLC1 NSG dCas9 + Puro` = list(
     `LLC1 NSG dCas9 + Puro 1` = c('dC9NSG_LungIV_LLC1_1',	'dC9NSG_LiverIV_LLC1_1'),
     `LLC1 NSG dCas9 + Puro 2` = c('dC9NSG_LungIV_LLC1_2',	'dC9NSG_LiverIV_LLC1_2'),
     `LLC1 NSG dCas9 + Puro 3` = c('dC9NSG_LungIV_LLC1_3',	'dC9NSG_LiverIV_LLC1_3'),
@@ -242,11 +242,11 @@ comp_list_muller <- list(
   # c('dC9NSG_LungIV_LLC1_3',	'dC9NSG_LungIV_LLC1_3'),
   # c('dC9NSG_LungIV_LLC1_4',	'dC9NSG_LungIV_LLC1_4'),
   # c('dC9NSG_LungIV_LLC1_5',	'dC9NSG_LungIV_LLC1_5'),
-  `CMT167 Syngeneic Thy1` = list(
+  `Comp 10. CMT167 Syngeneic Thy1` = list(
     `CMT167 Syngeneic Thy1 1` = c('Replacement_9',	'Replacement_1bis'),
     `CMT167 Syngeneic Thy1 2` = c('Replacement_5',	'Replacement_6')
   ),
-  `CMT167 NSG Thy1` = list(
+  `Comp 11. CMT167 NSG Thy1` = list(
     `CMT167 NSG Thy1 1` = c('Replacement_2bis',	'Replacement_3bis'),
     `CMT167 NSG Thy1 1` = c('Replacement_7',	'Replacement_8')
   )
@@ -348,3 +348,51 @@ for (i in names(muller_plots)) {
 ```{r}
 knitr::knit_exit()
 ```
+
+
+
+```{r }
+cpm_threshold <- 10000
+comp_list <- comp_list_muller
+
+use_df <- assay(se, 'cpm') %>% data.frame(check.names = FALSE) %>% 
+  rownames_to_column('guide') %>% 
+  mutate(
+    gene = rowData(se)$Gene,
+    gene = ifelse(grepl('Non_Target', gene), 'Non_Target', gene)
+  ) %>%
+  pivot_longer(-c(guide, gene), names_to = 'sample_alias', values_to = 'cpm')
+
+j <-  names(comp_list)[1]
+cpm_diff_df <- foreach(j = names(comp_list), .combine = rbind) %do% {
+  i <- comp_list[[j]][[1]]
+  res <- foreach(iname = names(comp_list[[j]]), .combine = rbind) %do% {
+    i <- comp_list[[j]][[iname]]
+    x <- use_df %>% 
+      filter(sample_alias %in% i) %>% 
+      mutate(
+        sample_type = ifelse(sample_alias == i[1], 'Primary tumor', 'Metastasis'),
+        sample_type = factor(sample_type, levels = c('Primary tumor', 'Metastasis'))
+      )
+    
+    x %>% 
+      dplyr::select(guide, cpm, sample_type) %>% 
+      pivot_wider(names_from = sample_type, values_from = cpm) %>% 
+      mutate(
+        comparison = j,
+        replicate = iname,
+        cpm_diff = Metastasis - `Primary tumor`
+      )
+  }
+  return(res)
+}
+
+cpm_diff_df %>% 
+  # ggplot(aes(replicate, cpm_diff)) +
+  ggplot(aes(comparison, cpm_diff)) +
+  geom_violin()
+  # facet_grid(cols = vars(comparison), scales = 'free_x', space = 'free_x')
+  
+```
+
+
