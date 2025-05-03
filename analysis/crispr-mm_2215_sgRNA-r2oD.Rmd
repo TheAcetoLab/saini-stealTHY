@@ -60,10 +60,10 @@ se <- readRDS(file.path(params$data_dir, 'se.rds'))
 ```
 
 Filter samples used for this analysis
-```{r dw-sel-cols}
+```{r dw-sel-cols, eval = FALSE}
 use_cols <- colData(se) %>% 
   data.frame %>% 
-  filter(effect_type_short == 'noKO') %>% 
+  # filter(effect_type_short == 'noKO') %>% 
   # filter(vector_short != "Thy1_EF1alpha_dCas9") %>% 
   rownames
 
@@ -71,7 +71,7 @@ se <- se[,use_cols]
 ```
 
 
-```{r}
+```{r, eval = FALSE}
 x <- colData(se) %>% data.frame
 x['dC9BL6_LungIV_C167_1',]$vector_short
 x['dC9BL6_LiverIV_C167_5',]$vector_short
@@ -204,19 +204,39 @@ Define selected comparisons for muller plots
 x <- colData(se) %>% data.frame
 
 comp_list_muller <- list(
-  `Comp 4. CMT167 Syngeneic dCas9 + Puro` = list(
+  `Comparison 1: CMT167 Syngeneic Thy` = list(
+    `CMT167 Syngeneic Thy 1` = c('C167_StealTHY_Tum_1',	'C167_StealTHY_Met_1'),
+    `CMT167 Syngeneic Thy 3` = c('C167_StealTHY_Tum_3',	'C167_StealTHY_Met_3'),
+    `CMT167 Syngeneic Thy 4` = c('C167_StealTHY_Tum_4',	'C167_StealTHY_Met_4'),
+    `CMT167 Syngeneic Thy 5` = c('C167_StealTHY_Tum_5',	'C167_StealTHY_Met_5')
+  ),
+  `Comparison 2: LLC1 Syngeneic Thy` = list( 
+   `LLC1 Syngeneic Thy 1` =  c('LLC1_StealTHY_Tum_1',	'LLC1_StealTHY_Met_1'),
+   `LLC1 Syngeneic Thy 2` =  c('LLC1_StealTHY_Tum_2',	'LLC1_StealTHY_Met_2'),
+   `LLC1 Syngeneic Thy 3` =  c('LLC1_StealTHY_Tum_3',	'LLC1_StealTHY_Met_3'),
+   `LLC1 Syngeneic Thy 4` =  c('LLC1_StealTHY_Tum_4',	'LLC1_StealTHY_Met_4'),
+   `LLC1 Syngeneic Thy 5` =  c('LLC1_StealTHY_Tum_5',	'LLC1_StealTHY_Met_5')
+  ),
+  `Comparison 3: CT26 Syngeneic Thy` = list( 
+    `CT26 Syngeneic Thy 1` = c('ColoCT26_StealTHY_Tum_1',	'ColoCT26_StealTHY_Met_1'),
+    `CT26 Syngeneic Thy 2` = c('ColoCT26_StealTHY_Tum_2',	'ColoCT26_StealTHY_Met_2'),
+    `CT26 Syngeneic Thy 3` = c('ColoCT26_StealTHY_Tum_3',	'Replacement_1'),
+    `CT26 Syngeneic Thy 4` = c('Replacement_2',	'Replacement_3'),
+    `CT26 Syngeneic Thy 5` = c('Replacement_4',	'Replacement_4bis')
+  ),
+  `Comparison 4: CMT167 Syngeneic dCas9 + Puro` = list(
     `CMT167 Syngeneic dCas9 + Puro 3` = c('dC9BL6_LungIV_C167_3',	'dC9BL6_LiverIV_C167_3'),
     `CMT167 Syngeneic dCas9 + Puro 5` = c('dC9BL6_LungIV_C167_5',	'dC9BL6_LiverIV_C167_5')
   ),
   
-  `Comp 5. LLC1 Syngeneic dCas9 + Puro` = list(
+  `Comparison 5: LLC1 Syngeneic dCas9 + Puro` = list(
     `LLC1 Syngeneic dCas9 + Puro 1` = c('dC9BL6_LungIV_LLC1_1',	'dC9BL6_LiverIV_LLC1_1'),
     `LLC1 Syngeneic dCas9 + Puro 3` = c('dC9BL6_LungIV_LLC1_3',	'dC9BL6_LiverIV_LLC1_3'),
     `LLC1 Syngeneic dCas9 + Puro 4` = c('dC9BL6_LungIV_LLC1_4',	'dC9BL6_LiverIV_LLC1_4'),
     `LLC1 Syngeneic dCas9 + Puro 5` = c('dC9BL6_LungIV_LLC1_5',	'dC9BL6_LiverIV_LLC1_5')
   ),
   
-  `Comp 6. CMT167 NSG dCas9 + Puro` = list(
+  `Comparison 6: CMT167 NSG dCas9 + Puro` = list(
     # `CMT167 NSG dCas9 + Puro 1` = c('dC9NSG_LungIV_C167_1',	'dC9NSG_LiverIV_C167_1'),
     `CMT167 NSG dCas9 + Puro 2` = c('dC9NSG_LungIV_C167_2',	'dC9NSG_LiverIV_C167_2'),
     `CMT167 NSG dCas9 + Puro 3` = c('dC9NSG_LungIV_C167_3',	'dC9NSG_LiverIV_C167_3'),
@@ -224,33 +244,23 @@ comp_list_muller <- list(
     `CMT167 NSG dCas9 + Puro 5` = c('dC9NSG_LungIV_C167_5',	'dC9NSG_LiverIV_C167_5')
   ),
   
-  `Comp 7. LLC1 NSG dCas9 + Puro` = list(
+  `Comparison 7: LLC1 NSG dCas9 + Puro` = list(
     `LLC1 NSG dCas9 + Puro 1` = c('dC9NSG_LungIV_LLC1_1',	'dC9NSG_LiverIV_LLC1_1'),
     `LLC1 NSG dCas9 + Puro 2` = c('dC9NSG_LungIV_LLC1_2',	'dC9NSG_LiverIV_LLC1_2'),
     `LLC1 NSG dCas9 + Puro 3` = c('dC9NSG_LungIV_LLC1_3',	'dC9NSG_LiverIV_LLC1_3'),
     `LLC1 NSG dCas9 + Puro 4` = c('dC9NSG_LungIV_LLC1_4',	'dC9NSG_LiverIV_LLC1_4'),
     `LLC1 NSG dCas9 + Puro 5` = c('dC9NSG_LungIV_LLC1_5',	'dC9NSG_LiverIV_LLC1_5')
   ),
-  
-  # `CMT167 NSG dCas9 + Puro` = c('dC9NSG_LungIV_C167_2',	'dC9NSG_LungIV_C167_2'),
-  # c('dC9NSG_LungIV_C167_3',	'dC9NSG_LungIV_C167_3'),
-  # c('dC9NSG_LungIV_C167_4',	'dC9NSG_LungIV_C167_4'),
-  # c('dC9NSG_LungIV_C167_5',	'dC9NSG_LungIV_C167_5'),
-  # 
-  # c('dC9NSG_LungIV_LLC1_1',	'dC9NSG_LungIV_LLC1_1'),
-  # c('dC9NSG_LungIV_LLC1_2',	'dC9NSG_LungIV_LLC1_2'),
-  # c('dC9NSG_LungIV_LLC1_3',	'dC9NSG_LungIV_LLC1_3'),
-  # c('dC9NSG_LungIV_LLC1_4',	'dC9NSG_LungIV_LLC1_4'),
-  # c('dC9NSG_LungIV_LLC1_5',	'dC9NSG_LungIV_LLC1_5'),
-  `Comp 10. CMT167 Syngeneic Thy1` = list(
-    `CMT167 Syngeneic Thy1 1` = c('Replacement_9',	'Replacement_1bis'),
-    `CMT167 Syngeneic Thy1 2` = c('Replacement_5',	'Replacement_6')
+  `Comparison 10: CMT167 NSG Thy1` = list(
+    `CMT167 NSG Thy1 1` = c('Replacement_9',	'Replacement_1bis'),
+    `CMT167 NSG Thy1 2` = c('Replacement_5',	'Replacement_6')
   ),
-  `Comp 11. CMT167 NSG Thy1` = list(
-    `CMT167 NSG Thy1 1` = c('Replacement_2bis',	'Replacement_3bis'),
-    `CMT167 NSG Thy1 1` = c('Replacement_7',	'Replacement_8')
+  `Comparison 11: LLC1 NSG Thy1` = list(
+    `LLC1 NSG Thy1 1` = c('Replacement_2bis',	'Replacement_3bis'),
+    `LLC1 NSG Thy1 1` = c('Replacement_7',	'Replacement_8')
   )
 )
+
 ```
 
 Generate muller plots
