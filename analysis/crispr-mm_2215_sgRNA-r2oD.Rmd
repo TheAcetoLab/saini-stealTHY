@@ -205,24 +205,24 @@ x <- colData(se) %>% data.frame
 
 comp_list_muller <- list(
   `Comparison 1: CMT167 Syngeneic Thy` = list(
-    `CMT167 Syngeneic Thy 1` = c('C167_StealTHY_Tum_1',	'C167_StealTHY_Met_1'),
-    `CMT167 Syngeneic Thy 3` = c('C167_StealTHY_Tum_3',	'C167_StealTHY_Met_3'),
-    `CMT167 Syngeneic Thy 4` = c('C167_StealTHY_Tum_4',	'C167_StealTHY_Met_4'),
-    `CMT167 Syngeneic Thy 5` = c('C167_StealTHY_Tum_5',	'C167_StealTHY_Met_5')
+    `CMT167 Syngeneic Thy1.1 1` = c('C167_StealTHY_Tum_1',	'C167_StealTHY_Met_1'),
+    `CMT167 Syngeneic Thy1.1 3` = c('C167_StealTHY_Tum_3',	'C167_StealTHY_Met_3'),
+    `CMT167 Syngeneic Thy1.1 4` = c('C167_StealTHY_Tum_4',	'C167_StealTHY_Met_4'),
+    `CMT167 Syngeneic Thy1.1 5` = c('C167_StealTHY_Tum_5',	'C167_StealTHY_Met_5')
   ),
   `Comparison 2: LLC1 Syngeneic Thy` = list( 
-   `LLC1 Syngeneic Thy 1` =  c('LLC1_StealTHY_Tum_1',	'LLC1_StealTHY_Met_1'),
-   `LLC1 Syngeneic Thy 2` =  c('LLC1_StealTHY_Tum_2',	'LLC1_StealTHY_Met_2'),
-   `LLC1 Syngeneic Thy 3` =  c('LLC1_StealTHY_Tum_3',	'LLC1_StealTHY_Met_3'),
-   `LLC1 Syngeneic Thy 4` =  c('LLC1_StealTHY_Tum_4',	'LLC1_StealTHY_Met_4'),
-   `LLC1 Syngeneic Thy 5` =  c('LLC1_StealTHY_Tum_5',	'LLC1_StealTHY_Met_5')
+   `LLC1 Syngeneic Thy1.1 1` =  c('LLC1_StealTHY_Tum_1',	'LLC1_StealTHY_Met_1'),
+   `LLC1 Syngeneic Thy1.1 2` =  c('LLC1_StealTHY_Tum_2',	'LLC1_StealTHY_Met_2'),
+   `LLC1 Syngeneic Thy1.1 3` =  c('LLC1_StealTHY_Tum_3',	'LLC1_StealTHY_Met_3'),
+   `LLC1 Syngeneic Thy1.1 4` =  c('LLC1_StealTHY_Tum_4',	'LLC1_StealTHY_Met_4'),
+   `LLC1 Syngeneic Thy1.1 5` =  c('LLC1_StealTHY_Tum_5',	'LLC1_StealTHY_Met_5')
   ),
   `Comparison 3: CT26 Syngeneic Thy` = list( 
-    `CT26 Syngeneic Thy 1` = c('ColoCT26_StealTHY_Tum_1',	'ColoCT26_StealTHY_Met_1'),
-    `CT26 Syngeneic Thy 2` = c('ColoCT26_StealTHY_Tum_2',	'ColoCT26_StealTHY_Met_2'),
-    `CT26 Syngeneic Thy 3` = c('ColoCT26_StealTHY_Tum_3',	'Replacement_1'),
-    `CT26 Syngeneic Thy 4` = c('Replacement_2',	'Replacement_3'),
-    `CT26 Syngeneic Thy 5` = c('Replacement_4',	'Replacement_4bis')
+    `CT26 Syngeneic Thy1.1 1` = c('ColoCT26_StealTHY_Tum_1',	'ColoCT26_StealTHY_Met_1'),
+    `CT26 Syngeneic Thy1.1 2` = c('ColoCT26_StealTHY_Tum_2',	'ColoCT26_StealTHY_Met_2'),
+    `CT26 Syngeneic Thy1.1 3` = c('ColoCT26_StealTHY_Tum_3',	'Replacement_1'),
+    `CT26 Syngeneic Thy1.1 4` = c('Replacement_2',	'Replacement_3'),
+    `CT26 Syngeneic Thy1.1 5` = c('Replacement_4',	'Replacement_4bis')
   ),
   `Comparison 4: CMT167 Syngeneic dCas9 + Puro` = list(
     `CMT167 Syngeneic dCas9 + Puro 3` = c('dC9BL6_LungIV_C167_3',	'dC9BL6_LiverIV_C167_3'),
@@ -251,15 +251,16 @@ comp_list_muller <- list(
     `LLC1 NSG dCas9 + Puro 4` = c('dC9NSG_LungIV_LLC1_4',	'dC9NSG_LiverIV_LLC1_4'),
     `LLC1 NSG dCas9 + Puro 5` = c('dC9NSG_LungIV_LLC1_5',	'dC9NSG_LiverIV_LLC1_5')
   ),
-  `Comparison 10: CMT167 NSG Thy1` = list(
-    `CMT167 NSG Thy1 1` = c('Replacement_9',	'Replacement_1bis'),
-    `CMT167 NSG Thy1 2` = c('Replacement_5',	'Replacement_6')
+  `Comparison 10: Thy1 in BL6` = list(
+    `CMT167 BL6 Thy1.1` = c('Replacement_9',	'Replacement_1bis'),
+    `LLC1 BL6 Thy1.1` = c('Replacement_5',	'Replacement_6')
   ),
-  `Comparison 11: LLC1 NSG Thy1` = list(
-    `LLC1 NSG Thy1 1` = c('Replacement_2bis',	'Replacement_3bis'),
-    `LLC1 NSG Thy1 1` = c('Replacement_7',	'Replacement_8')
+  `Comparison 11: Thy1 in NSG` = list(
+    `CMT167 NSG Thy1.1` = c('Replacement_2bis',	'Replacement_3bis'),
+    `LLC1 NSG Thy1.1` = c('Replacement_7',	'Replacement_8')
   )
 )
+
 
 ```
 
