@@ -1133,7 +1133,6 @@ hits_stats <- foreach(i = use_comp, .combine = rbind) %do% {
     dplyr::rename(LFC = Score) %>% 
     mutate(
       expressed = id %in% genes_expr,
-      expressed = id %in% genes_expr,
       hit = (abs(LFC) >= 2)
       )
   
@@ -1144,9 +1143,9 @@ hits_stats <- foreach(i = use_comp, .combine = rbind) %do% {
      total_genes = nrow(da_res),
      n_nonexpr_genes = nrow(da_res)-length(genes_expr),
      prop_non_expr_genes = (nrow(da_res)-length(genes_expr)) / nrow(da_res),
-     
      n_hits = sum(da_res$hit),
-     non_expr_hits = sum(da_res$hit & !da_res$expressed)
+     non_expr_hits = sum(da_res$hit & !da_res$expressed),
+     n_nohits = sum(!da_res$hit)
    ) %>% 
      mutate(
        prop_non_expr_hits = non_expr_hits / n_hits,
@@ -1259,7 +1258,6 @@ hits_stats <- foreach(i = use_comp, .combine = rbind) %do% {
     dplyr::rename(LFC = Score) %>% 
     mutate(
       expressed = id %in% genes_expr,
-      expressed = id %in% genes_expr,
       hit = (abs(LFC) >= 2)
       )
   
@@ -1270,12 +1268,13 @@ hits_stats <- foreach(i = use_comp, .combine = rbind) %do% {
      total_genes = nrow(da_res),
      n_nonexpr_genes = nrow(da_res)-length(genes_expr),
      prop_non_expr_genes = (nrow(da_res)-length(genes_expr)) / nrow(da_res),
-     
      n_hits = sum(da_res$hit),
-     non_expr_hits = sum(da_res$hit & !da_res$expressed)
+     non_expr_hits = sum(da_res$hit & !da_res$expressed),
+     n_nohits = sum(!da_res$hit)
    ) %>% 
      mutate(
        prop_non_expr_hits = non_expr_hits / n_hits,
+       prop_non_expr_hits_over_non_expr = non_expr_hits / prop_non_expr_genes,
        lfc = log2(prop_non_expr_hits / prop_non_expr_genes)
      )
   
@@ -1389,7 +1388,6 @@ hits_stats <- foreach(i = use_comp, .combine = rbind) %do% {
     dplyr::rename(LFC = Score) %>% 
     mutate(
       expressed = id %in% genes_expr,
-      expressed = id %in% genes_expr,
       hit = (abs(LFC) >= 2)
       )
   
@@ -1400,12 +1398,13 @@ hits_stats <- foreach(i = use_comp, .combine = rbind) %do% {
      total_genes = nrow(da_res),
      n_nonexpr_genes = nrow(da_res)-length(genes_expr),
      prop_non_expr_genes = (nrow(da_res)-length(genes_expr)) / nrow(da_res),
-     
      n_hits = sum(da_res$hit),
-     non_expr_hits = sum(da_res$hit & !da_res$expressed)
+     non_expr_hits = sum(da_res$hit & !da_res$expressed),
+     n_nohits = sum(!da_res$hit)
    ) %>% 
      mutate(
        prop_non_expr_hits = non_expr_hits / n_hits,
+       prop_non_expr_hits_over_non_expr = non_expr_hits / n_nohits,
        lfc = log2(prop_non_expr_hits / prop_non_expr_genes)
      )
   
@@ -1518,7 +1517,6 @@ hits_stats <- foreach(i = use_comp, .combine = rbind) %do% {
     dplyr::rename(LFC = Score) %>% 
     mutate(
       expressed = id %in% genes_expr,
-      expressed = id %in% genes_expr,
       hit = (abs(LFC) >= 2)
       )
   
@@ -1529,12 +1527,13 @@ hits_stats <- foreach(i = use_comp, .combine = rbind) %do% {
      total_genes = nrow(da_res),
      n_nonexpr_genes = nrow(da_res)-length(genes_expr),
      prop_non_expr_genes = (nrow(da_res)-length(genes_expr)) / nrow(da_res),
-     
      n_hits = sum(da_res$hit),
-     non_expr_hits = sum(da_res$hit & !da_res$expressed)
+     non_expr_hits = sum(da_res$hit & !da_res$expressed),
+     n_nohits = sum(!da_res$hit)
    ) %>% 
      mutate(
        prop_non_expr_hits = non_expr_hits / n_hits,
+       prop_non_expr_hits_over_non_expr = non_expr_hits / n_nohits,
        lfc = log2(prop_non_expr_hits / prop_non_expr_genes)
      )
   
@@ -1604,7 +1603,42 @@ chunk_data %>%
   )
 ```
 
-### Supplementary figure 5G
+### Figure 5D: Proportion of non-expressed hits
+```{r non-expressed-hits-barplot-prop, fig.width=1.5, fig.asp=1}
+chunk_data <- hits_stats_global
+
+chunk_data %>%
+  ggplot(aes(comparison, prop_non_expr_hits, fill = comparison)) +
+  geom_col() +
+  geom_hline(yintercept = 0, linetype = 'solid',
+             linewidth = one_pt/4) +
+  coord_flip() +
+  scale_y_continuous(
+    expand = expansion(mult = c(0, 0.05)),
+  #   breaks = y_breaks, 
+  #   labels = y_labels
+    )  +
+  scale_fill_manual(values = use_color_palette) +
+  theme_facet +
+  theme(
+    axis.line = element_line(linewidth = one_pt/4, color = 'black'),
+    axis.ticks = element_line(linewidth = one_pt/4, color = 'black'),
+    panel.border = element_blank(),
+    axis.text = element_text(size=5), 
+    axis.title = element_text(size = 5),
+    legend.title = element_text(size=5),
+    legend.text = element_text(size=5),
+    strip.text.y = element_text(size = 4, angle = 0)
+  ) +
+  guides(fill = 'none') +
+  labs(
+    x = '',
+    y = 'Proportion of\nnon-expressed hits'
+  )
+```
+
+
+### Supplementary figure 5G: Fold-change of non-expressed hits
 ```{r non-expressed-hits-barplot-lfc-bymodel, fig.width=1.5, fig.asp=1.5}
 chunk_data <- rbind(hits_stats_4t1, hits_stats_mvt1, hits_stats_py2t) %>% 
   mutate(
@@ -1640,9 +1674,42 @@ chunk_data %>%
 
 ```
 
+### Supplementary figure 5G: Proportion of non-expressed hits
+```{r non-expressed-hits-barplot-prop-bymodel, fig.width=1.5, fig.asp=1.5}
+chunk_data <- rbind(hits_stats_4t1, hits_stats_mvt1, hits_stats_py2t) %>% 
+  mutate(
+    comparison = factor(comparison, levels = rev(c('StealTHY', 'Puro', 'Cas9+Puro', 'StealTHY NSG')))
+  )
+chunk_data %>%
+  ggplot(aes(comparison, prop_non_expr_hits, fill = comparison)) +
+  geom_col() +
+  # geom_hline(yintercept = 0, 
+  #            linetype = 'dashed', 
+  #            linewidth = one_pt/4) +
+  coord_flip() +
+  scale_y_continuous(
+    expand = expansion(mult = c(0, 0.05))
+    ) +
+  scale_fill_manual(values = use_color_palette) +
+  facet_grid(rows = vars(donor),
+             scales = 'free_y',
+             space = 'free_y') +
+  theme_facet +
+  theme(
+    # axis.line = element_line(linewidth = one_pt/2, color = 'black'),
+    axis.ticks = element_line(linewidth = one_pt/2, color = 'black'),
+    panel.border = element_rect(linewidth = one_pt/2, color = 'black'),
+    axis.text = element_text(size=4), 
+    axis.title = element_text(size = 4),
+    legend.title = element_text(size=4),
+    legend.text = element_text(size=4),
+    strip.text.y = element_text(size = 4, angle = 0)
+  ) +
+  guides(fill = 'none') +
+  labs(
+    x = '',
+    y =  'Proportion of\nnon-expressed hits'
+  )
 
-## Stop knitr
-```{r}
-knitr::knit_exit()
 ```
 
