@@ -688,3 +688,93 @@ chunk_data %>%
 ```
 
 
+
+
+
+### Figure 4H: 
+
+```{r, eval = FALSE}
+se <- readRDS(file.path(params$data_dir, 'se.rds'))
+chunk_colData <- colData(se) %>% data.frame %>%
+  mutate(
+    vector_short = ifelse(vector_short == 'Puro_EF1alpha_SpCas9', 
+                          'Cas9+Puro', vector_short),
+    vector_short = factor(vector_short, levels = c('Thy1', 'Puro', 'Cas9+Puro')),
+    mouse_model_short = case_match(mouse_model_global,
+                                   'immunodeficient' ~ 'NSG',
+                                   'immunocompetent' ~ 'Syngeneic'
+                                   ),
+    mouse_model_short = factor(mouse_model_short, levels = c('NSG', 'Syngeneic')),
+    vector_mhost = paste0(vector_short, ', ', mouse_model_short),
+    model_vector_mhost = paste0(donor,', ', vector_short, ', ', mouse_model_short),
+    sample_type = ifelse(cancer_type %in% c('Breast', 'CRC'),
+                         case_match(sample_type, 
+                             'whole_tumor' ~ 'Primary tumor', 
+                             'whole_lung' ~ 'Lung mets',
+                             'bulk' ~ 'Bulk',
+                             'cell_culture' ~ 'Cell culture'),
+                         sample_type
+                         ),
+        sample_type = ifelse(cancer_type %in% c('NSCLC'),
+                         case_match(sample_type, 
+                             'met_liver' ~ 'Liver mets', 
+                             'whole_lung' ~ 'Primary tumor',
+                             'bulk' ~ 'Bulk',
+                             'cell_culture' ~ 'Cell culture'),
+                         sample_type
+                         ),
+    
+    sample_type = factor(sample_type, levels = c('Primary tumor', 'Lung mets', 'Liver mets', 'Bulk', 'Cell culture'))
+    
+  )
+
+colData(se) <- chunk_colData %>% DataFrame
+
+x <- colData(se) %>% data.frame %>% 
+  mutate(
+    vector_mhost_selected = ifelse(vector_mhost == 'Thy1, Syngeneic', '')
+  )
+
+
+No Cas 9 = 
+
+y=x %>% 
+    filter(
+      
+      vector_mhost_selected = ifelse()
+      vector_mmodel %in% c('4T1-KO-Thy1-BALB', 'MVT1-KO-Thy1-FVB', 'Py2T-KO-Thy1-FVB'))
+
+# chunk_data <- colData(se) %>% data.frame %>%
+#   filter(sample_type %in% c('cell_culture', 'Primary tumor')) %>% 
+#   filter(!is.na(vector_short)) %>% 
+#   filter(effect_type_short == 'noKO') %>% 
+#   mutate(
+#     guides_over_30_pct = guides_over_30 / 2215
+#   )
+
+
+group_list_modality <- list(
+  `StealTHY syngeneic` = x %>% 
+    filter(vector_mmodel %in% c('4T1-KO-Thy1-BALB', 'MVT1-KO-Thy1-FVB', 'Py2T-KO-Thy1-FVB') & sample_type == 'Primary tumor') %>%
+    pull(sample_alias),
+  
+  `Cas9+Puro syngeneic` = x %>% 
+    filter(vector_mmodel == '4T1-KO-Puro_EF1alpha_SpCas9-BALB' & sample_type == 'Primary tumor') %>% 
+    pull(sample_alias),
+  
+  `StealTHY NSG` = x %>% 
+    filter(vector_mmodel %in% c('4T1-KO-Thy1-NSG', 'MVT1-KO-Thy1-NSG', 'Py2T-KO-Thy1-NSG') & sample_type == 'Primary tumor') %>%
+    pull(sample_alias),
+  
+  `Cas9+Puro NSG` = x %>% 
+    filter(vector_mmodel == '4T1-KO-Puro_EF1alpha_SpCas9-NSG' & sample_type == 'Primary tumor') %>% 
+    pull(sample_alias),
+  
+  `StealTHY syngeneic 4T1` = x %>% 
+    filter(vector_mmodel == '4T1-KO-Thy1-BALB' & sample_type == 'Primary tumor') %>%
+    pull(sample_alias)
+  
+)
+
+```
+
