@@ -5,7 +5,7 @@ author: "Francesc Castro-Giner"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 output: workflowr::wflow_html
 editor_options:
-  chunk_output_type: console
+  chunk_output_type: inline
 params:
   data_dir: ./data/crispr/mm_2215_sgRNA
 ---
@@ -624,7 +624,7 @@ use_comparisons <- list(
 
 
 #### Threshold 30x
-```{r complexity-dynamics-30x}
+```{r complexity-dynamics-30x, fig.asp = 1.8, fig.width = 2}
 chunk_data %>% 
   ggplot(aes(vector_short, guides_over_30_pct,
              color = vector_short,
@@ -654,11 +654,17 @@ chunk_data %>%
     method = 'wilcox.test',
     size = 0.4*geom_text_size,
     bracket.size = one_pt/4
+  ) +
+  theme(
+    axis.text =  element_text(size=6),
+    axis.title =  element_text(size=6),
+    plot.title = element_text(size=6, hjust = 0.5),
+    strip.text = element_text(size = 6)
   )
 ```
 
 Same plot, with P.adjust at panel level
-```{r complexity-dynamics-30x-padj-panel}
+```{r complexity-dynamics-30x-padj-panel, fig.asp = 1.8, fig.width = 2}
 chunk_data %>% 
   ggplot(aes(vector_short, guides_over_30_pct,
              color = vector_short,
@@ -690,11 +696,18 @@ chunk_data %>%
     p.adjust.by = "panel",
     label.size = 0.4*geom_text_size,
     size = one_pt/4
+  ) +
+  theme(
+    axis.text =  element_text(size=6),
+    axis.title =  element_text(size=6),
+    plot.title = element_text(size=6, hjust = 0.5),
+    strip.text = element_text(size = 6)
   )
+
 ```
 
 Same plot, with P.adjust at group level
-```{r complexity-dynamics-30x-padj-group}
+```{r complexity-dynamics-30x-padj-group, fig.asp = 1.8, fig.width = 2}
 chunk_data %>% 
   ggplot(aes(vector_short, guides_over_30_pct,
              color = vector_short,
@@ -726,12 +739,19 @@ chunk_data %>%
     p.adjust.by = "group",
     label.size = 0.4*geom_text_size,
     size = one_pt/4
+  ) +
+  theme(
+    axis.text =  element_text(size=6),
+    axis.title =  element_text(size=6),
+    plot.title = element_text(size=6, hjust = 0.5),
+    strip.text = element_text(size = 6)
   )
+
 ```
 
 
 #### Threshold 100x
-```{r complexity-dynamics-100x}
+```{r complexity-dynamics-100x, fig.asp = 1.8, fig.width = 2}
 chunk_data %>% 
   ggplot(aes(vector_short, guides_over_100_pct,
              color = vector_short,
@@ -761,11 +781,18 @@ chunk_data %>%
     method = 'wilcox.test',
     size = 0.4*geom_text_size,
     bracket.size = one_pt/4
+  ) +
+  theme(
+    axis.text =  element_text(size=6),
+    axis.title =  element_text(size=6),
+    plot.title = element_text(size=6, hjust = 0.5),
+    strip.text = element_text(size = 6)
   )
+
 ```
 
 Same plot, with P.adjust at panel level
-```{r complexity-dynamics-100x-padj-panel}
+```{r complexity-dynamics-100x-padj-panel, fig.asp = 1.8, fig.width = 2}
 chunk_data %>% 
   ggplot(aes(vector_short, guides_over_100_pct,
              color = vector_short,
@@ -797,11 +824,18 @@ chunk_data %>%
     p.adjust.by = "panel",
     label.size = 0.4*geom_text_size,
     size = one_pt/4
+  ) +
+  theme(
+    axis.text =  element_text(size=6),
+    axis.title =  element_text(size=6),
+    plot.title = element_text(size=6, hjust = 0.5),
+    strip.text = element_text(size = 6)
   )
+
 ```
 
 Same plot, with P.adjust at group level
-```{r complexity-dynamics-100x-padj-group}
+```{r complexity-dynamics-100x-padj-group, fig.asp = 1.8, fig.width = 2}
 chunk_data %>% 
   ggplot(aes(vector_short, guides_over_100_pct,
              color = vector_short,
@@ -833,7 +867,14 @@ chunk_data %>%
     p.adjust.by = "group",
     label.size = 0.4*geom_text_size,
     size = one_pt/4
+  ) +
+  theme(
+    axis.text =  element_text(size=6),
+    axis.title =  element_text(size=6),
+    plot.title = element_text(size=6, hjust = 0.5),
+    strip.text = element_text(size = 6)
   )
+
 ```
 
 
