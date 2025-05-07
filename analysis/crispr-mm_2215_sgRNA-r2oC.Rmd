@@ -78,10 +78,13 @@ chunk_colData <- colData(se) %>% data.frame %>%
   mutate(
     vector_short = ifelse(vector_short == 'Puro_EF1alpha_SpCas9', 
                           'Cas9+Puro', vector_short),
+    vector_short = ifelse(vector_short == 'Puro+ dCas9', 
+                          'Cas9+Puro', vector_short),
     vector_short = factor(vector_short, levels = c('Thy1', 'Puro', 'Cas9+Puro')),
     mouse_model_short = case_match(mouse_model_global,
                                    'immunodeficient' ~ 'NSG',
-                                   'immunocompetent' ~ 'Syngeneic'
+                                   'immunocompetent' ~ 'Syngeneic',
+                                   'C57BL6' ~ 'Syngeneic'
                                    ),
     mouse_model_short = factor(mouse_model_short, levels = c('NSG', 'Syngeneic')),
     vector_mhost = paste0(vector_short, ', ', mouse_model_short),

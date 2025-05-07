@@ -77,6 +77,27 @@ Load Summarized Experiment object
 se <- readRDS(file.path(params$data_dir, 'se.rds'))
 ```
 
+
+```{r, eval = FALSE}
+x <- colData(se) %>% data.frame
+use_samples <- c(
+  'dCas4T1Repl1_NSGTum',
+  'dCas4T1Repl2_NSGTum',
+  'dCas4T1Repl3_NSGTum',
+  'dCas4T1Repl4_NSGTum',
+  'dCas4T1Repl5_NSGTum',
+  'Replacement_5bis',
+  'Replacement_6bis',
+  'Replacement_7bis',
+  'Replacement_8bis',
+  'Replacement_9bis'
+)
+
+x[use_samples,] %>% select(effect_type_short, effect_type_short,vector_short)
+
+x['dC9BL6_LungIV_C167_1',]
+```
+
 Filter samples used for this analysis
 ```{r dw-sel-cols}
 use_cols <- colData(se) %>% 
@@ -92,24 +113,42 @@ Data wrangling
 ```{r dw-colData}
 chunk_colData <- colData(se) %>% data.frame %>%
   mutate(
-    vector_short = ifelse(vector_short == 'Puro_EF1alpha_dCas9', 
-                          'dCas9+Puro', vector_short),
-    vector_short = factor(vector_short, levels = c('Thy1', 'Puro', 'dCas9+Puro')),
+    vector_short = ifelse(vector_short == 'Puro_EF1alpha_SpCas9', 
+                          'Cas9+Puro', vector_short),
+    vector_short = ifelse(vector_short == 'Puro+ dCas9', 
+                          'Cas9+Puro', vector_short),
+    vector_short = factor(vector_short, levels = c('Thy1', 'Puro', 'Cas9+Puro')),
     mouse_model_short = case_match(mouse_model_global,
                                    'immunodeficient' ~ 'NSG',
-                                   'immunocompetent' ~ 'Syngeneic'
+                                   'immunocompetent' ~ 'Syngeneic',
+                                   'C57BL6' ~ 'Syngeneic'
                                    ),
     mouse_model_short = factor(mouse_model_short, levels = c('NSG', 'Syngeneic')),
     vector_mhost = paste0(vector_short, ', ', mouse_model_short),
     model_vector_mhost = paste0(donor,', ', vector_short, ', ', mouse_model_short),
-    
-    sample_type = case_match(sample_type, 
+    sample_type = ifelse(cancer_type %in% c('Breast', 'CRC'),
+                         case_match(sample_type, 
                              'whole_tumor' ~ 'Primary tumor', 
-                             'whole_lung' ~ 'Lung mets'),
-    sample_type = factor(sample_type, levels = c('Primary tumor', 'Lung mets'))
+                             'whole_lung' ~ 'Lung mets',
+                             'bulk' ~ 'Bulk',
+                             'cell_culture' ~ 'Cell culture'),
+                         sample_type
+                         ),
+        sample_type = ifelse(cancer_type %in% c('NSCLC'),
+                         case_match(sample_type, 
+                             'met_liver' ~ 'Liver mets', 
+                             'whole_lung' ~ 'Primary tumor',
+                             'bulk' ~ 'Bulk',
+                             'cell_culture' ~ 'Cell culture'),
+                         sample_type
+                         ),
+    
+    sample_type = factor(sample_type, levels = c('Primary tumor', 'Lung mets', 'Liver mets', 'Bulk', 'Cell culture'))
+    
   )
 
 colData(se) <- chunk_colData %>% DataFrame
+
 
 ```
 
@@ -572,7 +611,8 @@ chunk_data <- colData(se) %>% data.frame %>%
   filter(!is.na(vector_short)) %>% 
   filter(effect_type_short == 'noKO') %>% 
   mutate(
-    guides_over_30_pct = guides_over_30 / 2215
+    guides_over_30_pct = guides_over_30 / 2215,
+    guides_over_100_pct = guides_over_100 / 2215
   )
 
 use_comparisons <- list(
@@ -580,9 +620,11 @@ use_comparisons <- list(
   c("Puro", "dCas9+Puro"),
   c("Thy1", "dCas9+Puro")
 )
+```
 
 
-
+#### Threshold 30x
+```{r complexity-dynamics-30x}
 chunk_data %>% 
   ggplot(aes(vector_short, guides_over_30_pct,
              color = vector_short,
@@ -616,7 +658,7 @@ chunk_data %>%
 ```
 
 Same plot, with P.adjust at panel level
-```{r complexity-dynamics-padj-panel}
+```{r complexity-dynamics-30x-padj-panel}
 chunk_data %>% 
   ggplot(aes(vector_short, guides_over_30_pct,
              color = vector_short,
@@ -652,9 +694,116 @@ chunk_data %>%
 ```
 
 Same plot, with P.adjust at group level
-```{r complexity-dynamics-padj-group}
+```{r complexity-dynamics-30x-padj-group}
 chunk_data %>% 
   ggplot(aes(vector_short, guides_over_30_pct,
+             color = vector_short,
+             fill = vector_short)) +
+  geom_quasirandom(shape = 21, 
+                   alpha = 0.8, 
+                   color = 'black', 
+                   size = 1, 
+                   stroke=one_pt/4
+                   ) +
+  scale_fill_manual(values = palette_vector) +
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1)
+    ) +
+  facet_grid2(sample_type ~ mouse_model_short,
+              axes = "all",
+              scales = 'free_y'
+              ) +
+  guides(fill = 'none', color = 'none') +
+  labs(
+    y = 'Percentage of guides',
+    x = ''
+  ) +
+  geom_pwc(
+    method = "wilcox_test", 
+    label = "p.adj.format",
+    p.adjust.method = "holm", 
+    p.adjust.by = "group",
+    label.size = 0.4*geom_text_size,
+    size = one_pt/4
+  )
+```
+
+
+#### Threshold 100x
+```{r complexity-dynamics-100x}
+chunk_data %>% 
+  ggplot(aes(vector_short, guides_over_100_pct,
+             color = vector_short,
+             fill = vector_short)) +
+  geom_quasirandom(shape = 21, 
+                   alpha = 0.8, 
+                   color = 'black', 
+                   size = 1, 
+                   stroke=one_pt/4
+                   ) +
+  scale_fill_manual(values = palette_vector) +
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1)
+    ) +
+  facet_grid2(sample_type ~ mouse_model_short,
+              axes = "all",
+              scales = 'free_y'
+              ) +
+  guides(fill = 'none', color = 'none') +
+  labs(
+    y = 'Percentage of guides',
+    x = ''
+  ) +
+  stat_compare_means(
+    comparisons = use_comparisons,
+    method = 'wilcox.test',
+    size = 0.4*geom_text_size,
+    bracket.size = one_pt/4
+  )
+```
+
+Same plot, with P.adjust at panel level
+```{r complexity-dynamics-100x-padj-panel}
+chunk_data %>% 
+  ggplot(aes(vector_short, guides_over_100_pct,
+             color = vector_short,
+             fill = vector_short)) +
+  geom_quasirandom(shape = 21, 
+                   alpha = 0.8, 
+                   color = 'black', 
+                   size = 1, 
+                   stroke=one_pt/4
+                   ) +
+  scale_fill_manual(values = palette_vector) +
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1)
+    ) +
+  facet_grid2(sample_type ~ mouse_model_short,
+              axes = "all",
+              scales = 'free_y'
+              ) +
+  guides(fill = 'none', color = 'none') +
+  labs(
+    y = 'Percentage of guides',
+    x = ''
+  ) +
+  geom_pwc(
+    method = "wilcox_test", 
+    label = "p.adj.format",
+    p.adjust.method = "holm", 
+    p.adjust.by = "panel",
+    label.size = 0.4*geom_text_size,
+    size = one_pt/4
+  )
+```
+
+Same plot, with P.adjust at group level
+```{r complexity-dynamics-100x-padj-group}
+chunk_data %>% 
+  ggplot(aes(vector_short, guides_over_100_pct,
              color = vector_short,
              fill = vector_short)) +
   geom_quasirandom(shape = 21, 
@@ -692,89 +841,244 @@ chunk_data %>%
 
 
 ### Figure 4H: 
-
-```{r, eval = FALSE}
+```{r complexity-dynamics-4h-conf}
 se <- readRDS(file.path(params$data_dir, 'se.rds'))
-chunk_colData <- colData(se) %>% data.frame %>%
-  mutate(
-    vector_short = ifelse(vector_short == 'Puro_EF1alpha_SpCas9', 
-                          'Cas9+Puro', vector_short),
-    vector_short = factor(vector_short, levels = c('Thy1', 'Puro', 'Cas9+Puro')),
-    mouse_model_short = case_match(mouse_model_global,
-                                   'immunodeficient' ~ 'NSG',
-                                   'immunocompetent' ~ 'Syngeneic'
-                                   ),
-    mouse_model_short = factor(mouse_model_short, levels = c('NSG', 'Syngeneic')),
-    vector_mhost = paste0(vector_short, ', ', mouse_model_short),
-    model_vector_mhost = paste0(donor,', ', vector_short, ', ', mouse_model_short),
-    sample_type = ifelse(cancer_type %in% c('Breast', 'CRC'),
-                         case_match(sample_type, 
-                             'whole_tumor' ~ 'Primary tumor', 
-                             'whole_lung' ~ 'Lung mets',
-                             'bulk' ~ 'Bulk',
-                             'cell_culture' ~ 'Cell culture'),
-                         sample_type
-                         ),
-        sample_type = ifelse(cancer_type %in% c('NSCLC'),
-                         case_match(sample_type, 
-                             'met_liver' ~ 'Liver mets', 
-                             'whole_lung' ~ 'Primary tumor',
-                             'bulk' ~ 'Bulk',
-                             'cell_culture' ~ 'Cell culture'),
-                         sample_type
-                         ),
-    
-    sample_type = factor(sample_type, levels = c('Primary tumor', 'Lung mets', 'Liver mets', 'Bulk', 'Cell culture'))
-    
-  )
 
-colData(se) <- chunk_colData %>% DataFrame
+# Define groups of samples
+data_array <- c(
+  "No Cas9","CRISPRKO_Clone_61","In vitro",
+  "No Cas9","CRISPRKO_Clone_64","In vitro",
+  "No Cas9","CRISPRKO_Clone_67","In vitro",
+  "No Cas9","C167_Thy1_baseline","In vitro",
+  "No Cas9","LLC1_Thy1_baseline","In vitro",
+  "+Apo-Cas9","PlatePositionG10","In vitro",
+  "+Apo-Cas9","CRISPRKO_Clone_65","In vitro",
+  "+Apo-Cas9","CRISPRKO_Clone_68","In vitro",
+  "+Apo-Cas9","C167_StealTHY","In vitro",
+  "+Apo-Cas9","LLC1_StealTHY","In vitro",
+  "+Apo-Cas9","CT26_StealTHY","In vitro",
+  "+LV Cas9","CRISPRKO_Clone_62","In vitro",
+  "+LV Cas9","CRISPRKO_Clone_66","In vitro",
+  "+LV Cas9","CRISPRKO_Clone_69","In vitro",
+  "+LV Cas9","PlatePositionC11","In vitro",
+  "+LV Cas9","PlatePositionH10","In vitro",
+  "+LV Cas9","PlatePositionB11","In vitro",
+  "Stable dCas9","C167_dCas9baseline","In vitro",
+  "Stable dCas9","LLC1_dCas9baseline","In vitro",
+  "Stable dCas9","MVT1_dCas9baseline","In vitro",
+  "Stable dCas9","Py2T_dCas9baseline","In vitro",
+  "Stable dCas9","4T1_dCas9baseline","In vitro",
+  "No Cas9","4T_TumoT_B5","In vivo",
+  "No Cas9","4T_TumoT_B3","In vivo",
+  "No Cas9","MVT_TumoT_F3","In vivo",
+  "No Cas9","MVT_TumoT_F5","In vivo",
+  "No Cas9","Replacement_9","In vivo",
+  "No Cas9","Replacement_5","In vivo",
+  "+Apo-Cas9","CRISPRKO_Clone_13","In vivo",
+  "+Apo-Cas9","CRISPRKO_Clone_22","In vivo",
+  "+Apo-Cas9","CRISPRKO_Clone_24","In vivo",
+  "+Apo-Cas9","C167_StealTHY_Tum_1","In vivo",
+  "+Apo-Cas9","LLC1_StealTHY_Tum_1","In vivo",
+  "+Apo-Cas9","ColoCT26_StealTHY_Tum_1","In vivo",
+  "+LV Cas9","PlatePositionA6","In vivo",
+  "+LV Cas9","PlatePositionE5","In vivo",
+  "+LV Cas9","PlatePositionC5","In vivo",
+  "+LV Cas9","PlatePositionA5","In vivo",
+  "+LV Cas9","PlatePositionG4","In vivo",
+  "+LV Cas9","PlatePositionG6","In vivo",
+  "Stable dCas9","PlatePositionG2","In vivo",
+  "Stable dCas9","PlatePositionA3","In vivo",
+  "Stable dCas9","PlatePositionC3","In vivo",
+  "Stable dCas9","PlatePositionE2","In vivo",
+  "Stable dCas9","PlatePositionC2","In vivo",
+  # Previous samples
+  "No Cas9","CRISPRKO_Clone_61","In vitro",
+  "No Cas9","CRISPRKO_Clone_64","In vitro",
+  "No Cas9","CRISPRKO_Clone_67","In vitro",
+  "No Cas9","CRISPRKO_Clone_63","In vitro",
+  "No Cas9","CRISPRKO_Clone_71","In vitro",
+  "No Cas9","CRISPRKO_Clone_70","In vitro",
+  "+Apo-Cas9","PlatePositionG10","In vitro",
+  "+Apo-Cas9","CRISPRKO_Clone_65","In vitro",
+  "+Apo-Cas9","CRISPRKO_Clone_68","In vitro",
+  "+Apo-Cas9","CRISPRKO_Clone_60","In vitro",
+  "+Apo-Cas9","not found (?)","In vitro",
+  "+Apo-Cas9","not found (?)","In vitro",
+  "+LV Cas9","CRISPRKO_Clone_62","In vitro",
+  "+LV Cas9","CRISPRKO_Clone_66","In vitro",
+  "+LV Cas9","CRISPRKO_Clone_69","In vitro",
+  "+LV Cas9","PlatePositionC11","In vitro",
+  "+LV Cas9","PlatePositionH10","In vitro",
+  "+LV Cas9","PlatePositionB11","In vitro",
+  "No Cas9","4T_TumoT_B5","In vivo",
+  "No Cas9","4T_TumoT_B3","In vivo",
+  "No Cas9","MVT_TumoT_F3","In vivo",
+  "No Cas9","MVT_TumoT_F5","In vivo",
+  "No Cas9","not found (?)","In vivo",
+  "No Cas9","not found (?)","In vivo",
+  "+Apo-Cas9","CRISPRKO_Clone_22","In vivo",
+  "+Apo-Cas9","CRISPRKO_Clone_24","In vivo",
+  "+Apo-Cas9","not found (?)","In vivo",
+  "+Apo-Cas9","not found (?)","In vivo",
+  "+Apo-Cas9","not found (?)","In vivo",
+  "+Apo-Cas9","not found (?)","In vivo",
+  "+LV Cas9","PlatePositionA6","In vivo",
+  "+LV Cas9","PlatePositionE5","In vivo",
+  "+LV Cas9","PlatePositionC5","In vivo",
+  "+LV Cas9","PlatePositionA5","In vivo",
+  "+LV Cas9","PlatePositionG4","In vivo",
+  "+LV Cas9","not found (?)","In vivo"
+)
 
-x <- colData(se) %>% data.frame %>% 
-  mutate(
-    vector_mhost_selected = ifelse(vector_mhost == 'Thy1, Syngeneic', '')
-  )
+use_sample_groups <- matrix(data_array, ncol =3, byrow = TRUE, 
+       dimnames = list(c(), c('group', 'sample_alias', 'model'))) %>% 
+  data.frame %>% 
+  unique
 
+# use_sample_groups$sample_alias[!use_sample_groups$sample_alias %in% colnames(se)]
 
-No Cas 9 = 
-
-y=x %>% 
-    filter(
-      
-      vector_mhost_selected = ifelse()
-      vector_mmodel %in% c('4T1-KO-Thy1-BALB', 'MVT1-KO-Thy1-FVB', 'Py2T-KO-Thy1-FVB'))
-
-# chunk_data <- colData(se) %>% data.frame %>%
-#   filter(sample_type %in% c('cell_culture', 'Primary tumor')) %>% 
-#   filter(!is.na(vector_short)) %>% 
-#   filter(effect_type_short == 'noKO') %>% 
-#   mutate(
-#     guides_over_30_pct = guides_over_30 / 2215
-#   )
-
-
-group_list_modality <- list(
-  `StealTHY syngeneic` = x %>% 
-    filter(vector_mmodel %in% c('4T1-KO-Thy1-BALB', 'MVT1-KO-Thy1-FVB', 'Py2T-KO-Thy1-FVB') & sample_type == 'Primary tumor') %>%
-    pull(sample_alias),
-  
-  `Cas9+Puro syngeneic` = x %>% 
-    filter(vector_mmodel == '4T1-KO-Puro_EF1alpha_SpCas9-BALB' & sample_type == 'Primary tumor') %>% 
-    pull(sample_alias),
-  
-  `StealTHY NSG` = x %>% 
-    filter(vector_mmodel %in% c('4T1-KO-Thy1-NSG', 'MVT1-KO-Thy1-NSG', 'Py2T-KO-Thy1-NSG') & sample_type == 'Primary tumor') %>%
-    pull(sample_alias),
-  
-  `Cas9+Puro NSG` = x %>% 
-    filter(vector_mmodel == '4T1-KO-Puro_EF1alpha_SpCas9-NSG' & sample_type == 'Primary tumor') %>% 
-    pull(sample_alias),
-  
-  `StealTHY syngeneic 4T1` = x %>% 
-    filter(vector_mmodel == '4T1-KO-Thy1-BALB' & sample_type == 'Primary tumor') %>%
-    pull(sample_alias)
-  
+use_palette <- c(
+  `No Cas9` = '#9f71ce',
+  `+Apo-Cas9`  = '#F7EC13',
+  `+LV Cas9`  = 'black',
+  `Stable dCas9` = 'white'
 )
 
 ```
+
+```{r complexity-dynamics-4h, fig.asp = 1.8, fig.width = 1.5}
+chunk_data <- colData(se) %>% data.frame %>% 
+  filter(sample_alias %in% use_sample_groups$sample_alias) %>%
+  left_join(use_sample_groups)%>% 
+  mutate(
+    guides_over_100_pct = guides_over_100 / 2215,
+    guides_over_30_pct = guides_over_30 / 2215,
+    guides_over_1_pct = guides_over_1 / 2215,
+    group = factor(group, levels = c('No Cas9', '+Apo-Cas9', '+LV Cas9', 'Stable dCas9'))
+  )
+
+use_comparisons <- chunk_data$group %>% levels() %>% combn(2,simplify = FALSE)
+
+
+chunk_data %>% 
+  ggplot(aes(group, guides_over_1_pct,
+             color = group,
+             fill = group)) +
+  geom_quasirandom(shape = 21, 
+                   alpha = 0.8, 
+                   color = 'black', 
+                   size = 1, 
+                   stroke=one_pt/4
+                   ) +
+  scale_fill_manual(values = use_palette) +
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1),
+    breaks = c(0, 0.5, 0.75, 1)
+    # limits = c(0, 1.2)
+    ) +
+  facet_grid2(model ~ .,
+              axes = "all"
+              ) +
+  guides(fill = 'none', color = 'none') +
+  labs(
+    y = 'Percentage of guides > 1x',
+    x = ''
+  ) +
+  stat_compare_means(
+    aes(label = paste0("p = ", after_stat(p.format))),
+    comparisons = use_comparisons,
+    method = 'wilcox.test',
+    size = 0.4*geom_text_size,
+    bracket.size = one_pt/4
+  ) +
+  theme(
+    axis.text =  element_text(size=6),
+    axis.title =  element_text(size=6),
+    plot.title = element_text(size=6, hjust = 0.5),
+    strip.text = element_text(size = 6)
+  )
+
+
+
+chunk_data %>% 
+  ggplot(aes(group, guides_over_30_pct,
+             color = group,
+             fill = group)) +
+  geom_quasirandom(shape = 21, 
+                   alpha = 0.8, 
+                   color = 'black', 
+                   size = 1, 
+                   stroke=one_pt/4
+                   ) +
+  scale_fill_manual(values = use_palette) +
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1),
+    breaks = c(0, 0.5, 0.75, 1)
+    # limits = c(0, 1.2)
+    ) +
+  facet_grid2(model ~ .,
+              axes = "all"
+              ) +
+  guides(fill = 'none', color = 'none') +
+  labs(
+    y = 'Percentage of guides > 30x',
+    x = ''
+  ) +
+  stat_compare_means(
+    aes(label = paste0("p = ", after_stat(p.format))),
+    comparisons = use_comparisons,
+    method = 'wilcox.test',
+    size = 0.4*geom_text_size,
+    bracket.size = one_pt/4
+  ) +
+  theme(
+    axis.text =  element_text(size=6),
+    axis.title =  element_text(size=6),
+    plot.title = element_text(size=6, hjust = 0.5),
+    strip.text = element_text(size = 6)
+  )
+
+
+chunk_data %>% 
+  ggplot(aes(group, guides_over_100_pct,
+             color = group,
+             fill = group)) +
+  geom_quasirandom(shape = 21, 
+                   alpha = 0.8, 
+                   color = 'black', 
+                   size = 1, 
+                   stroke=one_pt/4
+                   ) +
+  scale_fill_manual(values = use_palette) +
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1),
+    breaks = c(0, 0.5, 0.75, 1)
+    # limits = c(0, 1.2)
+    ) +
+  facet_grid2(model ~ .,
+              axes = "all"
+              ) +
+  guides(fill = 'none', color = 'none') +
+  labs(
+    y = 'Percentage of guides > 100x',
+    x = ''
+  ) +
+  stat_compare_means(
+    aes(label = paste0("p = ", after_stat(p.format))),
+    comparisons = use_comparisons,
+    method = 'wilcox.test',
+    size = 0.4*geom_text_size,
+    bracket.size = one_pt/4
+  ) +
+  theme(
+    axis.text =  element_text(size=6),
+    axis.title =  element_text(size=6),
+    plot.title = element_text(size=6, hjust = 0.5),
+    strip.text = element_text(size = 6)
+  )
+```
+
 
