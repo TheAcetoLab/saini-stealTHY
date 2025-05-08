@@ -881,7 +881,7 @@ chunk_data %>%
 
 
 
-### Figure 4H: 
+### Figure 4H: First draft
 ```{r complexity-dynamics-4h-conf}
 se <- readRDS(file.path(params$data_dir, 'se.rds'))
 
@@ -1121,5 +1121,453 @@ chunk_data %>%
     strip.text = element_text(size = 6)
   )
 ```
+
+
+### Figure 4H: Second draft
+```{r complexity-dynamics-4h-v2-conf}
+se <- readRDS(file.path(params$data_dir, 'se.rds'))
+
+# Define groups of samples
+data_array <- c(
+"No Cas9","CRISPRKO_Clone_61 ","In vitro",
+"No Cas9","CRISPRKO_Clone_64","In vitro",
+"No Cas9","CRISPRKO_Clone_67","In vitro",
+"No Cas9","C167_Thy1_baseline","In vitro",
+"No Cas9","LLC1_Thy1_baseline","In vitro",
+"+Apo-Cas9","CRISPRKO_Clone_60","In vitro",
+"+Apo-Cas9","CRISPRKO_Clone_65","In vitro",
+"+Apo-Cas9","CRISPRKO_Clone_68","In vitro",
+"+Apo-Cas9","C167_StealTHY","In vitro",
+"+Apo-Cas9","LLC1_StealTHY","In vitro",
+"+Apo-Cas9","CT26_StealTHY","In vitro",
+"+LV Cas9","CRISPRKO_Clone_62","In vitro",
+"+LV Cas9","CRISPRKO_Clone_66","In vitro",
+"+LV Cas9","CRISPRKO_Clone_69","In vitro",
+"+LV Cas9","PlatePositionC11","In vitro",
+"+LV Cas9","PlatePositionH10","In vitro",
+"+LV Cas9","PlatePositionB11","In vitro",
+"Stable dCas9","C167_dCas9baseline","In vitro",
+"Stable dCas9","LLC1_dCas9baseline","In vitro",
+"Stable dCas9","MVT1_dCas9baseline","In vitro",
+"Stable dCas9","Py2T_dCas9baseline","In vitro",
+"Stable dCas9","4T1_dCas9baseline","In vitro",
+"No Cas9","4T_TumoT_B5","In vivo (mammary fat pad)",
+"No Cas9","4T_TumoT_B3","In vivo (mammary fat pad)",
+"No Cas9","4T_TumoT_B1","In vivo (mammary fat pad)",
+"No Cas9","MVT_TumoT_F1","In vivo (mammary fat pad)",
+"No Cas9","MVT_TumoT_F3","In vivo (mammary fat pad)",
+"No Cas9","MVT_TumoT_F4","In vivo (mammary fat pad)",
+"+Apo-Cas9","CRISPRKO_Clone_13","In vivo (mammary fat pad)",
+"+Apo-Cas9","CRISPRKO_Clone_14","In vivo (mammary fat pad)",
+"+Apo-Cas9","CRISPRKO_Clone_11","In vivo (mammary fat pad)",
+"+Apo-Cas9","CRISPRKO_Clone_22","In vivo (mammary fat pad)",
+"+Apo-Cas9","CRISPRKO_Clone_24","In vivo (mammary fat pad)",
+"+Apo-Cas9","CRISPRKO_Clone_20","In vivo (mammary fat pad)",
+"+LV Cas9","PlatePositionA6","In vivo (mammary fat pad)",
+"+LV Cas9","PlatePositionE5","In vivo (mammary fat pad)",
+"+LV Cas9","PlatePositionC5","In vivo (mammary fat pad)",
+"+LV Cas9","PlatePositionA5","In vivo (mammary fat pad)",
+"+LV Cas9","PlatePositionG4","In vivo (mammary fat pad)",
+"+LV Cas9","PlatePositionG6","In vivo (mammary fat pad)",
+"Stable dCas9","PlatePositionG2","In vivo (mammary fat pad)",
+"Stable dCas9","PlatePositionA3","In vivo (mammary fat pad)",
+"Stable dCas9","PlatePositionC3","In vivo (mammary fat pad)",
+"Stable dCas9","PlatePositionE2","In vivo (mammary fat pad)",
+"Stable dCas9","PlatePositionC2","In vivo (mammary fat pad)",
+"No Cas9","Replacement_9","In vivo (lung intravenous)",
+"No Cas9","Replacement_5","In vivo (lung intravenous)",
+"No Cas9","Replacement_2bis","In vivo (lung intravenous)",
+"No Cas9","Replacement_7","In vivo (lung intravenous)",
+"+Apo-Cas9","LLC1_StealTHY_Tum_3","In vivo (lung intravenous)",
+"+Apo-Cas9","LLC1_StealTHY_Tum_5","In vivo (lung intravenous)",
+"+Apo-Cas9","C167_StealTHY_Tum_3","In vivo (lung intravenous)",
+"+Apo-Cas9","C167_StealTHY_Tum_5","In vivo (lung intravenous)",
+"Stable dCas9","dC9BL6_LungIV_LLC1_1","In vivo (lung intravenous)",
+"Stable dCas9","dC9BL6_LungIV_LLC1_2","In vivo (lung intravenous)",
+"Stable dCas9","dC9BL6_LungIV_C167_2","In vivo (lung intravenous)",
+"Stable dCas9","dC9BL6_LungIV_C167_4","In vivo (lung intravenous)",
+"+Apo-Cas9","ColoCT26_StealTHY_Tum_1","In vivo (colon cecal wall)"
+)
+
+
+use_sample_groups <- matrix(data_array, ncol =3, byrow = TRUE, 
+       dimnames = list(c(), c('group', 'sample_alias', 'model'))) %>% 
+  data.frame %>% 
+  unique
+
+# use_sample_groups$sample_alias[!use_sample_groups$sample_alias %in% colnames(se)]
+
+use_palette <- c(
+  `No Cas9` = '#9f71ce',
+  `+Apo-Cas9`  = '#F7EC13',
+  `+LV Cas9`  = 'black',
+  `Stable dCas9` = 'white'
+)
+
+chunk_data <- colData(se) %>% data.frame %>% 
+  filter(sample_alias %in% use_sample_groups$sample_alias) %>%
+  left_join(use_sample_groups)%>% 
+  mutate(
+    guides_over_100_pct = guides_over_100 / 2215,
+    guides_over_30_pct = guides_over_30 / 2215,
+    guides_over_1_pct = guides_over_1 / 2215,
+    group = factor(group, levels = c('No Cas9', '+Apo-Cas9', '+LV Cas9', 'Stable dCas9'))
+  )
+
+use_comparisons <- chunk_data$group %>% levels() %>% combn(2,simplify = FALSE)
+
+# Remove In vivo (colon cecal wall), only one sample
+chunk_data <- chunk_data %>% 
+  filter(model != 'In vivo (colon cecal wall)') %>% 
+  mutate(model = factor(model, levels = c(
+    'In vitro',
+    'In vivo (mammary fat pad)', 
+    'In vivo (lung intravenous)'
+  )))
+```
+
+#### Treshold 30x
+```{r complexity-dynamics-4h-v2-30x, fig.asp = 4, fig.width = 1.2}
+chunk_data %>% 
+  ggplot(aes(group, guides_over_30_pct,
+             color = group,
+             fill = group)) +
+  geom_quasirandom(shape = 21, 
+                   alpha = 0.8, 
+                   color = 'black', 
+                   size = 1, 
+                   stroke=one_pt/4
+                   ) +
+  scale_fill_manual(values = use_palette) +
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1),
+    breaks = c(0, 0.5, 0.75, 1)
+    # limits = c(0, 1.2)
+    ) +
+  facet_grid2(
+    model ~ .,
+    axes = "all"
+  ) +
+  guides(fill = 'none', color = 'none') +
+  labs(
+    y = 'Percentage of guides > 30x',
+    x = ''
+  ) +
+  geom_pwc(
+    method = "wilcox_test",
+    # label = "p.adj.format",
+    # p.adjust.method = "holm",
+    # p.adjust.by = "panel",
+    label.size = 0.4*geom_text_size,
+    size = one_pt/4
+  ) +
+  # stat_compare_means(
+  #   comparisons = use_comparisons,
+  #   method = 'wilcox.test',
+  #   size = 0.4*geom_text_size,
+  #   bracket.size = one_pt/4
+  # ) +
+  theme(
+    axis.text =  element_text(size=6),
+    axis.title =  element_text(size=6),
+    plot.title = element_text(size=6, hjust = 0.5),
+    strip.text = element_text(size = 6)
+  )
+
+```
+
+#### Treshold 100x
+```{r complexity-dynamics-4h-v2-100x, fig.asp = 1.8, fig.width = 1.5}
+chunk_data %>% 
+  ggplot(aes(group, guides_over_100_pct,
+             color = group,
+             fill = group)) +
+  geom_quasirandom(shape = 21, 
+                   alpha = 0.8, 
+                   color = 'black', 
+                   size = 1, 
+                   stroke=one_pt/4
+                   ) +
+  scale_fill_manual(values = use_palette) +
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1),
+    breaks = c(0, 0.5, 0.75, 1)
+    # limits = c(0, 1.2)
+    ) +
+  facet_grid2(
+    model ~ .,
+    axes = "all"
+  ) +
+  guides(fill = 'none', color = 'none') +
+  labs(
+    y = 'Percentage of guides > 100x',
+    x = ''
+  ) +
+  geom_pwc(
+    method = "wilcox_test",
+    # label = "p.adj.format",
+    # p.adjust.method = "holm",
+    # p.adjust.by = "panel",
+    label.size = 0.4*geom_text_size,
+    size = one_pt/4
+  ) +
+  # stat_compare_means(
+  #   comparisons = use_comparisons,
+  #   method = 'wilcox.test',
+  #   size = 0.4*geom_text_size,
+  #   bracket.size = one_pt/4
+  # ) +
+  theme(
+    axis.text =  element_text(size=6),
+    axis.title =  element_text(size=6),
+    plot.title = element_text(size=6, hjust = 0.5),
+    strip.text = element_text(size = 6)
+  )
+```
+
+
+### Figure 3B: 
+```{r complexity-dynamics-3b-conf}
+se <- readRDS(file.path(params$data_dir, 'se.rds'))
+
+# Define groups of samples
+data_array <- c(
+  "PlatePositionB10","11.78","Neg","Ig control",
+  "PlatePositionF10","16.88","Neg","Ig control",
+  "PlatePositionD10","11.12","Neg","Ig control",
+  "CD4_repeat_2","15.1","Neg","Ig control",
+  "CD4_repeat_3","8.6","Neg","Ig control",
+  "UntreatRepl1","41.15","Pos","Ig control",
+  "UntreatRepl2","49.44","Pos","Ig control",
+  "UntreatRepl3","19.65","Neg","Ig control",
+  "UntreatRepl4","22.14","Neg","Ig control",
+  "UntreatRepl5","20.77","Not ascertained","Ig control",
+  "PlatePositionE10","67.80","Pos","anti-CD4/CD8",
+  "PlatePositionC10","45.40","Pos","anti-CD4/CD8",
+  "CD4_repeat_1","53.78","Unclear","anti-CD4/CD8",
+  "RescueRepl1","77.92","Pos","anti-CD4/CD8",
+  "RescueRepl2","52.16","Not ascertained","anti-CD4/CD8",
+  "RescueRepl3","40.93","Pos","anti-CD4/CD8",
+  "RescueRepl4","57.11","Pos","anti-CD4/CD8",
+  "RescueRepl5","12.49","Not ascertained","anti-CD4/CD8",
+  "4T_LungsT_B1","75.35","Not applicable ","untreated",
+  "4T_LungsT_B2","66.78","Not applicable","untreated",
+  "4T_LungsT_B3","67.89","Not applicable","untreated",
+  "4T_LungsT_B4","74.56","Not applicable","untreated",
+  "4T_LungsT_B5","65.77","Not applicable","untreated"
+)
+
+use_sample_groups <- matrix(data_array, ncol =4, byrow = TRUE, 
+       dimnames = list(c(), c('sample_alias', 'Thy1 B+ cells per mm3 of PT', 'Cas9 staining', 'group'))) %>% 
+  data.frame(check.names = FALSE) %>% 
+  mutate(`Thy1 B+ cells per mm3 of PT` = as.numeric(`Thy1 B+ cells per mm3 of PT`))
+  unique
+
+# use_sample_groups$sample_alias[!use_sample_groups$sample_alias %in% colnames(se)]
+
+use_palette <- c(
+  `anti-CD4/CD8` = "#0600fe",
+  `Ig control`  = "#cccdcd",
+  `untreated`  = "#fffe06"
+)
+
+```
+
+
+```{r complexity-dynamics-3b}
+chunk_data <- colData(se) %>% data.frame %>% 
+  filter(sample_alias %in% use_sample_groups$sample_alias) %>%
+  left_join(use_sample_groups)%>% 
+  mutate(
+    guides_over_100_pct = guides_over_100 / 2215,
+    guides_over_30_pct = guides_over_30 / 2215,
+    guides_over_1_pct = guides_over_1 / 2215,
+    group = factor(group, levels = c('anti-CD4/CD8', 'Ig control', 'untreated'))
+  )
+
+use_comparisons <- chunk_data$group %>% levels() %>% combn(2,simplify = FALSE)
+```
+
+#### Treshold 30x
+
+##### Main figure
+```{r complexity-dynamics-3b-30x, fig.width = 2, fig.asp = 1}
+chunk_data %>% 
+  ggplot(aes(`Thy1 B+ cells per mm3 of PT`, guides_over_30_pct,
+             color = group,
+             fill = group)) +
+  geom_point(shape = 21, 
+             alpha = 0.8,
+             color = 'black',
+             size = 1,
+             stroke=one_pt/4) +
+  scale_fill_manual(values = use_palette) +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1)
+  ) +
+  xlim(0, 80) +
+  labs(
+    y = 'Percentage of guides > 30x in lungs',
+    color = '',
+    fill = ''
+  ) +
+  theme(
+    axis.text =  element_text(size=6),
+    axis.title =element_text(size=6),
+    plot.title = element_text(size=6, hjust = 0.5),
+    strip.text = element_text(size = 6),
+    legend.text = element_text(size = 6)
+  )
+```
+
+##### Figure with Y-Pvalues
+```{r complexity-dynamics-3b-30x-pval-y, fig.width = 1.5, fig.asp = 1.5}
+chunk_data %>% 
+  mutate(group = factor(as.character(group), levels = c('Ig control', 'anti-CD4/CD8', 'untreated'))) %>% 
+  ggplot(aes(group, guides_over_30_pct,
+             color = group,
+             fill = group)) +
+  geom_quasirandom(shape = 21, 
+                   alpha = 0.8, 
+                   color = 'black', 
+                   size = 1, 
+                   stroke=one_pt/4
+                   ) +
+  scale_fill_manual(values = use_palette) +
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1)
+    ) +
+  guides(fill = 'none', color = 'none') +
+  labs(
+    y = 'Percentage of guides > 30x in lungs',
+    x = ''
+  ) +
+  stat_compare_means(
+    aes(label = paste0("p = ", after_stat(p.format))),
+    comparisons = use_comparisons,
+    method = 'wilcox.test',
+    size = 0.4*geom_text_size,
+    bracket.size = one_pt/4
+  ) +
+  theme(
+    axis.text =  element_text(size=6),
+    axis.title =  element_text(size=6),
+    plot.title = element_text(size=6, hjust = 0.5),
+    strip.text = element_text(size = 6)
+  )
+
+```
+
+#### Treshold 100x
+
+##### Main figure
+```{r complexity-dynamics-3b-100x, fig.width = 2, fig.asp = 1}
+chunk_data %>% 
+  ggplot(aes(`Thy1 B+ cells per mm3 of PT`, guides_over_100_pct,
+             color = group,
+             fill = group)) +
+  geom_point(shape = 21, 
+             alpha = 0.8,
+             color = 'black',
+             size = 1,
+             stroke=one_pt/4) +
+  scale_fill_manual(values = use_palette) +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1)
+  ) +
+  xlim(0, 80) +
+  labs(
+    y = 'Percentage of guides > 100x in lungs',
+    color = '',
+    fill = ''
+  ) +
+  theme(
+    axis.text =  element_text(size=6),
+    axis.title =element_text(size=6),
+    plot.title = element_text(size=6, hjust = 0.5),
+    strip.text = element_text(size = 6),
+    legend.text = element_text(size = 6)
+  )
+```
+
+##### Figure with Y-Pvalues
+```{r complexity-dynamics-3b-100x-pval-y, fig.width = 1.5, fig.asp = 1.5}
+chunk_data %>% 
+  mutate(group = factor(as.character(group), levels = c('Ig control', 'anti-CD4/CD8', 'untreated'))) %>% 
+  ggplot(aes(group, guides_over_100_pct,
+             color = group,
+             fill = group)) +
+  geom_quasirandom(shape = 21, 
+                   alpha = 0.8, 
+                   color = 'black', 
+                   size = 1, 
+                   stroke=one_pt/4
+                   ) +
+  scale_fill_manual(values = use_palette) +
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1)
+    ) +
+  guides(fill = 'none', color = 'none') +
+  labs(
+    y = 'Percentage of guides > 100x in lungs',
+    x = ''
+  ) +
+  stat_compare_means(
+    aes(label = paste0("p = ", after_stat(p.format))),
+    comparisons = use_comparisons,
+    method = 'wilcox.test',
+    size = 0.4*geom_text_size,
+    bracket.size = one_pt/4
+  ) +
+  theme(
+    axis.text =  element_text(size=6),
+    axis.title =  element_text(size=6),
+    plot.title = element_text(size=6, hjust = 0.5),
+    strip.text = element_text(size = 6)
+  )
+
+```
+
+#### Figure with Pvalues for Thy1 B+ cells per mm3 of PT
+```{r complexity-dynamics-3b-B-pval, fig.width = 1.5, fig.asp = 1.5}
+chunk_data %>% 
+  mutate(group = factor(as.character(group), levels = c('Ig control', 'anti-CD4/CD8', 'untreated'))) %>% 
+  ggplot(aes(group, `Thy1 B+ cells per mm3 of PT`,
+             color = group,
+             fill = group)) +
+  geom_quasirandom(shape = 21, 
+                   alpha = 0.8, 
+                   color = 'black', 
+                   size = 1, 
+                   stroke=one_pt/4
+                   ) +
+  scale_fill_manual(values = use_palette) +
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  guides(fill = 'none', color = 'none') +
+  labs(
+    # y = 'Percentage of guides > 100x in lungs',
+    x = ''
+  ) +
+  stat_compare_means(
+    aes(label = paste0("p = ", after_stat(p.format))),
+    comparisons = use_comparisons,
+    method = 'wilcox.test',
+    size = 0.4*geom_text_size,
+    bracket.size = one_pt/4
+  ) +
+  theme(
+    axis.text =  element_text(size=6),
+    axis.title =  element_text(size=6),
+    plot.title = element_text(size=6, hjust = 0.5),
+    strip.text = element_text(size = 6)
+  )
+
+```
+
+
 
 
