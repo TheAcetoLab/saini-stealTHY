@@ -37,6 +37,7 @@ library(DT)
 library(kableExtra)
 library(diptest)
 library(SummarizedExperiment)
+library(openxlsx)
 
 library(ggridges)
 library(ggh4x)
@@ -220,6 +221,85 @@ gene_summ_files <- list.files(path = file.path('./output/crispr/mm_2215_sgRNA', 
 analysis_prefix <- basename(gene_summ_files) %>% gsub(".gene_summary.txt", "", .)
 gene_summ_5C <- foreach(i = gene_summ_files) %do% read.delim(i, check.names = FALSE)
 names(gene_summ_5C) <- analysis_prefix
+```
+
+
+
+## Download MAGeCK results
+```{r write-mageck-conf}
+# File name gene summary
+rmd_file <- current_input()
+if(is.null(rmd_file))
+  rmd_file <- 'tmp'
+gene_file_xlsx <- file.path('./docs/file',rmd_file, 'mageck_gene_summary.xlsx')
+sgrna_file_xlsx <- file.path('./docs/file',rmd_file, 'mageck_sgrna_summary.xlsx')
+```
+
+```{r write-mageck-results, eval = TRUE}
+for(i in names(mageck_comp_list)) {
+  i <- tolower(i) %>% gsub(" ", "_",.) 
+  file_xlsx <- file.path('./docs/file',rmd_file, paste0(i, '_mageck_results.xlsx'))
+  dir.create(dirname(file_xlsx), recursive = TRUE, showWarnings = FALSE)
+  # Generate workbook
+  wb <- createWorkbook()
+  wsn <- 'gene_summ'
+  addWorksheet(wb, wsn)
+  writeData(wb, wsn, gene_summ[[i]])
+  wsn <- 'sgrna_summ'
+  addWorksheet(wb, wsn)
+  # writeData(wb, wsn, sgrna_summ[[i]])
+  # for(wsn in names(mageck_flute[[i]])) {
+  #   addWorksheet(wb, wsn)
+  #   writeData(wb, wsn, mageck_flute[[i]][[wsn]])
+  # }
+  saveWorkbook(wb, file_xlsx, TRUE)
+}
+```
+
+```{r write-mageck-summ--results, eval = TRUE}
+# File name gene summary
+file_xlsx <- gene_file_xlsx
+dir.create(dirname(file_xlsx), recursive = TRUE, showWarnings = FALSE)
+
+# Generate workbook
+wb <- createWorkbook()
+for(i in names(gene_summ)) {
+  addWorksheet(wb, i)
+  writeData(wb, i, gene_summ[[i]])
+}
+saveWorkbook(wb, file_xlsx, TRUE)
+
+# File name sgRNA summary
+file_xlsx <- sgrna_file_xlsx
+dir.create(dirname(file_xlsx), recursive = TRUE, showWarnings = FALSE)
+
+# Generate workbook
+wb <- createWorkbook()
+for(i in names(sgrna_summ)) {
+  addWorksheet(wb, i)
+  writeData(wb, i, sgrna_summ[[i]])
+}
+saveWorkbook(wb, file_xlsx, TRUE)
+```
+
+### Overall summaries
+The tables of results can be downloaded using the following links:
+
+- [**Gene summary results**](`r gsub("docs/", "" , gene_file_xlsx)`)
+
+- [**sgRNA summary results**](`r gsub("docs/", "" , sgrna_file_xlsx)`)
+
+For file format description, visit [MAGeCK output](https://sourceforge.net/p/mageck/wiki/output/)
+
+### Results by comparison
+Download the results by comparison, including gene-set analysis level:
+```{r links-to-results}
+x <- foreach(i=names(mageck_comp_list), .combine = c) %do% {
+  ilower <- tolower(i) %>% gsub(" ", "_",.) 
+  file_xlsx <- file.path('./file', rmd_file, paste0(ilower, '_mageck_results.xlsx'))
+  paste0("[", i, "](", file_xlsx,")", sep = "")
+}
+cat(paste(x, collapse = ' - '), "\n\n")
 ```
 
 
@@ -410,6 +490,7 @@ for(i in use_comp)  {
 
 Define selected comparisons for muller plots
 ```{r define-comparisons-muller-plots}
+x <- colData(se) %>% data.frame
 
 mageck_comp_list <- list(
   `StealTHY KO Syngeneic CMT167` = list(
