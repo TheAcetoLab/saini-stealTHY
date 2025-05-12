@@ -5,7 +5,7 @@ author: "Francesc Castro-Giner"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 output: workflowr::wflow_html
 editor_options:
-  chunk_output_type: inline
+  chunk_output_type: console
 params:
   data_dir: ./data/crispr/mm_2215_sgRNA
 ---
@@ -402,11 +402,14 @@ genes_list_s5f <- gene_info %>%
 
 ### Genes selected in main figure 5C
 Generate muller plots for genes in main figure 5C
+
+
 ```{r run-muller-plots-m5c}
 cpm_threshold <- 1000
 comp_list <- comp_list_muller_StealTHY
 use_genes <- genes_list_m5c
 
+# Generate data
 use_df <- assay(se, 'cpm') %>% data.frame(check.names = FALSE) %>% 
   rownames_to_column('guide') %>% 
   mutate(
@@ -420,10 +423,17 @@ use_df <- assay(se, 'cpm') %>% data.frame(check.names = FALSE) %>%
   ) %>% 
   ungroup
 
+# Create color palette
+use_palette <- c(
+      'low abundant' = 'grey80',
+      colorRampPalette(rev(palette_OkabeIto))(length(use_genes)) %>% set_names(use_genes)
+    )
+
+
 j <-  names(comp_list)[1]
 muller_plots <- foreach(j = names(comp_list)) %do% {
-  i <- comp_list[[j]][[1]]
-  iname <-  names(comp_list[[j]])[1]
+  i <- comp_list[[j]][[2]]
+  iname <-  names(comp_list[[j]])[2]
   res <- foreach(iname = names(comp_list[[j]])) %do% {
     i <- comp_list[[j]][[iname]]
     x <- use_df %>% 
@@ -433,11 +443,28 @@ muller_plots <- foreach(j = names(comp_list)) %do% {
         sample_type = factor(sample_type, levels = c('Primary tumor', 'Metastasis'))
       )
 
+    # Remove genes to improve visualization
+    use_caption <- ''
+    if(j == 'Comparison 1: CMT167 Syngeneic Thy1.1') {
+      if(iname == 'CMT167 Syngeneic Thy1.1 1') {
+        x <- x %>% filter(gene != 'Axl')
+        use_caption <- 'Removed Axl gene for visualization'
+      }
+      if(iname == 'CMT167 Syngeneic Thy1.1 3') {
+        x <- x %>% filter(gene != 'Axl')
+        use_caption <- 'Removed Axl gene for visualization'
+      }
+    }
+    if(j == 'Comparison 3: CT26 Syngeneic Thy1.1') {
+      x <- x %>% filter(gene != 'Egfr')
+      use_caption <- 'Removed Egfr gene for visualization'
+    }
+
     # Select genes with cpm > cpm_threshold
     x_genes_keep <- x %>%
       filter(cpm > cpm_threshold) %>%
       pull(gene)
-
+    
     # Group guides with cpm < cpm_threshold into the low abundant category, and sum counts for low abundant
     x %<>%
       mutate(
@@ -446,12 +473,13 @@ muller_plots <- foreach(j = names(comp_list)) %do% {
       mutate(
         gene = fct_reorder(gene, cpm),
         gene = relevel(gene, ref = 'low abundant')
-      )
-    
-    use_cols <- c(
-      'low abundant' = 'grey80',
-      colorRampPalette(rev(palette_OkabeIto))(nlevels(x$gene) - 1) %>% set_names(levels(x$gene)[-1])
-    )
+      ) %>% 
+      group_by(gene, sample_alias, sample_type) %>% 
+      summarise(cpm = sum(cpm)) %>% 
+      ungroup()
+
+    use_cols <- use_palette[levels(x$gene)]
+  
     
     x %>% 
       ggplot( aes(x = sample_type, y = cpm/10000, group = gene, fill = gene)) + 
@@ -461,7 +489,8 @@ muller_plots <- foreach(j = names(comp_list)) %do% {
         x = '',
         y = expression("CPM x 10"^-4),
         title = iname,
-        fill = ''
+        fill = '',
+        caption = use_caption
       ) +
       scale_x_discrete(expand = c(0, 0)) +
       scale_y_continuous(expand = c(0, 0)) +
@@ -472,6 +501,7 @@ muller_plots <- foreach(j = names(comp_list)) %do% {
         plot.margin = margin(0.1, 0.5, 0.1, 0, "cm"),
         axis.text =  element_text(size=3),
         axis.title =  element_text(size=3),
+        plot.caption = element_text(size=3),
         plot.title = element_text(size=3, hjust = 0.5),
         legend.text = element_text(size=3),
         legend.title = element_text(size=3),

@@ -5,7 +5,7 @@ author: "Francesc Castro-Giner"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 output: workflowr::wflow_html
 editor_options:
-  chunk_output_type: inline
+  chunk_output_type: console
 params:
   data_dir: ./data/crispr/mm_2215_sgRNA
 ---
@@ -611,15 +611,51 @@ chunk_data <- colData(se) %>% data.frame %>%
   filter(!is.na(vector_short)) %>% 
   filter(effect_type_short == 'noKO') %>% 
   mutate(
+    guides_over_1_pct = guides_over_1 / 2215,
     guides_over_30_pct = guides_over_30 / 2215,
     guides_over_100_pct = guides_over_100 / 2215
   )
+
+# Exclude samples because PCR amplification problems, these samples showed unconvincing bands
+use_samples <- c(
+  'dCas4T1Repl1_NSGTum',
+  'dCas4T1Repl2_NSGTum',
+  'dCas4T1Repl3_NSGTum',
+  'dCas4T1Repl4_NSGTum',
+  'Replacement_5bis',
+  'Replacement_7bis',
+  'Replacement_8bis',
+  'Replacement_9bis'
+)
+
+chunk_data %<>% filter(!sample_alias %in% use_samples)
 
 use_comparisons <- list(
   c("Thy1", "Puro"), 
   c("Puro", "dCas9+Puro"),
   c("Thy1", "dCas9+Puro")
 )
+```
+
+#### Source data
+```{r complexity-dynamics-data}
+chunk_data %>% 
+  dplyr::select(sample_alias, vector_short, mouse_model_short, guides_over_1_pct, guides_over_30_pct, guides_over_100_pct) %>% 
+  mutate_at(vars(guides_over_1_pct, guides_over_30_pct, guides_over_100_pct), 
+            ~ round(.*100, 2)) %>% 
+  datatable(., 
+            rownames = FALSE, 
+            filter = 'top', 
+            caption = 'Source data for the plots',
+            extensions = 'Buttons', 
+            options = list(
+              dom = 'Blfrtip',
+              buttons = c('csv', 'excel'),
+              columnDefs = list(
+                list(width = 120, targets = 1:2)
+              )
+            )
+            )
 ```
 
 
@@ -881,8 +917,8 @@ chunk_data %>%
 
 
 
-### Figure 4H: First draft
-```{r complexity-dynamics-4h-conf}
+### Figure 3H: First draft
+```{r complexity-dynamics-3d-conf}
 se <- readRDS(file.path(params$data_dir, 'se.rds'))
 
 # Define groups of samples
@@ -892,88 +928,153 @@ data_array <- c(
   "No Cas9","CRISPRKO_Clone_67","In vitro",
   "No Cas9","C167_Thy1_baseline","In vitro",
   "No Cas9","LLC1_Thy1_baseline","In vitro",
-  "+Apo-Cas9","PlatePositionG10","In vitro",
+  "+Apo-Cas9","CRISPRKO_Clone_60","In vitro",
   "+Apo-Cas9","CRISPRKO_Clone_65","In vitro",
   "+Apo-Cas9","CRISPRKO_Clone_68","In vitro",
   "+Apo-Cas9","C167_StealTHY","In vitro",
   "+Apo-Cas9","LLC1_StealTHY","In vitro",
   "+Apo-Cas9","CT26_StealTHY","In vitro",
-  "+LV Cas9","CRISPRKO_Clone_62","In vitro",
-  "+LV Cas9","CRISPRKO_Clone_66","In vitro",
-  "+LV Cas9","CRISPRKO_Clone_69","In vitro",
-  "+LV Cas9","PlatePositionC11","In vitro",
-  "+LV Cas9","PlatePositionH10","In vitro",
-  "+LV Cas9","PlatePositionB11","In vitro",
   "Stable dCas9","C167_dCas9baseline","In vitro",
   "Stable dCas9","LLC1_dCas9baseline","In vitro",
   "Stable dCas9","MVT1_dCas9baseline","In vitro",
   "Stable dCas9","Py2T_dCas9baseline","In vitro",
   "Stable dCas9","4T1_dCas9baseline","In vitro",
-  "No Cas9","4T_TumoT_B5","In vivo",
-  "No Cas9","4T_TumoT_B3","In vivo",
-  "No Cas9","MVT_TumoT_F3","In vivo",
-  "No Cas9","MVT_TumoT_F5","In vivo",
-  "No Cas9","Replacement_9","In vivo",
-  "No Cas9","Replacement_5","In vivo",
-  "+Apo-Cas9","CRISPRKO_Clone_13","In vivo",
-  "+Apo-Cas9","CRISPRKO_Clone_22","In vivo",
-  "+Apo-Cas9","CRISPRKO_Clone_24","In vivo",
-  "+Apo-Cas9","C167_StealTHY_Tum_1","In vivo",
-  "+Apo-Cas9","LLC1_StealTHY_Tum_1","In vivo",
-  "+Apo-Cas9","ColoCT26_StealTHY_Tum_1","In vivo",
-  "+LV Cas9","PlatePositionA6","In vivo",
-  "+LV Cas9","PlatePositionE5","In vivo",
-  "+LV Cas9","PlatePositionC5","In vivo",
-  "+LV Cas9","PlatePositionA5","In vivo",
-  "+LV Cas9","PlatePositionG4","In vivo",
-  "+LV Cas9","PlatePositionG6","In vivo",
-  "Stable dCas9","PlatePositionG2","In vivo",
-  "Stable dCas9","PlatePositionA3","In vivo",
-  "Stable dCas9","PlatePositionC3","In vivo",
-  "Stable dCas9","PlatePositionE2","In vivo",
-  "Stable dCas9","PlatePositionC2","In vivo",
-  # Previous samples
-  "No Cas9","CRISPRKO_Clone_61","In vitro",
-  "No Cas9","CRISPRKO_Clone_64","In vitro",
-  "No Cas9","CRISPRKO_Clone_67","In vitro",
-  "No Cas9","CRISPRKO_Clone_63","In vitro",
-  "No Cas9","CRISPRKO_Clone_71","In vitro",
-  "No Cas9","CRISPRKO_Clone_70","In vitro",
-  "+Apo-Cas9","PlatePositionG10","In vitro",
-  "+Apo-Cas9","CRISPRKO_Clone_65","In vitro",
-  "+Apo-Cas9","CRISPRKO_Clone_68","In vitro",
-  "+Apo-Cas9","CRISPRKO_Clone_60","In vitro",
-  "+Apo-Cas9","not found (?)","In vitro",
-  "+Apo-Cas9","not found (?)","In vitro",
   "+LV Cas9","CRISPRKO_Clone_62","In vitro",
   "+LV Cas9","CRISPRKO_Clone_66","In vitro",
   "+LV Cas9","CRISPRKO_Clone_69","In vitro",
   "+LV Cas9","PlatePositionC11","In vitro",
   "+LV Cas9","PlatePositionH10","In vitro",
   "+LV Cas9","PlatePositionB11","In vitro",
-  "No Cas9","4T_TumoT_B5","In vivo",
-  "No Cas9","4T_TumoT_B3","In vivo",
-  "No Cas9","MVT_TumoT_F3","In vivo",
-  "No Cas9","MVT_TumoT_F5","In vivo",
-  "No Cas9","not found (?)","In vivo",
-  "No Cas9","not found (?)","In vivo",
-  "+Apo-Cas9","CRISPRKO_Clone_22","In vivo",
-  "+Apo-Cas9","CRISPRKO_Clone_24","In vivo",
-  "+Apo-Cas9","not found (?)","In vivo",
-  "+Apo-Cas9","not found (?)","In vivo",
-  "+Apo-Cas9","not found (?)","In vivo",
-  "+Apo-Cas9","not found (?)","In vivo",
-  "+LV Cas9","PlatePositionA6","In vivo",
-  "+LV Cas9","PlatePositionE5","In vivo",
-  "+LV Cas9","PlatePositionC5","In vivo",
-  "+LV Cas9","PlatePositionA5","In vivo",
-  "+LV Cas9","PlatePositionG4","In vivo",
-  "+LV Cas9","not found (?)","In vivo"
+  "No Cas9","4T_TumoT_B5","In vivo (mammary fat pad)",
+  "No Cas9","4T_TumoT_B3","In vivo (mammary fat pad)",
+  "No Cas9","4T_TumoT_B1","In vivo (mammary fat pad)",
+  "No Cas9","MVT_TumoT_F1","In vivo (mammary fat pad)",
+  "No Cas9","MVT_TumoT_F3","In vivo (mammary fat pad)",
+  "No Cas9","MVT_TumoT_F4","In vivo (mammary fat pad)",
+  "+Apo-Cas9","CRISPRKO_Clone_13","In vivo (mammary fat pad)",
+  "+Apo-Cas9","CRISPRKO_Clone_14","In vivo (mammary fat pad)",
+  "+Apo-Cas9","CRISPRKO_Clone_11","In vivo (mammary fat pad)",
+  "+Apo-Cas9","CRISPRKO_Clone_22","In vivo (mammary fat pad)",
+  "+Apo-Cas9","CRISPRKO_Clone_24","In vivo (mammary fat pad)",
+  "+Apo-Cas9","CRISPRKO_Clone_20","In vivo (mammary fat pad)",
+  "Stable dCas9","PlatePositionG2","In vivo (mammary fat pad)",
+  "Stable dCas9","PlatePositionA3","In vivo (mammary fat pad)",
+  "Stable dCas9","PlatePositionC3","In vivo (mammary fat pad)",
+  "Stable dCas9","PlatePositionE2","In vivo (mammary fat pad)",
+  "Stable dCas9","PlatePositionC2","In vivo (mammary fat pad)",
+  "+LV Cas9","PlatePositionA6","In vivo (mammary fat pad)",
+  "+LV Cas9","PlatePositionE5","In vivo (mammary fat pad)",
+  "+LV Cas9","PlatePositionC5","In vivo (mammary fat pad)",
+  "+LV Cas9","PlatePositionA5","In vivo (mammary fat pad)",
+  "+LV Cas9","PlatePositionG4","In vivo (mammary fat pad)",
+  "+LV Cas9","PlatePositionG6","In vivo (mammary fat pad)",
+  "No Cas9","Replacement_9","In vivo (lung intravenous)",
+  "No Cas9","Replacement_5","In vivo (lung intravenous)",
+  "No Cas9","Replacement_2bis","In vivo (lung intravenous)",
+  "No Cas9","Replacement_7","In vivo (lung intravenous)",
+  "+Apo-Cas9","LLC1_StealTHY_Tum_3","In vivo (lung intravenous)",
+  "+Apo-Cas9","LLC1_StealTHY_Tum_5","In vivo (lung intravenous)",
+  "+Apo-Cas9","C167_StealTHY_Tum_3","In vivo (lung intravenous)",
+  "+Apo-Cas9","C167_StealTHY_Tum_5","In vivo (lung intravenous)",
+  "Stable dCas9","dC9BL6_LungIV_LLC1_1","In vivo (lung intravenous)",
+  "Stable dCas9","dC9BL6_LungIV_LLC1_2","In vivo (lung intravenous)",
+  "Stable dCas9","dC9BL6_LungIV_C167_2","In vivo (lung intravenous)",
+  "Stable dCas9","dC9BL6_LungIV_C167_4","In vivo (lung intravenous)",
+  "+Apo-Cas9","ColoCT26_StealTHY_Tum_2","In vivo (colon cecal wall)",
+  "+Apo-Cas9","ColoCT26_StealTHY_Tum_3","In vivo (colon cecal wall)",
+  "+Apo-Cas9","Replacement_2","In vivo (colon cecal wall)",
+  "+Apo-Cas9","Replacement_4","In vivo (colon cecal wall)"
 )
+# 
+# data_array <- c(
+#   "No Cas9","CRISPRKO_Clone_61","In vitro",
+#   "No Cas9","CRISPRKO_Clone_64","In vitro",
+#   "No Cas9","CRISPRKO_Clone_67","In vitro",
+#   "No Cas9","C167_Thy1_baseline","In vitro",
+#   "No Cas9","LLC1_Thy1_baseline","In vitro",
+#   "+Apo-Cas9","PlatePositionG10","In vitro",
+#   "+Apo-Cas9","CRISPRKO_Clone_65","In vitro",
+#   "+Apo-Cas9","CRISPRKO_Clone_68","In vitro",
+#   "+Apo-Cas9","C167_StealTHY","In vitro",
+#   "+Apo-Cas9","LLC1_StealTHY","In vitro",
+#   "+Apo-Cas9","CT26_StealTHY","In vitro",
+#   "+LV Cas9","CRISPRKO_Clone_62","In vitro",
+#   "+LV Cas9","CRISPRKO_Clone_66","In vitro",
+#   "+LV Cas9","CRISPRKO_Clone_69","In vitro",
+#   "+LV Cas9","PlatePositionC11","In vitro",
+#   "+LV Cas9","PlatePositionH10","In vitro",
+#   "+LV Cas9","PlatePositionB11","In vitro",
+#   "Stable dCas9","C167_dCas9baseline","In vitro",
+#   "Stable dCas9","LLC1_dCas9baseline","In vitro",
+#   "Stable dCas9","MVT1_dCas9baseline","In vitro",
+#   "Stable dCas9","Py2T_dCas9baseline","In vitro",
+#   "Stable dCas9","4T1_dCas9baseline","In vitro",
+#   "No Cas9","4T_TumoT_B5","In vivo",
+#   "No Cas9","4T_TumoT_B3","In vivo",
+#   "No Cas9","MVT_TumoT_F3","In vivo",
+#   "No Cas9","MVT_TumoT_F5","In vivo",
+#   "No Cas9","Replacement_9","In vivo",
+#   "No Cas9","Replacement_5","In vivo",
+#   "+Apo-Cas9","CRISPRKO_Clone_13","In vivo",
+#   "+Apo-Cas9","CRISPRKO_Clone_22","In vivo",
+#   "+Apo-Cas9","CRISPRKO_Clone_24","In vivo",
+#   "+Apo-Cas9","C167_StealTHY_Tum_1","In vivo",
+#   "+Apo-Cas9","LLC1_StealTHY_Tum_1","In vivo",
+#   "+Apo-Cas9","ColoCT26_StealTHY_Tum_1","In vivo",
+#   "+LV Cas9","PlatePositionA6","In vivo",
+#   "+LV Cas9","PlatePositionE5","In vivo",
+#   "+LV Cas9","PlatePositionC5","In vivo",
+#   "+LV Cas9","PlatePositionA5","In vivo",
+#   "+LV Cas9","PlatePositionG4","In vivo",
+#   "+LV Cas9","PlatePositionG6","In vivo",
+#   "Stable dCas9","PlatePositionG2","In vivo",
+#   "Stable dCas9","PlatePositionA3","In vivo",
+#   "Stable dCas9","PlatePositionC3","In vivo",
+#   "Stable dCas9","PlatePositionE2","In vivo",
+#   "Stable dCas9","PlatePositionC2","In vivo",
+#   # Previous samples
+#   "No Cas9","CRISPRKO_Clone_61","In vitro",
+#   "No Cas9","CRISPRKO_Clone_64","In vitro",
+#   "No Cas9","CRISPRKO_Clone_67","In vitro",
+#   "No Cas9","CRISPRKO_Clone_63","In vitro",
+#   "No Cas9","CRISPRKO_Clone_71","In vitro",
+#   "No Cas9","CRISPRKO_Clone_70","In vitro",
+#   "+Apo-Cas9","PlatePositionG10","In vitro",
+#   "+Apo-Cas9","CRISPRKO_Clone_65","In vitro",
+#   "+Apo-Cas9","CRISPRKO_Clone_68","In vitro",
+#   "+Apo-Cas9","CRISPRKO_Clone_60","In vitro",
+#   "+Apo-Cas9","not found (?)","In vitro",
+#   "+Apo-Cas9","not found (?)","In vitro",
+#   "+LV Cas9","CRISPRKO_Clone_62","In vitro",
+#   "+LV Cas9","CRISPRKO_Clone_66","In vitro",
+#   "+LV Cas9","CRISPRKO_Clone_69","In vitro",
+#   "+LV Cas9","PlatePositionC11","In vitro",
+#   "+LV Cas9","PlatePositionH10","In vitro",
+#   "+LV Cas9","PlatePositionB11","In vitro",
+#   "No Cas9","4T_TumoT_B5","In vivo",
+#   "No Cas9","4T_TumoT_B3","In vivo",
+#   "No Cas9","MVT_TumoT_F3","In vivo",
+#   "No Cas9","MVT_TumoT_F5","In vivo",
+#   "No Cas9","not found (?)","In vivo",
+#   "No Cas9","not found (?)","In vivo",
+#   "+Apo-Cas9","CRISPRKO_Clone_22","In vivo",
+#   "+Apo-Cas9","CRISPRKO_Clone_24","In vivo",
+#   "+Apo-Cas9","not found (?)","In vivo",
+#   "+Apo-Cas9","not found (?)","In vivo",
+#   "+Apo-Cas9","not found (?)","In vivo",
+#   "+Apo-Cas9","not found (?)","In vivo",
+#   "+LV Cas9","PlatePositionA6","In vivo",
+#   "+LV Cas9","PlatePositionE5","In vivo",
+#   "+LV Cas9","PlatePositionC5","In vivo",
+#   "+LV Cas9","PlatePositionA5","In vivo",
+#   "+LV Cas9","PlatePositionG4","In vivo",
+#   "+LV Cas9","not found (?)","In vivo"
+# )
 
 use_sample_groups <- matrix(data_array, ncol =3, byrow = TRUE, 
        dimnames = list(c(), c('group', 'sample_alias', 'model'))) %>% 
   data.frame %>% 
+  mutate(model = ifelse(grepl('In vivo', model), 'In vivo', model)) %>%
   unique
 
 # use_sample_groups$sample_alias[!use_sample_groups$sample_alias %in% colnames(se)]
@@ -985,9 +1086,6 @@ use_palette <- c(
   `Stable dCas9` = 'white'
 )
 
-```
-
-```{r complexity-dynamics-4h, fig.asp = 1.8, fig.width = 1.5}
 chunk_data <- colData(se) %>% data.frame %>% 
   filter(sample_alias %in% use_sample_groups$sample_alias) %>%
   left_join(use_sample_groups)%>% 
@@ -997,6 +1095,33 @@ chunk_data <- colData(se) %>% data.frame %>%
     guides_over_1_pct = guides_over_1 / 2215,
     group = factor(group, levels = c('No Cas9', '+Apo-Cas9', '+LV Cas9', 'Stable dCas9'))
   )
+
+
+```
+
+#### Source data
+```{r complexity-dynamics-3d-data}
+chunk_data %>% 
+  dplyr::select(sample_alias, model, group, guides_over_1_pct, guides_over_30_pct, guides_over_100_pct) %>% 
+  mutate_at(vars(guides_over_1_pct, guides_over_30_pct, guides_over_100_pct), 
+            ~ round(.*100, 2)) %>% 
+  datatable(., 
+            rownames = FALSE, 
+            filter = 'top', 
+            caption = 'Source data for the plots',
+            extensions = 'Buttons', 
+            options = list(
+              dom = 'Blfrtip',
+              buttons = c('csv', 'excel'),
+              columnDefs = list(
+                list(width = 120, targets = 1:2)
+              )
+            )
+            )
+```
+
+#### Figures
+```{r complexity-dynamics-3d, fig.asp = 1.8, fig.width = 1.5}
 
 use_comparisons <- chunk_data$group %>% levels() %>% combn(2,simplify = FALSE)
 
@@ -1123,72 +1248,75 @@ chunk_data %>%
 ```
 
 
-### Figure 4H: Second draft
-```{r complexity-dynamics-4h-v2-conf}
+### Figure 3H: Second draft
+```{r complexity-dynamics-3d-v2-conf}
 se <- readRDS(file.path(params$data_dir, 'se.rds'))
+
 
 # Define groups of samples
 data_array <- c(
-"No Cas9","CRISPRKO_Clone_61 ","In vitro",
-"No Cas9","CRISPRKO_Clone_64","In vitro",
-"No Cas9","CRISPRKO_Clone_67","In vitro",
-"No Cas9","C167_Thy1_baseline","In vitro",
-"No Cas9","LLC1_Thy1_baseline","In vitro",
-"+Apo-Cas9","CRISPRKO_Clone_60","In vitro",
-"+Apo-Cas9","CRISPRKO_Clone_65","In vitro",
-"+Apo-Cas9","CRISPRKO_Clone_68","In vitro",
-"+Apo-Cas9","C167_StealTHY","In vitro",
-"+Apo-Cas9","LLC1_StealTHY","In vitro",
-"+Apo-Cas9","CT26_StealTHY","In vitro",
-"+LV Cas9","CRISPRKO_Clone_62","In vitro",
-"+LV Cas9","CRISPRKO_Clone_66","In vitro",
-"+LV Cas9","CRISPRKO_Clone_69","In vitro",
-"+LV Cas9","PlatePositionC11","In vitro",
-"+LV Cas9","PlatePositionH10","In vitro",
-"+LV Cas9","PlatePositionB11","In vitro",
-"Stable dCas9","C167_dCas9baseline","In vitro",
-"Stable dCas9","LLC1_dCas9baseline","In vitro",
-"Stable dCas9","MVT1_dCas9baseline","In vitro",
-"Stable dCas9","Py2T_dCas9baseline","In vitro",
-"Stable dCas9","4T1_dCas9baseline","In vitro",
-"No Cas9","4T_TumoT_B5","In vivo (mammary fat pad)",
-"No Cas9","4T_TumoT_B3","In vivo (mammary fat pad)",
-"No Cas9","4T_TumoT_B1","In vivo (mammary fat pad)",
-"No Cas9","MVT_TumoT_F1","In vivo (mammary fat pad)",
-"No Cas9","MVT_TumoT_F3","In vivo (mammary fat pad)",
-"No Cas9","MVT_TumoT_F4","In vivo (mammary fat pad)",
-"+Apo-Cas9","CRISPRKO_Clone_13","In vivo (mammary fat pad)",
-"+Apo-Cas9","CRISPRKO_Clone_14","In vivo (mammary fat pad)",
-"+Apo-Cas9","CRISPRKO_Clone_11","In vivo (mammary fat pad)",
-"+Apo-Cas9","CRISPRKO_Clone_22","In vivo (mammary fat pad)",
-"+Apo-Cas9","CRISPRKO_Clone_24","In vivo (mammary fat pad)",
-"+Apo-Cas9","CRISPRKO_Clone_20","In vivo (mammary fat pad)",
-"+LV Cas9","PlatePositionA6","In vivo (mammary fat pad)",
-"+LV Cas9","PlatePositionE5","In vivo (mammary fat pad)",
-"+LV Cas9","PlatePositionC5","In vivo (mammary fat pad)",
-"+LV Cas9","PlatePositionA5","In vivo (mammary fat pad)",
-"+LV Cas9","PlatePositionG4","In vivo (mammary fat pad)",
-"+LV Cas9","PlatePositionG6","In vivo (mammary fat pad)",
-"Stable dCas9","PlatePositionG2","In vivo (mammary fat pad)",
-"Stable dCas9","PlatePositionA3","In vivo (mammary fat pad)",
-"Stable dCas9","PlatePositionC3","In vivo (mammary fat pad)",
-"Stable dCas9","PlatePositionE2","In vivo (mammary fat pad)",
-"Stable dCas9","PlatePositionC2","In vivo (mammary fat pad)",
-"No Cas9","Replacement_9","In vivo (lung intravenous)",
-"No Cas9","Replacement_5","In vivo (lung intravenous)",
-"No Cas9","Replacement_2bis","In vivo (lung intravenous)",
-"No Cas9","Replacement_7","In vivo (lung intravenous)",
-"+Apo-Cas9","LLC1_StealTHY_Tum_3","In vivo (lung intravenous)",
-"+Apo-Cas9","LLC1_StealTHY_Tum_5","In vivo (lung intravenous)",
-"+Apo-Cas9","C167_StealTHY_Tum_3","In vivo (lung intravenous)",
-"+Apo-Cas9","C167_StealTHY_Tum_5","In vivo (lung intravenous)",
-"Stable dCas9","dC9BL6_LungIV_LLC1_1","In vivo (lung intravenous)",
-"Stable dCas9","dC9BL6_LungIV_LLC1_2","In vivo (lung intravenous)",
-"Stable dCas9","dC9BL6_LungIV_C167_2","In vivo (lung intravenous)",
-"Stable dCas9","dC9BL6_LungIV_C167_4","In vivo (lung intravenous)",
-"+Apo-Cas9","ColoCT26_StealTHY_Tum_1","In vivo (colon cecal wall)"
+  "No Cas9","CRISPRKO_Clone_61","In vitro",
+  "No Cas9","CRISPRKO_Clone_64","In vitro",
+  "No Cas9","CRISPRKO_Clone_67","In vitro",
+  "No Cas9","C167_Thy1_baseline","In vitro",
+  "No Cas9","LLC1_Thy1_baseline","In vitro",
+  "+Apo-Cas9","CRISPRKO_Clone_60","In vitro",
+  "+Apo-Cas9","CRISPRKO_Clone_65","In vitro",
+  "+Apo-Cas9","CRISPRKO_Clone_68","In vitro",
+  "+Apo-Cas9","C167_StealTHY","In vitro",
+  "+Apo-Cas9","LLC1_StealTHY","In vitro",
+  "+Apo-Cas9","CT26_StealTHY","In vitro",
+  "Stable dCas9","C167_dCas9baseline","In vitro",
+  "Stable dCas9","LLC1_dCas9baseline","In vitro",
+  "Stable dCas9","MVT1_dCas9baseline","In vitro",
+  "Stable dCas9","Py2T_dCas9baseline","In vitro",
+  "Stable dCas9","4T1_dCas9baseline","In vitro",
+  "+LV Cas9","CRISPRKO_Clone_62","In vitro",
+  "+LV Cas9","CRISPRKO_Clone_66","In vitro",
+  "+LV Cas9","CRISPRKO_Clone_69","In vitro",
+  "+LV Cas9","PlatePositionC11","In vitro",
+  "+LV Cas9","PlatePositionH10","In vitro",
+  "+LV Cas9","PlatePositionB11","In vitro",
+  "No Cas9","4T_TumoT_B5","In vivo (mammary fat pad)",
+  "No Cas9","4T_TumoT_B3","In vivo (mammary fat pad)",
+  "No Cas9","4T_TumoT_B1","In vivo (mammary fat pad)",
+  "No Cas9","MVT_TumoT_F1","In vivo (mammary fat pad)",
+  "No Cas9","MVT_TumoT_F3","In vivo (mammary fat pad)",
+  "No Cas9","MVT_TumoT_F4","In vivo (mammary fat pad)",
+  "+Apo-Cas9","CRISPRKO_Clone_13","In vivo (mammary fat pad)",
+  "+Apo-Cas9","CRISPRKO_Clone_14","In vivo (mammary fat pad)",
+  "+Apo-Cas9","CRISPRKO_Clone_11","In vivo (mammary fat pad)",
+  "+Apo-Cas9","CRISPRKO_Clone_22","In vivo (mammary fat pad)",
+  "+Apo-Cas9","CRISPRKO_Clone_24","In vivo (mammary fat pad)",
+  "+Apo-Cas9","CRISPRKO_Clone_20","In vivo (mammary fat pad)",
+  "Stable dCas9","PlatePositionG2","In vivo (mammary fat pad)",
+  "Stable dCas9","PlatePositionA3","In vivo (mammary fat pad)",
+  "Stable dCas9","PlatePositionC3","In vivo (mammary fat pad)",
+  "Stable dCas9","PlatePositionE2","In vivo (mammary fat pad)",
+  "Stable dCas9","PlatePositionC2","In vivo (mammary fat pad)",
+  "+LV Cas9","PlatePositionA6","In vivo (mammary fat pad)",
+  "+LV Cas9","PlatePositionE5","In vivo (mammary fat pad)",
+  "+LV Cas9","PlatePositionC5","In vivo (mammary fat pad)",
+  "+LV Cas9","PlatePositionA5","In vivo (mammary fat pad)",
+  "+LV Cas9","PlatePositionG4","In vivo (mammary fat pad)",
+  "+LV Cas9","PlatePositionG6","In vivo (mammary fat pad)",
+  "No Cas9","Replacement_9","In vivo (lung intravenous)",
+  "No Cas9","Replacement_5","In vivo (lung intravenous)",
+  "No Cas9","Replacement_2bis","In vivo (lung intravenous)",
+  "No Cas9","Replacement_7","In vivo (lung intravenous)",
+  "+Apo-Cas9","LLC1_StealTHY_Tum_3","In vivo (lung intravenous)",
+  "+Apo-Cas9","LLC1_StealTHY_Tum_5","In vivo (lung intravenous)",
+  "+Apo-Cas9","C167_StealTHY_Tum_3","In vivo (lung intravenous)",
+  "+Apo-Cas9","C167_StealTHY_Tum_5","In vivo (lung intravenous)",
+  "Stable dCas9","dC9BL6_LungIV_LLC1_1","In vivo (lung intravenous)",
+  "Stable dCas9","dC9BL6_LungIV_LLC1_2","In vivo (lung intravenous)",
+  "Stable dCas9","dC9BL6_LungIV_C167_2","In vivo (lung intravenous)",
+  "Stable dCas9","dC9BL6_LungIV_C167_4","In vivo (lung intravenous)",
+  "+Apo-Cas9","ColoCT26_StealTHY_Tum_2","In vivo (colon cecal wall)",
+  "+Apo-Cas9","ColoCT26_StealTHY_Tum_3","In vivo (colon cecal wall)",
+  "+Apo-Cas9","Replacement_2","In vivo (colon cecal wall)",
+  "+Apo-Cas9","Replacement_4","In vivo (colon cecal wall)"
 )
-
 
 use_sample_groups <- matrix(data_array, ncol =3, byrow = TRUE, 
        dimnames = list(c(), c('group', 'sample_alias', 'model'))) %>% 
@@ -1217,17 +1345,46 @@ chunk_data <- colData(se) %>% data.frame %>%
 use_comparisons <- chunk_data$group %>% levels() %>% combn(2,simplify = FALSE)
 
 # Remove In vivo (colon cecal wall), only one sample
+# chunk_data <- chunk_data %>% 
+#   filter(model != 'In vivo (colon cecal wall)') %>% 
+#   mutate(model = factor(model, levels = c(
+#     'In vitro',
+#     'In vivo (mammary fat pad)', 
+#     'In vivo (lung intravenous)'
+#   )))
+
 chunk_data <- chunk_data %>% 
-  filter(model != 'In vivo (colon cecal wall)') %>% 
   mutate(model = factor(model, levels = c(
     'In vitro',
     'In vivo (mammary fat pad)', 
-    'In vivo (lung intravenous)'
+    'In vivo (lung intravenous)',
+    'In vivo (colon cecal wall)'
   )))
 ```
 
+#### Source data
+```{r complexity-dynamics-3d-v2-data}
+chunk_data %>% 
+  dplyr::select(sample_alias, model, group, guides_over_1_pct, guides_over_30_pct, guides_over_100_pct) %>% 
+  mutate_at(vars(guides_over_1_pct, guides_over_30_pct, guides_over_100_pct), 
+            ~ round(.*100, 2)) %>% 
+  datatable(., 
+            rownames = FALSE, 
+            filter = 'top', 
+            caption = 'Source data for the plots',
+            extensions = 'Buttons', 
+            options = list(
+              dom = 'Blfrtip',
+              buttons = c('csv', 'excel'),
+              columnDefs = list(
+                list(width = 120, targets = 1:2)
+              )
+            )
+            )
+```
+
 #### Treshold 30x
-```{r complexity-dynamics-4h-v2-30x, fig.asp = 4, fig.width = 1.2}
+```{r complexity-dynamics-3d-v2-30x, fig.asp = 4, fig.width = 1.6}
 chunk_data %>% 
   ggplot(aes(group, guides_over_30_pct,
              color = group,
@@ -1278,7 +1435,7 @@ chunk_data %>%
 ```
 
 #### Treshold 100x
-```{r complexity-dynamics-4h-v2-100x, fig.asp = 1.8, fig.width = 1.5}
+```{r complexity-dynamics-3d-v2-100x, fig.asp = 4, fig.width = 1.6}
 chunk_data %>% 
   ggplot(aes(group, guides_over_100_pct,
              color = group,
@@ -1328,8 +1485,8 @@ chunk_data %>%
 ```
 
 
-### Figure 3B: 
-```{r complexity-dynamics-3b-conf}
+### Figure 2J-Second draft: T-cell depletion treatment on lung metastasis
+```{r complexity-dynamics-2j-conf}
 se <- readRDS(file.path(params$data_dir, 'se.rds'))
 
 # Define groups of samples
@@ -1339,14 +1496,14 @@ data_array <- c(
   "PlatePositionD10","11.12","Neg","Ig control",
   "CD4_repeat_2","15.1","Neg","Ig control",
   "CD4_repeat_3","8.6","Neg","Ig control",
-  "UntreatRepl1","41.15","Pos","Ig control",
-  "UntreatRepl2","49.44","Pos","Ig control",
+  # "UntreatRepl1","41.15","Pos","Ig control",
+  # "UntreatRepl2","49.44","Pos","Ig control",
   "UntreatRepl3","19.65","Neg","Ig control",
   "UntreatRepl4","22.14","Neg","Ig control",
   "UntreatRepl5","20.77","Not ascertained","Ig control",
   "PlatePositionE10","67.80","Pos","anti-CD4/CD8",
   "PlatePositionC10","45.40","Pos","anti-CD4/CD8",
-  "CD4_repeat_1","53.78","Unclear","anti-CD4/CD8",
+  # "CD4_repeat_1","53.78","Unclear","anti-CD4/CD8",
   "RescueRepl1","77.92","Pos","anti-CD4/CD8",
   "RescueRepl2","52.16","Not ascertained","anti-CD4/CD8",
   "RescueRepl3","40.93","Pos","anti-CD4/CD8",
@@ -1376,7 +1533,7 @@ use_palette <- c(
 ```
 
 
-```{r complexity-dynamics-3b}
+```{r complexity-dynamics-2j}
 chunk_data <- colData(se) %>% data.frame %>% 
   filter(sample_alias %in% use_sample_groups$sample_alias) %>%
   left_join(use_sample_groups)%>% 
@@ -1390,10 +1547,31 @@ chunk_data <- colData(se) %>% data.frame %>%
 use_comparisons <- chunk_data$group %>% levels() %>% combn(2,simplify = FALSE)
 ```
 
+#### Source data
+```{r complexity-dynamics-2j-data}
+chunk_data %>% 
+  dplyr::select(sample_alias, `Thy1 B+ cells per mm3 of PT`, `Cas9 staining`, group, guides_over_1_pct, guides_over_30_pct, guides_over_100_pct) %>% 
+  mutate_at(vars(guides_over_1_pct, guides_over_30_pct, guides_over_100_pct), 
+            ~ round(.*100, 2)) %>% 
+  datatable(., 
+            rownames = FALSE, 
+            filter = 'top', 
+            caption = 'Source data for the plots',
+            extensions = 'Buttons', 
+            options = list(
+              dom = 'Blfrtip',
+              buttons = c('csv', 'excel'),
+              columnDefs = list(
+                list(width = 120, targets = 1:2)
+              )
+            )
+            )
+```
+
 #### Treshold 30x
 
 ##### Main figure
-```{r complexity-dynamics-3b-30x, fig.width = 2, fig.asp = 1}
+```{r complexity-dynamics-2j-30x, fig.width = 2, fig.asp = 1}
 chunk_data %>% 
   ggplot(aes(`Thy1 B+ cells per mm3 of PT`, guides_over_30_pct,
              color = group,
@@ -1423,7 +1601,7 @@ chunk_data %>%
 ```
 
 ##### Figure with Y-Pvalues
-```{r complexity-dynamics-3b-30x-pval-y, fig.width = 1.5, fig.asp = 1.5}
+```{r complexity-dynamics-2j-30x-pval-y, fig.width = 1.5, fig.asp = 1.5}
 chunk_data %>% 
   mutate(group = factor(as.character(group), levels = c('Ig control', 'anti-CD4/CD8', 'untreated'))) %>% 
   ggplot(aes(group, guides_over_30_pct,
@@ -1464,7 +1642,7 @@ chunk_data %>%
 #### Treshold 100x
 
 ##### Main figure
-```{r complexity-dynamics-3b-100x, fig.width = 2, fig.asp = 1}
+```{r complexity-dynamics-2j-100x, fig.width = 2, fig.asp = 1}
 chunk_data %>% 
   ggplot(aes(`Thy1 B+ cells per mm3 of PT`, guides_over_100_pct,
              color = group,
@@ -1494,7 +1672,7 @@ chunk_data %>%
 ```
 
 ##### Figure with Y-Pvalues
-```{r complexity-dynamics-3b-100x-pval-y, fig.width = 1.5, fig.asp = 1.5}
+```{r complexity-dynamics-2j-100x-pval-y, fig.width = 1.5, fig.asp = 1.5}
 chunk_data %>% 
   mutate(group = factor(as.character(group), levels = c('Ig control', 'anti-CD4/CD8', 'untreated'))) %>% 
   ggplot(aes(group, guides_over_100_pct,
@@ -1533,7 +1711,7 @@ chunk_data %>%
 ```
 
 #### Figure with Pvalues for Thy1 B+ cells per mm3 of PT
-```{r complexity-dynamics-3b-B-pval, fig.width = 1.5, fig.asp = 1.5}
+```{r complexity-dynamics-2j-B-pval, fig.width = 1.5, fig.asp = 1.5}
 chunk_data %>% 
   mutate(group = factor(as.character(group), levels = c('Ig control', 'anti-CD4/CD8', 'untreated'))) %>% 
   ggplot(aes(group, `Thy1 B+ cells per mm3 of PT`,
@@ -1571,3 +1749,456 @@ chunk_data %>%
 
 
 
+
+
+### Figure 2J-Third draft: T-cell depletion treatment on lung metastasis
+```{r complexity-dynamics-2j-v2-conf}
+se <- readRDS(file.path(params$data_dir, 'se.rds'))
+
+# Define groups of samples
+data_array <- c(
+  "PlatePositionB10","11.78","Neg","Ig control",
+  "PlatePositionF10","16.88","Neg","Ig control",
+  "PlatePositionD10","11.12","Neg","Ig control",
+  "CD4_repeat_2","15.1","Neg","Ig control",
+  "CD4_repeat_3","8.6","Neg","Ig control",
+  # "UntreatRepl1","41.15","Pos","Ig control",
+  # "UntreatRepl2","49.44","Pos","Ig control",
+  "UntreatRepl3","19.65","Neg","Ig control",
+  "UntreatRepl4","22.14","Neg","Ig control",
+  # "UntreatRepl5","20.77","Not ascertained","Ig control",
+  "PlatePositionE10","67.80","Pos","anti-CD4/CD8",
+  "PlatePositionC10","45.40","Pos","anti-CD4/CD8",
+  # "CD4_repeat_1","53.78","Unclear","anti-CD4/CD8",
+  "RescueRepl1","77.92","Pos","anti-CD4/CD8",
+  # "RescueRepl2","52.16","Not ascertained","anti-CD4/CD8",
+  "RescueRepl3","40.93","Pos","anti-CD4/CD8",
+  "RescueRepl4","57.11","Pos","anti-CD4/CD8",
+  # "RescueRepl5","12.49","Not ascertained","anti-CD4/CD8",
+  "4T_LungsT_B1","75.35","Not applicable ","untreated",
+  "4T_LungsT_B2","66.78","Not applicable","untreated",
+  "4T_LungsT_B3","67.89","Not applicable","untreated",
+  "4T_LungsT_B4","74.56","Not applicable","untreated",
+  "4T_LungsT_B5","65.77","Not applicable","untreated"
+)
+
+use_sample_groups <- matrix(data_array, ncol =4, byrow = TRUE, 
+       dimnames = list(c(), c('sample_alias', 'Thy1 B+ cells per mm3 of PT', 'Cas9 staining', 'group'))) %>% 
+  data.frame(check.names = FALSE) %>% 
+  mutate(`Thy1 B+ cells per mm3 of PT` = as.numeric(`Thy1 B+ cells per mm3 of PT`))
+  unique
+
+# use_sample_groups$sample_alias[!use_sample_groups$sample_alias %in% colnames(se)]
+
+use_palette <- c(
+  `anti-CD4/CD8` = "#0600fe",
+  `Ig control`  = "#cccdcd",
+  `untreated`  = "#fffe06"
+)
+
+```
+
+
+```{r complexity-dynamics-2j-v2}
+chunk_data <- colData(se) %>% data.frame %>% 
+  filter(sample_alias %in% use_sample_groups$sample_alias) %>%
+  left_join(use_sample_groups)%>% 
+  mutate(
+    guides_over_100_pct = guides_over_100 / 2215,
+    guides_over_30_pct = guides_over_30 / 2215,
+    guides_over_1_pct = guides_over_1 / 2215,
+    group = factor(group, levels = c('anti-CD4/CD8', 'Ig control', 'untreated'))
+  )
+
+use_comparisons <- chunk_data$group %>% levels() %>% combn(2,simplify = FALSE)
+```
+
+#### Source data
+```{r complexity-dynamics-2j-v2-data}
+chunk_data %>% 
+  dplyr::select(sample_alias, `Thy1 B+ cells per mm3 of PT`, `Cas9 staining`, group, guides_over_1_pct, guides_over_30_pct, guides_over_100_pct) %>% 
+  mutate_at(vars(guides_over_1_pct, guides_over_30_pct, guides_over_100_pct), 
+            ~ round(.*100, 2)) %>% 
+  datatable(., 
+            rownames = FALSE, 
+            filter = 'top', 
+            caption = 'Source data for the plots',
+            extensions = 'Buttons', 
+            options = list(
+              dom = 'Blfrtip',
+              buttons = c('csv', 'excel'),
+              columnDefs = list(
+                list(width = 120, targets = 1:2)
+              )
+            )
+            )
+```
+
+#### Treshold 30x
+
+##### Main figure
+```{r complexity-dynamics-2j-v2-30x, fig.width = 2, fig.asp = 1}
+chunk_data %>% 
+  ggplot(aes(`Thy1 B+ cells per mm3 of PT`, guides_over_30_pct,
+             color = group,
+             fill = group)) +
+  geom_point(shape = 21, 
+             alpha = 0.8,
+             color = 'black',
+             size = 1,
+             stroke=one_pt/4) +
+  scale_fill_manual(values = use_palette) +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1)
+  ) +
+  xlim(0, 80) +
+  labs(
+    y = 'Percentage of guides > 30x in lungs',
+    color = '',
+    fill = ''
+  ) +
+  theme(
+    axis.text =  element_text(size=6),
+    axis.title =element_text(size=6),
+    plot.title = element_text(size=6, hjust = 0.5),
+    strip.text = element_text(size = 6),
+    legend.text = element_text(size = 6)
+  )
+```
+
+##### Figure with Y-Pvalues
+```{r complexity-dynamics-2j-v2-30x-pval-y, fig.width = 1.5, fig.asp = 1.5}
+chunk_data %>% 
+  mutate(group = factor(as.character(group), levels = c('Ig control', 'anti-CD4/CD8', 'untreated'))) %>% 
+  ggplot(aes(group, guides_over_30_pct,
+             color = group,
+             fill = group)) +
+  geom_quasirandom(shape = 21, 
+                   alpha = 0.8, 
+                   color = 'black', 
+                   size = 1, 
+                   stroke=one_pt/4
+                   ) +
+  scale_fill_manual(values = use_palette) +
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1)
+    ) +
+  guides(fill = 'none', color = 'none') +
+  labs(
+    y = 'Percentage of guides > 30x in lungs',
+    x = ''
+  ) +
+  stat_compare_means(
+    aes(label = paste0("p = ", after_stat(p.format))),
+    comparisons = use_comparisons,
+    method = 'wilcox.test',
+    size = 0.4*geom_text_size,
+    bracket.size = one_pt/4
+  ) +
+  theme(
+    axis.text =  element_text(size=6),
+    axis.title =  element_text(size=6),
+    plot.title = element_text(size=6, hjust = 0.5),
+    strip.text = element_text(size = 6)
+  )
+
+```
+
+#### Treshold 100x
+
+##### Main figure
+```{r complexity-dynamics-2j-v2-100x, fig.width = 2, fig.asp = 1}
+chunk_data %>% 
+  ggplot(aes(`Thy1 B+ cells per mm3 of PT`, guides_over_100_pct,
+             color = group,
+             fill = group)) +
+  geom_point(shape = 21, 
+             alpha = 0.8,
+             color = 'black',
+             size = 1,
+             stroke=one_pt/4) +
+  scale_fill_manual(values = use_palette) +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1)
+  ) +
+  xlim(0, 80) +
+  labs(
+    y = 'Percentage of guides > 100x in lungs',
+    color = '',
+    fill = ''
+  ) +
+  theme(
+    axis.text =  element_text(size=6),
+    axis.title =element_text(size=6),
+    plot.title = element_text(size=6, hjust = 0.5),
+    strip.text = element_text(size = 6),
+    legend.text = element_text(size = 6)
+  )
+```
+
+##### Figure with Y-Pvalues
+```{r complexity-dynamics-2j-v2-100x-pval-y, fig.width = 1.5, fig.asp = 1.5}
+chunk_data %>% 
+  mutate(group = factor(as.character(group), levels = c('Ig control', 'anti-CD4/CD8', 'untreated'))) %>% 
+  ggplot(aes(group, guides_over_100_pct,
+             color = group,
+             fill = group)) +
+  geom_quasirandom(shape = 21, 
+                   alpha = 0.8, 
+                   color = 'black', 
+                   size = 1, 
+                   stroke=one_pt/4
+                   ) +
+  scale_fill_manual(values = use_palette) +
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1)
+    ) +
+  guides(fill = 'none', color = 'none') +
+  labs(
+    y = 'Percentage of guides > 100x in lungs',
+    x = ''
+  ) +
+  stat_compare_means(
+    aes(label = paste0("p = ", after_stat(p.format))),
+    comparisons = use_comparisons,
+    method = 'wilcox.test',
+    size = 0.4*geom_text_size,
+    bracket.size = one_pt/4
+  ) +
+  theme(
+    axis.text =  element_text(size=6),
+    axis.title =  element_text(size=6),
+    plot.title = element_text(size=6, hjust = 0.5),
+    strip.text = element_text(size = 6)
+  )
+
+```
+
+#### Figure with Pvalues for Thy1 B+ cells per mm3 of PT
+```{r complexity-dynamics-2j-v2-B-pval, fig.width = 1.5, fig.asp = 1.5}
+chunk_data %>% 
+  mutate(group = factor(as.character(group), levels = c('Ig control', 'anti-CD4/CD8', 'untreated'))) %>% 
+  ggplot(aes(group, `Thy1 B+ cells per mm3 of PT`,
+             color = group,
+             fill = group)) +
+  geom_quasirandom(shape = 21, 
+                   alpha = 0.8, 
+                   color = 'black', 
+                   size = 1, 
+                   stroke=one_pt/4
+                   ) +
+  scale_fill_manual(values = use_palette) +
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  guides(fill = 'none', color = 'none') +
+  labs(
+    # y = 'Percentage of guides > 100x in lungs',
+    x = ''
+  ) +
+  stat_compare_means(
+    aes(label = paste0("p = ", after_stat(p.format))),
+    comparisons = use_comparisons,
+    method = 'wilcox.test',
+    size = 0.4*geom_text_size,
+    bracket.size = one_pt/4
+  ) +
+  theme(
+    axis.text =  element_text(size=6),
+    axis.title =  element_text(size=6),
+    plot.title = element_text(size=6, hjust = 0.5),
+    strip.text = element_text(size = 6)
+  )
+
+```
+
+
+
+
+
+
+
+### Figure 2G
+```{r complexity-dynamics-2g-conf}
+se <- readRDS(file.path(params$data_dir, 'se.rds'))
+
+# Define groups of samples
+data_array <- c(
+  "NSG lung tumor","dC9NSG_LungIV_C167_2","Lung tumor","NSG",
+  "NSG lung tumor","dC9NSG_LungIV_C167_3","Lung tumor","NSG",
+  "NSG lung tumor","dC9NSG_LungIV_C167_4","Lung tumor","NSG",
+  "NSG lung tumor","dC9NSG_LungIV_C167_5","Lung tumor","NSG",
+  "NSG lung tumor","dC9NSG_LungIV_LLC1_1","Lung tumor","NSG",
+  "NSG lung tumor","dC9NSG_LungIV_LLC1_2","Lung tumor","NSG",
+  "NSG lung tumor","dC9NSG_LungIV_LLC1_3","Lung tumor","NSG",
+  "NSG lung tumor","dC9NSG_LungIV_LLC1_4","Lung tumor","NSG",
+  "NSG lung tumor","dC9NSG_LungIV_LLC1_5","Lung tumor","NSG",
+  "Syngeneic lung tumor","dC9BL6_LungIV_C167_1","Lung tumor","Syngeneic",
+  "Syngeneic lung tumor","dC9BL6_LungIV_C167_2","Lung tumor","Syngeneic",
+  "Syngeneic lung tumor","dC9BL6_LungIV_C167_3","Lung tumor","Syngeneic",
+  "Syngeneic lung tumor","dC9BL6_LungIV_C167_4","Lung tumor","Syngeneic",
+  "Syngeneic lung tumor","dC9BL6_LungIV_C167_5","Lung tumor","Syngeneic",
+  "Syngeneic lung tumor","dC9BL6_LungIV_LLC1_1","Lung tumor","Syngeneic",
+  "Syngeneic lung tumor","dC9BL6_LungIV_LLC1_2","Lung tumor","Syngeneic",
+  "Syngeneic lung tumor","dC9BL6_LungIV_LLC1_3","Lung tumor","Syngeneic",
+  "Syngeneic lung tumor","dC9BL6_LungIV_LLC1_4","Lung tumor","Syngeneic",
+  "Syngeneic lung tumor","dC9BL6_LungIV_LLC1_5","Lung tumor","Syngeneic",
+  "NSG liver mets","dC9NSG_LiverIV_C167_1","Liver mets","NSG",
+  "NSG liver mets","dC9NSG_LiverIV_C167_2","Liver mets","NSG",
+  "NSG liver mets","dC9NSG_LiverIV_C167_3","Liver mets","NSG",
+  "NSG liver mets","dC9NSG_LiverIV_C167_4","Liver mets","NSG",
+  "NSG liver mets","dC9NSG_LiverIV_C167_5","Liver mets","NSG",
+  "NSG liver mets","dC9NSG_LiverIV_LLC1_1","Liver mets","NSG",
+  "NSG liver mets","dC9NSG_LiverIV_LLC1_2","Liver mets","NSG",
+  "NSG liver mets","dC9NSG_LiverIV_LLC1_3","Liver mets","NSG",
+  "NSG liver mets","dC9NSG_LiverIV_LLC1_4","Liver mets","NSG",
+  "NSG liver mets","dC9NSG_LiverIV_LLC1_5","Liver mets","NSG",
+  "Syngeneic liver mets","dC9BL6_LiverIV_C167_3","Liver mets","Syngeneic",
+  "Syngeneic liver mets","dC9BL6_LiverIV_C167_5","Liver mets","Syngeneic",
+  "Syngeneic liver mets","dC9BL6_LiverIV_LLC1_1","Liver mets","Syngeneic",
+  "Syngeneic liver mets","dC9BL6_LiverIV_LLC1_3","Liver mets","Syngeneic",
+  "Syngeneic liver mets","dC9BL6_LiverIV_LLC1_4","Liver mets","Syngeneic",
+  "Syngeneic liver mets","dC9BL6_LiverIV_LLC1_5","Liver mets","Syngeneic"
+)
+
+use_sample_groups <- matrix(data_array, ncol = 4, byrow = TRUE, 
+       dimnames = list(c(), c('group', 'sample_alias', 'group_origin', 'group_model'))) %>% 
+  data.frame %>% 
+  unique
+
+# use_sample_groups$sample_alias[!use_sample_groups$sample_alias %in% colnames(se)]
+
+use_palette <- c(
+  Syngeneic  = 'black',
+  NSG = 'white'
+)
+
+chunk_data <- colData(se) %>% data.frame %>% 
+  filter(sample_alias %in% use_sample_groups$sample_alias) %>%
+  left_join(use_sample_groups)%>% 
+  mutate(
+    guides_over_100_pct = guides_over_100 / 2215,
+    guides_over_30_pct = guides_over_30 / 2215,
+    guides_over_1_pct = guides_over_1 / 2215,
+    group_model = factor(group_model, levels = c('NSG', 'Syngeneic'))
+  )
+
+
+```
+
+#### Source data
+```{r complexity-dynamics-2g-data}
+chunk_data %>% 
+  dplyr::select(sample_alias, group, group_origin, group_model, guides_over_1_pct, guides_over_30_pct, guides_over_100_pct) %>% 
+  mutate_at(vars(guides_over_1_pct, guides_over_30_pct, guides_over_100_pct), 
+            ~ round(.*100, 2)) %>% 
+  datatable(., 
+            rownames = FALSE, 
+            filter = 'top', 
+            caption = 'Source data for the plots',
+            extensions = 'Buttons', 
+            options = list(
+              dom = 'Blfrtip',
+              buttons = c('csv', 'excel'),
+              columnDefs = list(
+                list(width = 120, targets = 1:2)
+              )
+            )
+            )
+```
+
+#### Threshold 30x
+```{r complexity-dynamics-2g-30x, fig.width = 2}
+chunk_data %>% 
+  ggplot(aes(group_model, guides_over_30_pct,
+             color = group_model,
+             fill = group_model)) +
+  geom_quasirandom(shape = 21, 
+                   alpha = 0.8, 
+                   color = 'black', 
+                   size = 1, 
+                   stroke=one_pt/4
+                   ) +
+  scale_fill_manual(values = use_palette) +
+  # scale_x_discrete(guide = guide_axis(angle = 45)) +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1)
+    ) +
+  facet_grid2(. ~ group_origin,
+              axes = "all",
+              scales = 'free_y'
+              ) +
+  guides(fill = 'none', color = 'none') +
+  labs(
+    y = 'Percentage of guides',
+    x = ''
+  ) +
+  geom_pwc(
+    method = "wilcox_test",
+    # label = "p.adj.format",
+    # p.adjust.method = "holm", 
+    # p.adjust.by = "panel",
+    label.size = 0.4*geom_text_size,
+    size = one_pt/4
+  ) +
+  # stat_compare_means(
+  #   comparisons = use_comparisons,
+  #   method = 'wilcox.test',
+  #   size = 0.4*geom_text_size,
+  #   bracket.size = one_pt/4
+  # ) +
+  theme(
+    axis.text =  element_text(size=6),
+    axis.title =  element_text(size=6),
+    plot.title = element_text(size=6, hjust = 0.5),
+    strip.text = element_text(size = 6)
+  )
+```
+
+#### Threshold 100x
+```{r complexity-dynamics-2g-100x, fig.width = 2}
+chunk_data %>% 
+  ggplot(aes(group_model, guides_over_100_pct,
+             color = group_model,
+             fill = group_model)) +
+  geom_quasirandom(shape = 21, 
+                   alpha = 0.8, 
+                   color = 'black', 
+                   size = 1, 
+                   stroke=one_pt/4
+                   ) +
+  scale_fill_manual(values = use_palette) +
+  # scale_x_discrete(guide = guide_axis(angle = 45)) +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1)
+    ) +
+  facet_grid2(. ~ group_origin,
+              axes = "all",
+              scales = 'free_y'
+              ) +
+  guides(fill = 'none', color = 'none') +
+  labs(
+    y = 'Percentage of guides',
+    x = ''
+  ) +
+  geom_pwc(
+    method = "wilcox_test",
+    # label = "p.adj.format",
+    # p.adjust.method = "holm", 
+    # p.adjust.by = "panel",
+    label.size = 0.4*geom_text_size,
+    size = one_pt/4
+  ) +
+  # stat_compare_means(
+  #   comparisons = use_comparisons,
+  #   method = 'wilcox.test',
+  #   size = 0.4*geom_text_size,
+  #   bracket.size = one_pt/4
+  # ) +
+  theme(
+    axis.text =  element_text(size=6),
+    axis.title =  element_text(size=6),
+    plot.title = element_text(size=6, hjust = 0.5),
+    strip.text = element_text(size = 6)
+  )
+```

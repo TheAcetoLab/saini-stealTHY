@@ -5,7 +5,7 @@ author: "Francesc Castro-Giner"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 output: workflowr::wflow_html
 editor_options:
-  chunk_output_type: console
+  chunk_output_type: inline
 params:
   data_dir: ./data/crispr/mm_2215_sgRNA
   output_dir: ./output/crispr/mm_2215_sgRNA
@@ -119,21 +119,21 @@ colData(se) <- chunk_colData %>% DataFrame
 ### MAGeCK analysis
 
 #### List of comparisons
-List of comparisons for differential abundance using MAGeCK
+List of comparisons for differential abundance using MAGeCK, using Mets over Primary tumor
 ```{r mageck-comparisons-definition}
 x <- colData(se) %>% data.frame
 mageck_comp_list <- list(
   `StealTHY KO Syngeneic CMT167` = list(
-    `Primary tumor` = x %>% filter(vector_mmodel == 'CMT167-KO-Thy1-C57BL6' & sample_type == 'Primary tumor' ) %>% pull(sample_alias),
-    `Liver mets` = x %>% filter(vector_mmodel == 'CMT167-KO-Thy1-C57BL6' & sample_type == 'Liver mets' ) %>% pull(sample_alias)
+    `Liver mets` = x %>% filter(vector_mmodel == 'CMT167-KO-Thy1-C57BL6' & sample_type == 'Liver mets' ) %>% pull(sample_alias),
+    `Primary tumor` = x %>% filter(vector_mmodel == 'CMT167-KO-Thy1-C57BL6' & sample_type == 'Primary tumor' ) %>% pull(sample_alias)
     ),
   `StealTHY KO Syngeneic LLC1` = list(
-    `Primary tumor` = x %>% filter(vector_mmodel == 'LLC1-KO-Thy1-C57BL6' & sample_type == 'Primary tumor' ) %>% pull(sample_alias),
-    `Liver mets` = x %>% filter(vector_mmodel == 'LLC1-KO-Thy1-C57BL6' & sample_type == 'Liver mets' ) %>% pull(sample_alias)
+    `Liver mets` = x %>% filter(vector_mmodel == 'LLC1-KO-Thy1-C57BL6' & sample_type == 'Liver mets' ) %>% pull(sample_alias),
+    `Primary tumor` = x %>% filter(vector_mmodel == 'LLC1-KO-Thy1-C57BL6' & sample_type == 'Primary tumor' ) %>% pull(sample_alias)
     ),
   `StealTHY KO Syngeneic CT26` = list(
-    `Primary tumor` = x %>% filter(vector_mmodel == 'CT26-KO-Thy1-BALB' & sample_type == 'Primary tumor' ) %>% pull(sample_alias),
-    `Liver mets` = x %>% filter(vector_mmodel == 'CT26-KO-Thy1-BALB' & sample_type == 'Lung mets' ) %>% pull(sample_alias)
+    `Liver mets` = x %>% filter(vector_mmodel == 'CT26-KO-Thy1-BALB' & sample_type == 'Lung mets' ) %>% pull(sample_alias),
+    `Primary tumor` = x %>% filter(vector_mmodel == 'CT26-KO-Thy1-BALB' & sample_type == 'Primary tumor' ) %>% pull(sample_alias)
     )
 )
 
@@ -305,7 +305,7 @@ cat(paste(x, collapse = ' - '), "\n\n")
 
 ## Differential abundance analysis
 ```{r da-selected-genes-conf}
-gene_info <- readxl::read_xlsx('./data/resources/selected_gene_list/gene_list_for_figure_5c.xlsx')
+gene_info <- readxl::read_xlsx('./data/resources/selected_gene_list/gene_list_for_figure_5c_additional_models.xlsx')
 
 use_colors <- c(
   `Immune system cytokines and chemokines` = 'grey',
@@ -357,6 +357,42 @@ use_shape <- c(
 #   pull(gene_name) %>%
 #   levels
 gene_levels <- rev(gene_info$id)
+
+
+gene_levels_list <- list()
+gene_levels_list[['stealthy_ko_syngeneic_llc1']] <- c(
+  "Pcna",
+  # "Tgfb2","Gdf9","Amhr2","Tgfbr2","Gdf15","Tgfb3","Tgfbr1",
+  "Amh", "Amhr2",  "Tgfbr2", "Acvr2b", "Gdf15", "Tgfb3", "Tgfbr1",
+  # "Met","Igf2r","Igf1r","Egfr","Axl","Gas6", "Erbb3","Erbb2","Egf",
+  "Mertk", "Igf2r", "Angpt2", "Igf1r", "Egfr", "Axl", "Gas6",
+  "Plk1","Trim72",
+  "Cd30","Ifnlr1","Ifnar1","Trail","Ifne","Lta","Ltbr","Tnfr2","Light", 
+  "Ccl25","Cxcl9","Ccrl2","Cxcr5","Ccr6","Ccr4","Relt", "Il18ra1", "Il13ra2", "Il13ra1", "Il18","Cxcl4","Ccl4","Cxcl14"
+  )
+
+gene_levels_list[['stealthy_ko_syngeneic_ct26']] <- c(
+  "Pcna",
+  # "Amhr2","Gdf9","Tgfbr1","Tgfbr2","Tgfb2","Gdf15","Tgfb3",
+  'Amhr2', 'Amh', 'Gdf15', 'Tgfbr2', 'Gdf9', 'Acvr1b', 'Tgfbr1',
+  # "Met","Igf1r","Igf2r","Egfr","Axl","Erbb3","Erbb2","Egf","Gas6",
+  'Axl', 'Egfr', 'Erbb3', 'Igf2r', 'Mertk', 'Gas6', 'Met',
+  "Plk1","Trim72",
+  "Cd30","Ifnlr1","Ifnar1","Trail","Ifne","Lta","Ltbr","Tnfr2","Light", 
+  "Ccl25","Cxcl9","Ccrl2","Cxcr5","Ccr6","Ccr4","Relt", "Il18ra1", "Il13ra2", "Il13ra1", "Il18","Cxcl4","Ccl4","Cxcl14"
+  )
+
+gene_levels_list[['stealthy_ko_syngeneic_cmt167']]  <- c(
+  "Pcna",
+  # "Amhr2","Gdf9","Tgfbr2","Tgfbr1","Tgfb2","Gdf15","Tgfb3",
+  'Amhr2', 'Amh', 'Gdf9', 'Acvr1b', 'Acvr1', 'Tgfbr2', 'Tgfbr1',
+  # "Met","Igf1r","Igf2r","Egfr","Axl","Erbb3","Erbb2","Egf","Gas6",
+  'Met', 'Igf1r', 'Igf2r', 'Egfr', 'Mertk', 'Axl', 'Angpt2',
+  "Plk1","Trim72",
+  "Cd30","Ifnlr1","Ifnar1","Trail","Ifne","Lta","Ltbr","Tnfr2","Light", 
+  "Ccl25","Cxcl9","Ccrl2","Cxcr5","Ccr6","Ccr4","Relt", "Il18ra1", "Il13ra2", "Il13ra1", "Il18","Cxcl4","Ccl4","Cxcl14"
+  )
+
 ```
 
 ### Differential abundance of selected genes
@@ -402,20 +438,23 @@ xlfc <- foreach(i=gene_summ, .combine = rbind) %do% {
     pull(LFC) %>%
     abs %>% max
 }
-maxLFC <- ceiling(max(xlfc[,1]))
-xlim <- c(-maxLFC, maxLFC)
-xbreaks <- c(-6, -2.5, 0, 2.5, 6)
-xlabels <- c('-6', '-2.5', '0', '2.5', '6')
+# maxLFC <- ceiling(max(xlfc[,1]))
+# xlim <- c(-maxLFC, maxLFC)
+# xbreaks <- c(-6, -2.5, 0, 2.5, 6)
+# xlabels <- c('-6', '-2.5', '0', '2.5', '6')
 
 i <- use_comp[1]
 for(i in use_comp)  {
   cat("####", mageck_comp_list_names[i], "\n\n")
+  
+  gene_levels <-  gene_levels_list[[i]]
   
   x <- gene_summ[[i]] %>% 
     ReadRRA(score = 'lfc') %>% 
     dplyr::rename(LFC = Score) %>% 
     left_join(gene_info, by = c('id' = 'id')) %>% 
     filter(!is.na(gene_set)) %>% 
+    filter(gene_name %in% gene_levels) %>% 
     mutate(
       gene_name = factor(gene_name, levels = gene_levels),
       gene_set = ifelse(
@@ -430,8 +469,8 @@ for(i in use_comp)  {
       ),
       gene_set = factor(gene_set, names(use_colors))
       )
-  # xlim <- c(-ceiling(max(abs(x$LFC), na.rm = TRUE)), 
-  #           ceiling(max(abs(x$LFC), na.rm = TRUE)))
+  xlim <- c(-ceiling(max(abs(x$LFC), na.rm = TRUE)),
+            ceiling(max(abs(x$LFC), na.rm = TRUE)))
   # size_breaks <- c(0, 0.25, 0.5, 1, 2, ceiling(maxFDR))
   size_breaks <- c(0, 0.25, 0.5, ceiling(maxFDR))
   res <- x %>% 
@@ -475,9 +514,9 @@ for(i in use_comp)  {
   res <- res +
     scale_x_continuous(
       expand = expansion(add = c(1, 1)), 
-      limits = xlim,
-      breaks = xbreaks,
-      labels = xlabels
+      limits = xlim
+      # breaks = xbreaks,
+      # labels = xlabels
     )
   
   print(res)
@@ -545,6 +584,7 @@ cpm_threshold <- 10000
 comp_list <- comp_list_muller
 use_genes <- genes_list_1
 
+# Create DF
 use_df <- assay(se, 'cpm') %>% data.frame(check.names = FALSE) %>% 
   rownames_to_column('guide') %>% 
   mutate(
@@ -553,6 +593,7 @@ use_df <- assay(se, 'cpm') %>% data.frame(check.names = FALSE) %>%
   ) %>%
   filter(gene %in% use_genes) %>% 
   pivot_longer(-c(guide, gene), names_to = 'sample_alias', values_to = 'cpm')
+
 
 j <-  names(comp_list)[1]
 muller_plots <- foreach(j = names(comp_list)) %do% {
@@ -619,7 +660,8 @@ muller_plots <- foreach(j = names(comp_list)) %do% {
         plot.margin = margin(0, 0.5, 0, 0, "cm"),
         axis.text =  element_text(size=3),
         axis.title =  element_text(size=3),
-        plot.title = element_text(size=3, hjust = 0.5)
+        plot.title = element_text(size=3, hjust = 0.5),
+        legend.text = element_text(size=3)
       )
   }
   names(res) <- names(comp_list[[j]])
@@ -631,7 +673,7 @@ names(muller_plots) <- names(comp_list)
 ```
 
 
-```{r muller-plots, fig.width = 1.5, fig.asp = 2}
+```{r muller-plots, fig.width = 2.5, fig.asp = 2}
 for (i in names(muller_plots)) {
   cat('###', i, '\n\n')
   wrap_plots(muller_plots[[i]], ncol = 1) %>% print
