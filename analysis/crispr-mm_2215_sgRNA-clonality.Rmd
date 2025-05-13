@@ -605,33 +605,203 @@ wrap_plots(muller_plots, ncol = 1)
 ## Complexity dynamics
 
 ### Figure 2D: Complexity dynamics in primary tumors and lung metastases
-```{r complexity-dynamics-1}
-chunk_data <- colData(se) %>% data.frame %>%
-  filter(sample_type %in% c('Primary tumor', 'Lung mets')) %>% 
-  filter(!is.na(vector_short)) %>% 
-  filter(effect_type_short == 'noKO') %>% 
-  mutate(
-    guides_over_1_pct = guides_over_1 / 2215,
-    guides_over_30_pct = guides_over_30 / 2215,
-    guides_over_100_pct = guides_over_100 / 2215
-  )
+```{r complexity-dynamics}
+se <- readRDS(file.path(params$data_dir, 'se.rds'))
 
-# Exclude samples because PCR amplification problems, these samples showed unconvincing bands
-use_samples <- c(
-  'dCas4T1Repl1_NSGTum',
-  'dCas4T1Repl2_NSGTum',
-  'dCas4T1Repl3_NSGTum',
-  'dCas4T1Repl4_NSGTum',
-  'Replacement_5bis',
-  'Replacement_7bis',
-  'Replacement_8bis',
-  'Replacement_9bis'
+# Define groups of samples
+data_array <- c(
+  "Thy1","4T_TumoT_N4","NSG tumor","NSG","Primary tumor",
+  "Thy1","4T_TumoT_N2","NSG tumor","NSG","Primary tumor",
+  "Thy1","4T_TumoT_N5","NSG tumor","NSG","Primary tumor",
+  "Thy1","4T_TumoT_N3","NSG tumor","NSG","Primary tumor",
+  "Thy1","4T_TumoT_N1","NSG tumor","NSG","Primary tumor",
+  "Thy1","MVT_TumoT_N5","NSG tumor","NSG","Primary tumor",
+  "Thy1","MVT_TumoT_N4","NSG tumor","NSG","Primary tumor",
+  "Thy1","MVT_TumoT_N1","NSG tumor","NSG","Primary tumor",
+  "Thy1","MVT_TumoT_N2","NSG tumor","NSG","Primary tumor",
+  "Thy1","MVT_TumoT_N3","NSG tumor","NSG","Primary tumor",
+  "Thy1","PY_TumoT_N2","NSG tumor","NSG","Primary tumor",
+  "Thy1","PY_TumoT_N5","NSG tumor","NSG","Primary tumor",
+  "Thy1","PY_TumoT_N4","NSG tumor","NSG","Primary tumor",
+  "Thy1","PY_TumoT_N3","NSG tumor","NSG","Primary tumor",
+  "Thy1","PY_TumoT_N1","NSG tumor","NSG","Primary tumor",
+  "Puro","4T_TumoP_N1","NSG tumor","NSG","Primary tumor",
+  "Puro","4T_TumoP_N2","NSG tumor","NSG","Primary tumor",
+  "Puro","4T_TumoP_N5","NSG tumor","NSG","Primary tumor",
+  "Puro","4T_TumoP_N4","NSG tumor","NSG","Primary tumor",
+  "Puro","4T_TumoP_N3","NSG tumor","NSG","Primary tumor",
+  "Puro","MVT_TumoP_N5","NSG tumor","NSG","Primary tumor",
+  "Puro","MVT_TumoP_N2","NSG tumor","NSG","Primary tumor",
+  "Puro","MVT_TumoP_N3","NSG tumor","NSG","Primary tumor",
+  "Puro","MVT_TumoP_N4","NSG tumor","NSG","Primary tumor",
+  "Puro","MVT_TumoP_N1","NSG tumor","NSG","Primary tumor",
+  "Puro","PY_TumoP_N1","NSG tumor","NSG","Primary tumor",
+  "Puro","PY_TumoP_N4","NSG tumor","NSG","Primary tumor",
+  "Puro","PY_TumoP_N5","NSG tumor","NSG","Primary tumor",
+  "Puro","PY_TumoP_N2","NSG tumor","NSG","Primary tumor",
+  "Puro","PY_TumoP_N3","NSG tumor","NSG","Primary tumor",
+  "dCas9+Puro","PlatePositionC1","NSG tumor","NSG","Primary tumor",
+  "dCas9+Puro","PlatePositionA2","NSG tumor","NSG","Primary tumor",
+  "dCas9+Puro","PlatePositionE1","NSG tumor","NSG","Primary tumor",
+  "dCas9+Puro","PlatePositionG1","NSG tumor","NSG","Primary tumor",
+  "dCas9+Puro","PlatePositionA1","NSG tumor","NSG","Primary tumor",
+  "dCas9+Puro","dCas4T1Repl1_NSGTum","NSG tumor","NSG","Primary tumor",
+  "dCas9+Puro","dCas4T1Repl2_NSGTum","NSG tumor","NSG","Primary tumor",
+  "dCas9+Puro","dCas4T1Repl3_NSGTum","NSG tumor","NSG","Primary tumor",
+  "dCas9+Puro","dCas4T1Repl4_NSGTum","NSG tumor","NSG","Primary tumor",
+  "dCas9+Puro","dCas4T1Repl5_NSGTum","NSG tumor","NSG","Primary tumor",
+  "Thy1","4T_LungsT_N3","NSG Lung mets","NSG","Lung mets",
+  "Thy1","4T_LungsT_N4","NSG Lung mets","NSG","Lung mets",
+  "Thy1","4T_LungsT_N5","NSG Lung mets","NSG","Lung mets",
+  "Thy1","4T_LungsT_N1","NSG Lung mets","NSG","Lung mets",
+  "Thy1","4T_LungsT_N2","NSG Lung mets","NSG","Lung mets",
+  "Thy1","MVT_LungsT_N4","NSG Lung mets","NSG","Lung mets",
+  "Thy1","MVT_LungsT_N2","NSG Lung mets","NSG","Lung mets",
+  "Thy1","MVT_LungsT_N3","NSG Lung mets","NSG","Lung mets",
+  "Thy1","MVT_LungsT_N1","NSG Lung mets","NSG","Lung mets",
+  "Thy1","MVT_LungsT_N5","NSG Lung mets","NSG","Lung mets",
+  "Thy1","PY_LungsT_N2","NSG Lung mets","NSG","Lung mets",
+  "Thy1","PY_LungsT_N5","NSG Lung mets","NSG","Lung mets",
+  "Thy1","PY_LungsT_N4","NSG Lung mets","NSG","Lung mets",
+  "Thy1","PY_LungsT_N3","NSG Lung mets","NSG","Lung mets",
+  "Thy1","PY_LungsT_N1","NSG Lung mets","NSG","Lung mets",
+  "Puro","4T_LungsP_N4","NSG Lung mets","NSG","Lung mets",
+  "Puro","4T_LungsP_N5","NSG Lung mets","NSG","Lung mets",
+  "Puro","4T_LungsP_N3","NSG Lung mets","NSG","Lung mets",
+  "Puro","4T_LungsP_N2","NSG Lung mets","NSG","Lung mets",
+  "Puro","4T_LungsP_N1","NSG Lung mets","NSG","Lung mets",
+  "Puro","MVT_LungsP_N2","NSG Lung mets","NSG","Lung mets",
+  "Puro","MVT_LungsP_N1","NSG Lung mets","NSG","Lung mets",
+  "Puro","MVT_LungsP_N5","NSG Lung mets","NSG","Lung mets",
+  "Puro","MVT_LungsP_N3","NSG Lung mets","NSG","Lung mets",
+  "Puro","MVT_LungsP_N4","NSG Lung mets","NSG","Lung mets",
+  "Puro","PY_LungsP_N5","NSG Lung mets","NSG","Lung mets",
+  "Puro","PY_LungsP_N4","NSG Lung mets","NSG","Lung mets",
+  "Puro","PY_LungsP_N3","NSG Lung mets","NSG","Lung mets",
+  "Puro","PY_LungsP_N1","NSG Lung mets","NSG","Lung mets",
+  "Puro","PY_LungsP_N2","NSG Lung mets","NSG","Lung mets",
+  "dCas9+Puro","PlatePositionB1","NSG Lung mets","NSG","Lung mets",
+  "dCas9+Puro","PlatePositionD1","NSG Lung mets","NSG","Lung mets",
+  "dCas9+Puro","PlatePositionB2","NSG Lung mets","NSG","Lung mets",
+  "dCas9+Puro","PlatePositionF1","NSG Lung mets","NSG","Lung mets",
+  "dCas9+Puro","PlatePositionH1","NSG Lung mets","NSG","Lung mets",
+  "dCas9+Puro","Replacement_5bis","NSG Lung mets","NSG","Lung mets",
+  "dCas9+Puro","Replacement_6bis","NSG Lung mets","NSG","Lung mets",
+  "dCas9+Puro","Replacement_7bis","NSG Lung mets","NSG","Lung mets",
+  "dCas9+Puro","Replacement_8bis","NSG Lung mets","NSG","Lung mets",
+  "dCas9+Puro","Replacement_9bis","NSG Lung mets","NSG","Lung mets",
+  "Thy1","4T_TumoT_B5","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Thy1","4T_TumoT_B3","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Thy1","4T_TumoT_B4","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Thy1","4T_TumoT_B1","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Thy1","4T_TumoT_B2","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Thy1","MVT_TumoT_F1","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Thy1","MVT_TumoT_F3","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Thy1","MVT_TumoT_F4","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Thy1","MVT_TumoT_F2","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Thy1","MVT_TumoT_F5","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Thy1","PY_TumoT_F4","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Thy1","PY_TumoT_F2","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Thy1","PY_TumoT_F1","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Thy1","PY_TumoT_F3","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Thy1","PY_TumoT_F5","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Puro","4T_TumoP_B1","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Puro","4T_TumoP_B2","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Puro","4T_TumoP_B3","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Puro","4T_TumoP_B4","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Puro","sample_5","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Puro","MVT_LungsT_F3","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Puro","MVT_LungsT_F1","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Puro","MVT_LungsT_F4","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Puro","MVT_LungsT_F5","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Puro","MVT_LungsT_F2","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Puro","PY_TumoP_F2","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Puro","PY_TumoP_F5","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Puro","PY_TumoP_F1","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Puro","","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Puro","","Syngeneic tumor","Syngeneic","Primary tumor",
+  "dCas9+Puro","PlatePositionC2","Syngeneic tumor","Syngeneic","Primary tumor",
+  "dCas9+Puro","PlatePositionG2","Syngeneic tumor","Syngeneic","Primary tumor",
+  "dCas9+Puro","PlatePositionA3","Syngeneic tumor","Syngeneic","Primary tumor",
+  "dCas9+Puro","PlatePositionC3","Syngeneic tumor","Syngeneic","Primary tumor",
+  "dCas9+Puro","PlatePositionE2","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Thy1","4T_LungsT_B2","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Thy1","4T_LungsT_B1","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Thy1","4T_LungsT_B4","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Thy1","4T_LungsT_B3","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Thy1","4T_LungsT_B5","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Thy1","MVT_LungsT_F3","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Thy1","MVT_LungsT_F1","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Thy1","MVT_LungsT_F4","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Thy1","MVT_LungsT_F5","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Thy1","MVT_LungsT_F2","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Thy1","PY_LungsT_F4","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Thy1","PY_LungsT_F2","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Thy1","PY_LungsT_F5","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Thy1","PY_LungsT_F3","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Thy1","PY_LungsT_F1","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Puro","4T_LungsP_B5","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Puro","4T_LungsP_B3","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Puro","4T_LungsP_B2","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Puro","4T_LungsP_B1","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Puro","4T_LungsP_B4","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Puro","MVT_LungsP_F4","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Puro","MVT_LungsP_F1","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Puro","MVT_LungsP_F2","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Puro","MVT_LungsP_F5","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Puro","MVT_LungsP_F3","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Puro","PY_LungsP_F1","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Puro","PY_LungsP_F4","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Puro","PY_LungsP_F3","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Puro","PY_LungsP_F5","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Puro","PY_LungsP_F2","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "dCas9+Puro","PlatePositionD3","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "dCas9+Puro","PlatePositionB3","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "dCas9+Puro","PlatePositionH2","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "dCas9+Puro","PlatePositionF2","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "dCas9+Puro","PlatePositionD2","Syngeneic Lung mets","Syngeneic","Lung mets"
 )
 
-chunk_data %<>% filter(!sample_alias %in% use_samples)
 
+use_sample_groups <- matrix(data_array, ncol = 5, byrow = TRUE, 
+       dimnames = list(c(), c('vector_short', 'sample_alias', 'model_sample_type', 'mouse_model_short', 'sample_type'))) %>% 
+  data.frame %>% 
+  unique
+
+
+
+chunk_data <- colData(se) %>% data.frame %>% 
+  mutate(
+    guides_over_100_pct = guides_over_100 / 2215,
+    guides_over_30_pct = guides_over_30 / 2215,
+    guides_over_1_pct = guides_over_1 / 2215
+  ) %>% 
+  filter(sample_alias %in% use_sample_groups$sample_alias) %>%
+  dplyr::select(sample_alias, starts_with('guides_over')) %>% 
+  left_join(use_sample_groups) %>% 
+  mutate(
+    model_sample_type = factor(model_sample_type, levels = c('NSG', 'Syngeneic')),
+    vector_short = factor(vector_short, levels = c('Thy1', 'Puro', 'dCas9+Puro'))
+  )
+ 
+
+
+# # Exclude samples because PCR amplification problems, these samples showed unconvincing bands
+# use_samples <- c(
+#   'dCas4T1Repl1_NSGTum',
+#   'dCas4T1Repl2_NSGTum',
+#   'dCas4T1Repl3_NSGTum',
+#   'dCas4T1Repl4_NSGTum',
+#   'Replacement_5bis',
+#   'Replacement_7bis',
+#   'Replacement_8bis',
+#   'Replacement_9bis'
+# )
+
+# chunk_data %<>% filter(!sample_alias %in% use_samples)
+# 
 use_comparisons <- list(
-  c("Thy1", "Puro"), 
+  c("Thy1", "Puro"),
   c("Puro", "dCas9+Puro"),
   c("Thy1", "dCas9+Puro")
 )
@@ -677,8 +847,8 @@ chunk_data %>%
     labels = scales::percent_format(accuracy = 1)
     ) +
   facet_grid2(sample_type ~ mouse_model_short,
-              axes = "all",
-              scales = 'free_y'
+              axes = "all"
+              # scales = 'free_y'
               ) +
   guides(fill = 'none', color = 'none') +
   labs(
@@ -913,6 +1083,486 @@ chunk_data %>%
 
 ```
 
+
+### Figure 2D: Second-draft - Complexity dynamics in primary tumors and lung metastases
+```{r complexity-dynamics-v2}
+se <- readRDS(file.path(params$data_dir, 'se.rds'))
+
+# Define groups of samples
+data_array <- c(
+  "Thy1","4T_TumoT_N4","NSG tumor","NSG","Primary tumor",
+  "Thy1","4T_TumoT_N2","NSG tumor","NSG","Primary tumor",
+  "Thy1","4T_TumoT_N5","NSG tumor","NSG","Primary tumor",
+  "Thy1","4T_TumoT_N3","NSG tumor","NSG","Primary tumor",
+  "Thy1","4T_TumoT_N1","NSG tumor","NSG","Primary tumor",
+  "Thy1","MVT_TumoT_N5","NSG tumor","NSG","Primary tumor",
+  "Thy1","MVT_TumoT_N4","NSG tumor","NSG","Primary tumor",
+  "Thy1","MVT_TumoT_N1","NSG tumor","NSG","Primary tumor",
+  "Thy1","MVT_TumoT_N2","NSG tumor","NSG","Primary tumor",
+  "Thy1","MVT_TumoT_N3","NSG tumor","NSG","Primary tumor",
+  "Thy1","PY_TumoT_N2","NSG tumor","NSG","Primary tumor",
+  "Thy1","PY_TumoT_N5","NSG tumor","NSG","Primary tumor",
+  "Thy1","PY_TumoT_N4","NSG tumor","NSG","Primary tumor",
+  "Thy1","PY_TumoT_N3","NSG tumor","NSG","Primary tumor",
+  "Thy1","PY_TumoT_N1","NSG tumor","NSG","Primary tumor",
+  "Puro","4T_TumoP_N1","NSG tumor","NSG","Primary tumor",
+  "Puro","4T_TumoP_N2","NSG tumor","NSG","Primary tumor",
+  "Puro","4T_TumoP_N5","NSG tumor","NSG","Primary tumor",
+  "Puro","4T_TumoP_N4","NSG tumor","NSG","Primary tumor",
+  "Puro","4T_TumoP_N3","NSG tumor","NSG","Primary tumor",
+  "Puro","MVT_TumoP_N5","NSG tumor","NSG","Primary tumor",
+  "Puro","MVT_TumoP_N2","NSG tumor","NSG","Primary tumor",
+  "Puro","MVT_TumoP_N3","NSG tumor","NSG","Primary tumor",
+  "Puro","MVT_TumoP_N4","NSG tumor","NSG","Primary tumor",
+  "Puro","MVT_TumoP_N1","NSG tumor","NSG","Primary tumor",
+  "Puro","PY_TumoP_N1","NSG tumor","NSG","Primary tumor",
+  "Puro","PY_TumoP_N4","NSG tumor","NSG","Primary tumor",
+  "Puro","PY_TumoP_N5","NSG tumor","NSG","Primary tumor",
+  "Puro","PY_TumoP_N2","NSG tumor","NSG","Primary tumor",
+  "Puro","PY_TumoP_N3","NSG tumor","NSG","Primary tumor",
+  "dCas9+Puro","PlatePositionC1","NSG tumor","NSG","Primary tumor",
+  "dCas9+Puro","PlatePositionA2","NSG tumor","NSG","Primary tumor",
+  "dCas9+Puro","PlatePositionE1","NSG tumor","NSG","Primary tumor",
+  "dCas9+Puro","PlatePositionG1","NSG tumor","NSG","Primary tumor",
+  "dCas9+Puro","PlatePositionA1","NSG tumor","NSG","Primary tumor",
+  "dCas9+Puro","dCas4T1Repl1_NSGTum","NSG tumor","NSG","Primary tumor",
+  "dCas9+Puro","dCas4T1Repl2_NSGTum","NSG tumor","NSG","Primary tumor",
+  "dCas9+Puro","dCas4T1Repl3_NSGTum","NSG tumor","NSG","Primary tumor",
+  "dCas9+Puro","dCas4T1Repl4_NSGTum","NSG tumor","NSG","Primary tumor",
+  "dCas9+Puro","dCas4T1Repl5_NSGTum","NSG tumor","NSG","Primary tumor",
+  "Thy1","4T_LungsT_N3","NSG Lung mets","NSG","Lung mets",
+  "Thy1","4T_LungsT_N4","NSG Lung mets","NSG","Lung mets",
+  "Thy1","4T_LungsT_N5","NSG Lung mets","NSG","Lung mets",
+  "Thy1","4T_LungsT_N1","NSG Lung mets","NSG","Lung mets",
+  "Thy1","4T_LungsT_N2","NSG Lung mets","NSG","Lung mets",
+  "Thy1","MVT_LungsT_N4","NSG Lung mets","NSG","Lung mets",
+  "Thy1","MVT_LungsT_N2","NSG Lung mets","NSG","Lung mets",
+  "Thy1","MVT_LungsT_N3","NSG Lung mets","NSG","Lung mets",
+  "Thy1","MVT_LungsT_N1","NSG Lung mets","NSG","Lung mets",
+  "Thy1","MVT_LungsT_N5","NSG Lung mets","NSG","Lung mets",
+  "Thy1","PY_LungsT_N2","NSG Lung mets","NSG","Lung mets",
+  "Thy1","PY_LungsT_N5","NSG Lung mets","NSG","Lung mets",
+  "Thy1","PY_LungsT_N4","NSG Lung mets","NSG","Lung mets",
+  "Thy1","PY_LungsT_N3","NSG Lung mets","NSG","Lung mets",
+  "Thy1","PY_LungsT_N1","NSG Lung mets","NSG","Lung mets",
+  "Puro","4T_LungsP_N4","NSG Lung mets","NSG","Lung mets",
+  "Puro","4T_LungsP_N5","NSG Lung mets","NSG","Lung mets",
+  "Puro","4T_LungsP_N3","NSG Lung mets","NSG","Lung mets",
+  "Puro","4T_LungsP_N2","NSG Lung mets","NSG","Lung mets",
+  "Puro","4T_LungsP_N1","NSG Lung mets","NSG","Lung mets",
+  "Puro","MVT_LungsP_N2","NSG Lung mets","NSG","Lung mets",
+  "Puro","MVT_LungsP_N1","NSG Lung mets","NSG","Lung mets",
+  "Puro","MVT_LungsP_N5","NSG Lung mets","NSG","Lung mets",
+  "Puro","MVT_LungsP_N3","NSG Lung mets","NSG","Lung mets",
+  "Puro","MVT_LungsP_N4","NSG Lung mets","NSG","Lung mets",
+  "Puro","PY_LungsP_N5","NSG Lung mets","NSG","Lung mets",
+  "Puro","PY_LungsP_N4","NSG Lung mets","NSG","Lung mets",
+  "Puro","PY_LungsP_N3","NSG Lung mets","NSG","Lung mets",
+  "Puro","PY_LungsP_N1","NSG Lung mets","NSG","Lung mets",
+  "Puro","PY_LungsP_N2","NSG Lung mets","NSG","Lung mets",
+  "dCas9+Puro","PlatePositionB1","NSG Lung mets","NSG","Lung mets",
+  "dCas9+Puro","PlatePositionD1","NSG Lung mets","NSG","Lung mets",
+  "dCas9+Puro","PlatePositionB2","NSG Lung mets","NSG","Lung mets",
+  "dCas9+Puro","PlatePositionF1","NSG Lung mets","NSG","Lung mets",
+  "dCas9+Puro","PlatePositionH1","NSG Lung mets","NSG","Lung mets",
+  "dCas9+Puro","Replacement_5bis","NSG Lung mets","NSG","Lung mets",
+  "dCas9+Puro","Replacement_6bis","NSG Lung mets","NSG","Lung mets",
+  "dCas9+Puro","Replacement_7bis","NSG Lung mets","NSG","Lung mets",
+  "dCas9+Puro","Replacement_8bis","NSG Lung mets","NSG","Lung mets",
+  "dCas9+Puro","Replacement_9bis","NSG Lung mets","NSG","Lung mets",
+  "Thy1","4T_TumoT_B5","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Thy1","4T_TumoT_B3","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Thy1","4T_TumoT_B4","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Thy1","4T_TumoT_B1","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Thy1","4T_TumoT_B2","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Thy1","MVT_TumoT_F1","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Thy1","MVT_TumoT_F3","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Thy1","MVT_TumoT_F4","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Thy1","MVT_TumoT_F2","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Thy1","MVT_TumoT_F5","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Thy1","PY_TumoT_F4","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Thy1","PY_TumoT_F2","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Thy1","PY_TumoT_F1","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Thy1","PY_TumoT_F3","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Thy1","PY_TumoT_F5","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Puro","4T_TumoP_B1","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Puro","4T_TumoP_B2","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Puro","4T_TumoP_B3","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Puro","4T_TumoP_B4","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Puro","sample_5","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Puro","MVT_LungsT_F3","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Puro","MVT_LungsT_F1","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Puro","MVT_LungsT_F4","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Puro","MVT_LungsT_F5","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Puro","MVT_LungsT_F2","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Puro","PY_TumoP_F2","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Puro","PY_TumoP_F5","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Puro","PY_TumoP_F1","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Puro","","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Puro","","Syngeneic tumor","Syngeneic","Primary tumor",
+  "dCas9+Puro","PlatePositionC2","Syngeneic tumor","Syngeneic","Primary tumor",
+  "dCas9+Puro","PlatePositionG2","Syngeneic tumor","Syngeneic","Primary tumor",
+  "dCas9+Puro","PlatePositionA3","Syngeneic tumor","Syngeneic","Primary tumor",
+  "dCas9+Puro","PlatePositionC3","Syngeneic tumor","Syngeneic","Primary tumor",
+  "dCas9+Puro","PlatePositionE2","Syngeneic tumor","Syngeneic","Primary tumor",
+  "Thy1","4T_LungsT_B2","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Thy1","4T_LungsT_B1","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Thy1","4T_LungsT_B4","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Thy1","4T_LungsT_B3","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Thy1","4T_LungsT_B5","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Thy1","MVT_LungsT_F3","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Thy1","MVT_LungsT_F1","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Thy1","MVT_LungsT_F4","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Thy1","MVT_LungsT_F5","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Thy1","MVT_LungsT_F2","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Thy1","PY_LungsT_F4","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Thy1","PY_LungsT_F2","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Thy1","PY_LungsT_F5","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Thy1","PY_LungsT_F3","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Thy1","PY_LungsT_F1","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Puro","4T_LungsP_B5","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Puro","4T_LungsP_B3","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Puro","4T_LungsP_B2","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Puro","4T_LungsP_B1","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Puro","4T_LungsP_B4","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Puro","MVT_LungsP_F4","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Puro","MVT_LungsP_F1","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Puro","MVT_LungsP_F2","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Puro","MVT_LungsP_F5","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Puro","MVT_LungsP_F3","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Puro","PY_LungsP_F1","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Puro","PY_LungsP_F4","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Puro","PY_LungsP_F3","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Puro","PY_LungsP_F5","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "Puro","PY_LungsP_F2","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "dCas9+Puro","PlatePositionD3","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "dCas9+Puro","PlatePositionB3","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "dCas9+Puro","PlatePositionH2","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "dCas9+Puro","PlatePositionF2","Syngeneic Lung mets","Syngeneic","Lung mets",
+  "dCas9+Puro","PlatePositionD2","Syngeneic Lung mets","Syngeneic","Lung mets"
+)
+
+
+use_sample_groups <- matrix(data_array, ncol = 5, byrow = TRUE, 
+       dimnames = list(c(), c('vector_short', 'sample_alias', 'model_sample_type', 'mouse_model_short', 'sample_type'))) %>% 
+  data.frame %>% 
+  unique
+
+
+
+chunk_data <- colData(se) %>% data.frame %>% 
+  mutate(
+    guides_over_100_pct = guides_over_100 / 2215,
+    guides_over_30_pct = guides_over_30 / 2215,
+    guides_over_1_pct = guides_over_1 / 2215
+  ) %>% 
+  filter(sample_alias %in% use_sample_groups$sample_alias) %>%
+  dplyr::select(sample_alias, starts_with('guides_over')) %>% 
+  left_join(use_sample_groups) %>% 
+  mutate(
+    model_sample_type = factor(model_sample_type, levels = c('NSG', 'Syngeneic')),
+    vector_short = factor(vector_short, levels = c('Thy1', 'Puro', 'dCas9+Puro'))
+  )
+ 
+
+
+# Exclude samples because PCR amplification problems, these samples showed unconvincing bands
+use_samples <- c(
+  'dCas4T1Repl1_NSGTum',
+  'dCas4T1Repl2_NSGTum',
+  'dCas4T1Repl3_NSGTum',
+  'dCas4T1Repl4_NSGTum',
+  'Replacement_5bis',
+  'Replacement_7bis',
+  'Replacement_8bis',
+  'Replacement_9bis'
+)
+
+chunk_data %<>% filter(!sample_alias %in% use_samples)
+
+# Define comparisons
+use_comparisons <- list(
+  c("Thy1", "Puro"),
+  c("Puro", "dCas9+Puro"),
+  c("Thy1", "dCas9+Puro")
+)
+```
+
+#### Source data
+```{r complexity-dynamics-v2-data}
+chunk_data %>% 
+  dplyr::select(sample_alias, vector_short, mouse_model_short, guides_over_1_pct, guides_over_30_pct, guides_over_100_pct) %>% 
+  mutate_at(vars(guides_over_1_pct, guides_over_30_pct, guides_over_100_pct), 
+            ~ round(.*100, 2)) %>% 
+  datatable(., 
+            rownames = FALSE, 
+            filter = 'top', 
+            caption = 'Source data for the plots',
+            extensions = 'Buttons', 
+            options = list(
+              dom = 'Blfrtip',
+              buttons = c('csv', 'excel'),
+              columnDefs = list(
+                list(width = 120, targets = 1:2)
+              )
+            )
+            )
+```
+
+
+#### Threshold 30x
+```{r complexity-dynamics-v2-30x, fig.asp = 1.8, fig.width = 2}
+chunk_data %>% 
+  ggplot(aes(vector_short, guides_over_30_pct,
+             color = vector_short,
+             fill = vector_short)) +
+  geom_quasirandom(shape = 21, 
+                   alpha = 0.8, 
+                   color = 'black', 
+                   size = 1, 
+                   stroke=one_pt/4
+                   ) +
+  scale_fill_manual(values = palette_vector) +
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1)
+    ) +
+  facet_grid2(sample_type ~ mouse_model_short,
+              axes = "all"
+              # scales = 'free_y'
+              ) +
+  guides(fill = 'none', color = 'none') +
+  labs(
+    y = 'Percentage of guides',
+    x = ''
+  ) +
+  stat_compare_means(
+    comparisons = use_comparisons,
+    method = 'wilcox.test',
+    size = 0.4*geom_text_size,
+    bracket.size = one_pt/4
+  ) +
+  theme(
+    axis.text =  element_text(size=6),
+    axis.title =  element_text(size=6),
+    plot.title = element_text(size=6, hjust = 0.5),
+    strip.text = element_text(size = 6)
+  )
+```
+
+Same plot, with P.adjust at panel level
+```{r complexity-dynamics-v2-30x-padj-panel, fig.asp = 1.8, fig.width = 2}
+chunk_data %>% 
+  ggplot(aes(vector_short, guides_over_30_pct,
+             color = vector_short,
+             fill = vector_short)) +
+  geom_quasirandom(shape = 21, 
+                   alpha = 0.8, 
+                   color = 'black', 
+                   size = 1, 
+                   stroke=one_pt/4
+                   ) +
+  scale_fill_manual(values = palette_vector) +
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1)
+    ) +
+  facet_grid2(sample_type ~ mouse_model_short,
+              axes = "all",
+              scales = 'free_y'
+              ) +
+  guides(fill = 'none', color = 'none') +
+  labs(
+    y = 'Percentage of guides',
+    x = ''
+  ) +
+  geom_pwc(
+    method = "wilcox_test", 
+    label = "p.adj.format",
+    p.adjust.method = "holm", 
+    p.adjust.by = "panel",
+    label.size = 0.4*geom_text_size,
+    size = one_pt/4
+  ) +
+  theme(
+    axis.text =  element_text(size=6),
+    axis.title =  element_text(size=6),
+    plot.title = element_text(size=6, hjust = 0.5),
+    strip.text = element_text(size = 6)
+  )
+
+```
+
+Same plot, with P.adjust at group level
+```{r complexity-dynamics-v2-30x-padj-group, fig.asp = 1.8, fig.width = 2}
+chunk_data %>% 
+  ggplot(aes(vector_short, guides_over_30_pct,
+             color = vector_short,
+             fill = vector_short)) +
+  geom_quasirandom(shape = 21, 
+                   alpha = 0.8, 
+                   color = 'black', 
+                   size = 1, 
+                   stroke=one_pt/4
+                   ) +
+  scale_fill_manual(values = palette_vector) +
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1)
+    ) +
+  facet_grid2(sample_type ~ mouse_model_short,
+              axes = "all",
+              scales = 'free_y'
+              ) +
+  guides(fill = 'none', color = 'none') +
+  labs(
+    y = 'Percentage of guides',
+    x = ''
+  ) +
+  geom_pwc(
+    method = "wilcox_test", 
+    label = "p.adj.format",
+    p.adjust.method = "holm", 
+    p.adjust.by = "group",
+    label.size = 0.4*geom_text_size,
+    size = one_pt/4
+  ) +
+  theme(
+    axis.text =  element_text(size=6),
+    axis.title =  element_text(size=6),
+    plot.title = element_text(size=6, hjust = 0.5),
+    strip.text = element_text(size = 6)
+  )
+
+```
+
+
+#### Threshold 100x
+```{r complexity-dynamics-v2-100x, fig.asp = 1.8, fig.width = 2}
+chunk_data %>% 
+  ggplot(aes(vector_short, guides_over_100_pct,
+             color = vector_short,
+             fill = vector_short)) +
+  geom_quasirandom(shape = 21, 
+                   alpha = 0.8, 
+                   color = 'black', 
+                   size = 1, 
+                   stroke=one_pt/4
+                   ) +
+  scale_fill_manual(values = palette_vector) +
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1)
+    ) +
+  facet_grid2(sample_type ~ mouse_model_short,
+              axes = "all",
+              scales = 'free_y'
+              ) +
+  guides(fill = 'none', color = 'none') +
+  labs(
+    y = 'Percentage of guides',
+    x = ''
+  ) +
+  stat_compare_means(
+    comparisons = use_comparisons,
+    method = 'wilcox.test',
+    size = 0.4*geom_text_size,
+    bracket.size = one_pt/4
+  ) +
+  theme(
+    axis.text =  element_text(size=6),
+    axis.title =  element_text(size=6),
+    plot.title = element_text(size=6, hjust = 0.5),
+    strip.text = element_text(size = 6)
+  )
+
+```
+
+Same plot, with P.adjust at panel level
+```{r complexity-dynamics-v2-100x-padj-panel, fig.asp = 1.8, fig.width = 2}
+chunk_data %>% 
+  ggplot(aes(vector_short, guides_over_100_pct,
+             color = vector_short,
+             fill = vector_short)) +
+  geom_quasirandom(shape = 21, 
+                   alpha = 0.8, 
+                   color = 'black', 
+                   size = 1, 
+                   stroke=one_pt/4
+                   ) +
+  scale_fill_manual(values = palette_vector) +
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1)
+    ) +
+  facet_grid2(sample_type ~ mouse_model_short,
+              axes = "all",
+              scales = 'free_y'
+              ) +
+  guides(fill = 'none', color = 'none') +
+  labs(
+    y = 'Percentage of guides',
+    x = ''
+  ) +
+  geom_pwc(
+    method = "wilcox_test", 
+    label = "p.adj.format",
+    p.adjust.method = "holm", 
+    p.adjust.by = "panel",
+    label.size = 0.4*geom_text_size,
+    size = one_pt/4
+  ) +
+  theme(
+    axis.text =  element_text(size=6),
+    axis.title =  element_text(size=6),
+    plot.title = element_text(size=6, hjust = 0.5),
+    strip.text = element_text(size = 6)
+  )
+
+```
+
+Same plot, with P.adjust at group level
+```{r complexity-dynamics-v2-100x-padj-group, fig.asp = 1.8, fig.width = 2}
+chunk_data %>% 
+  ggplot(aes(vector_short, guides_over_100_pct,
+             color = vector_short,
+             fill = vector_short)) +
+  geom_quasirandom(shape = 21, 
+                   alpha = 0.8, 
+                   color = 'black', 
+                   size = 1, 
+                   stroke=one_pt/4
+                   ) +
+  scale_fill_manual(values = palette_vector) +
+  scale_x_discrete(guide = guide_axis(angle = 45)) +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1)
+    ) +
+  facet_grid2(sample_type ~ mouse_model_short,
+              axes = "all",
+              scales = 'free_y'
+              ) +
+  guides(fill = 'none', color = 'none') +
+  labs(
+    y = 'Percentage of guides',
+    x = ''
+  ) +
+  geom_pwc(
+    method = "wilcox_test", 
+    label = "p.adj.format",
+    p.adjust.method = "holm", 
+    p.adjust.by = "group",
+    label.size = 0.4*geom_text_size,
+    size = one_pt/4
+  ) +
+  theme(
+    axis.text =  element_text(size=6),
+    axis.title =  element_text(size=6),
+    plot.title = element_text(size=6, hjust = 0.5),
+    strip.text = element_text(size = 6)
+  )
+
+```
 
 
 
