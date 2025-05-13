@@ -77,27 +77,6 @@ Load Summarized Experiment object
 se <- readRDS(file.path(params$data_dir, 'se.rds'))
 ```
 
-
-```{r, eval = FALSE}
-x <- colData(se) %>% data.frame
-use_samples <- c(
-  'dCas4T1Repl1_NSGTum',
-  'dCas4T1Repl2_NSGTum',
-  'dCas4T1Repl3_NSGTum',
-  'dCas4T1Repl4_NSGTum',
-  'dCas4T1Repl5_NSGTum',
-  'Replacement_5bis',
-  'Replacement_6bis',
-  'Replacement_7bis',
-  'Replacement_8bis',
-  'Replacement_9bis'
-)
-
-x[use_samples,] %>% select(effect_type_short, effect_type_short,vector_short)
-
-x['dC9BL6_LungIV_C167_1',]
-```
-
 Filter samples used for this analysis
 ```{r dw-sel-cols}
 use_cols <- colData(se) %>% 
@@ -685,11 +664,11 @@ data_array <- c(
   "dCas9+Puro","PlatePositionB2","NSG Lung mets","NSG","Lung mets",
   "dCas9+Puro","PlatePositionF1","NSG Lung mets","NSG","Lung mets",
   "dCas9+Puro","PlatePositionH1","NSG Lung mets","NSG","Lung mets",
-  "dCas9+Puro","Replacement_5bis","NSG Lung mets","NSG","Lung mets",
-  "dCas9+Puro","Replacement_6bis","NSG Lung mets","NSG","Lung mets",
-  "dCas9+Puro","Replacement_7bis","NSG Lung mets","NSG","Lung mets",
-  "dCas9+Puro","Replacement_8bis","NSG Lung mets","NSG","Lung mets",
-  "dCas9+Puro","Replacement_9bis","NSG Lung mets","NSG","Lung mets",
+  "dCas9+Puro","dCas4T1Repl1_NSGLung","NSG Lung mets","NSG","Lung mets",
+  "dCas9+Puro","dCas4T1Repl2_NSGLung","NSG Lung mets","NSG","Lung mets",
+  "dCas9+Puro","dCas4T1Repl3_NSGLung","NSG Lung mets","NSG","Lung mets",
+  "dCas9+Puro","dCas4T1Repl4_NSGLung","NSG Lung mets","NSG","Lung mets",
+  "dCas9+Puro","dCas4T1Repl5_NSGLung","NSG Lung mets","NSG","Lung mets",
   "Thy1","4T_TumoT_B5","Syngeneic tumor","Syngeneic","Primary tumor",
   "Thy1","4T_TumoT_B3","Syngeneic tumor","Syngeneic","Primary tumor",
   "Thy1","4T_TumoT_B4","Syngeneic tumor","Syngeneic","Primary tumor",
@@ -718,8 +697,6 @@ data_array <- c(
   "Puro","PY_TumoP_F2","Syngeneic tumor","Syngeneic","Primary tumor",
   "Puro","PY_TumoP_F5","Syngeneic tumor","Syngeneic","Primary tumor",
   "Puro","PY_TumoP_F1","Syngeneic tumor","Syngeneic","Primary tumor",
-  "Puro","","Syngeneic tumor","Syngeneic","Primary tumor",
-  "Puro","","Syngeneic tumor","Syngeneic","Primary tumor",
   "dCas9+Puro","PlatePositionC2","Syngeneic tumor","Syngeneic","Primary tumor",
   "dCas9+Puro","PlatePositionG2","Syngeneic tumor","Syngeneic","Primary tumor",
   "dCas9+Puro","PlatePositionA3","Syngeneic tumor","Syngeneic","Primary tumor",
@@ -762,13 +739,13 @@ data_array <- c(
   "dCas9+Puro","PlatePositionD2","Syngeneic Lung mets","Syngeneic","Lung mets"
 )
 
-
 use_sample_groups <- matrix(data_array, ncol = 5, byrow = TRUE, 
        dimnames = list(c(), c('vector_short', 'sample_alias', 'model_sample_type', 'mouse_model_short', 'sample_type'))) %>% 
   data.frame %>% 
   unique
 
 
+# use_sample_groups[!use_sample_groups$sample_alias %in% colnames(se),]
 
 chunk_data <- colData(se) %>% data.frame %>% 
   mutate(
@@ -786,18 +763,21 @@ chunk_data <- colData(se) %>% data.frame %>%
  
 
 
+chunk_data %>% filter(sample_alias == 'Replacement_6bis')
+chunk_data['Replacement_6bis',]
 # # Exclude samples because PCR amplification problems, these samples showed unconvincing bands
 # use_samples <- c(
 #   'dCas4T1Repl1_NSGTum',
 #   'dCas4T1Repl2_NSGTum',
 #   'dCas4T1Repl3_NSGTum',
 #   'dCas4T1Repl4_NSGTum',
-#   'Replacement_5bis',
-#   'Replacement_7bis',
-#   'Replacement_8bis',
-#   'Replacement_9bis'
+#   'dCas4T1Repl1_NSGLung',
+#   'dCas4T1Repl3_NSGLung',
+#   'dCas4T1Repl4_NSGLung',
+#   'dCas4T1Repl5_NSGLung'
 # )
 
+  
 # chunk_data %<>% filter(!sample_alias %in% use_samples)
 # 
 use_comparisons <- list(
@@ -1266,17 +1246,18 @@ chunk_data <- colData(se) %>% data.frame %>%
  
 
 
-# Exclude samples because PCR amplification problems, these samples showed unconvincing bands
+# # Exclude samples because PCR amplification problems, these samples showed unconvincing bands
 use_samples <- c(
   'dCas4T1Repl1_NSGTum',
   'dCas4T1Repl2_NSGTum',
   'dCas4T1Repl3_NSGTum',
   'dCas4T1Repl4_NSGTum',
-  'Replacement_5bis',
-  'Replacement_7bis',
-  'Replacement_8bis',
-  'Replacement_9bis'
+  'dCas4T1Repl1_NSGLung',
+  'dCas4T1Repl3_NSGLung',
+  'dCas4T1Repl4_NSGLung',
+  'dCas4T1Repl5_NSGLung'
 )
+
 
 chunk_data %<>% filter(!sample_alias %in% use_samples)
 
