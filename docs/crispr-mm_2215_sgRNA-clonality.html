@@ -556,15 +556,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtree748478ddf826aace4d4ea19c1a8a6bf5c7f1ba6etargetblank748478da">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtreef2497227bea4d0c618e871f06ff31d6181a6e3d2targetblankf249722a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/748478ddf826aace4d4ea19c1a8a6bf5c7f1ba6e" target="_blank">748478d</a>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/f2497227bea4d0c618e871f06ff31d6181a6e3d2" target="_blank">f249722</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtree748478ddf826aace4d4ea19c1a8a6bf5c7f1ba6etargetblank748478da"
+id="strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtreef2497227bea4d0c618e871f06ff31d6181a6e3d2targetblankf249722a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -574,7 +574,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/748478ddf826aace4d4ea19c1a8a6bf5c7f1ba6e" target="_blank">748478d</a>.
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/f2497227bea4d0c618e871f06ff31d6181a6e3d2" target="_blank">f249722</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -648,6 +648,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/f2497227bea4d0c618e871f06ff31d6181a6e3d2/analysis/crispr-mm_2215_sgRNA-clonality.Rmd" target="_blank">f249722</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-05-13
+</td>
+<td>
+mod clonality figuress
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/TheAcetoLab/saini-stealTHY/0e8d1db849f537c8abb88e943b7f6fd049d838fc/docs/crispr-mm_2215_sgRNA-clonality.html" target="_blank">0e8d1db</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-05-13
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -930,23 +964,6 @@ library(ggpubr)
 <pre class="r"><code>source(&quot;./configuration/rmarkdown/color_palettes.R&quot;)</code></pre>
 <p>Load Summarized Experiment object</p>
 <pre class="r"><code>se &lt;- readRDS(file.path(params$data_dir, &#39;se.rds&#39;))</code></pre>
-<pre class="r"><code>x &lt;- colData(se) %&gt;% data.frame
-use_samples &lt;- c(
-  &#39;dCas4T1Repl1_NSGTum&#39;,
-  &#39;dCas4T1Repl2_NSGTum&#39;,
-  &#39;dCas4T1Repl3_NSGTum&#39;,
-  &#39;dCas4T1Repl4_NSGTum&#39;,
-  &#39;dCas4T1Repl5_NSGTum&#39;,
-  &#39;Replacement_5bis&#39;,
-  &#39;Replacement_6bis&#39;,
-  &#39;Replacement_7bis&#39;,
-  &#39;Replacement_8bis&#39;,
-  &#39;Replacement_9bis&#39;
-)
-
-x[use_samples,] %&gt;% select(effect_type_short, effect_type_short,vector_short)
-
-x[&#39;dC9BL6_LungIV_C167_1&#39;,]</code></pre>
 <p>Filter samples used for this analysis</p>
 <pre class="r"><code>use_cols &lt;- colData(se) %&gt;% 
   data.frame %&gt;% 
@@ -1885,11 +1902,11 @@ data_array &lt;- c(
   &quot;dCas9+Puro&quot;,&quot;PlatePositionB2&quot;,&quot;NSG Lung mets&quot;,&quot;NSG&quot;,&quot;Lung mets&quot;,
   &quot;dCas9+Puro&quot;,&quot;PlatePositionF1&quot;,&quot;NSG Lung mets&quot;,&quot;NSG&quot;,&quot;Lung mets&quot;,
   &quot;dCas9+Puro&quot;,&quot;PlatePositionH1&quot;,&quot;NSG Lung mets&quot;,&quot;NSG&quot;,&quot;Lung mets&quot;,
-  &quot;dCas9+Puro&quot;,&quot;Replacement_5bis&quot;,&quot;NSG Lung mets&quot;,&quot;NSG&quot;,&quot;Lung mets&quot;,
-  &quot;dCas9+Puro&quot;,&quot;Replacement_6bis&quot;,&quot;NSG Lung mets&quot;,&quot;NSG&quot;,&quot;Lung mets&quot;,
-  &quot;dCas9+Puro&quot;,&quot;Replacement_7bis&quot;,&quot;NSG Lung mets&quot;,&quot;NSG&quot;,&quot;Lung mets&quot;,
-  &quot;dCas9+Puro&quot;,&quot;Replacement_8bis&quot;,&quot;NSG Lung mets&quot;,&quot;NSG&quot;,&quot;Lung mets&quot;,
-  &quot;dCas9+Puro&quot;,&quot;Replacement_9bis&quot;,&quot;NSG Lung mets&quot;,&quot;NSG&quot;,&quot;Lung mets&quot;,
+  &quot;dCas9+Puro&quot;,&quot;dCas4T1Repl1_NSGLung&quot;,&quot;NSG Lung mets&quot;,&quot;NSG&quot;,&quot;Lung mets&quot;,
+  &quot;dCas9+Puro&quot;,&quot;dCas4T1Repl2_NSGLung&quot;,&quot;NSG Lung mets&quot;,&quot;NSG&quot;,&quot;Lung mets&quot;,
+  &quot;dCas9+Puro&quot;,&quot;dCas4T1Repl3_NSGLung&quot;,&quot;NSG Lung mets&quot;,&quot;NSG&quot;,&quot;Lung mets&quot;,
+  &quot;dCas9+Puro&quot;,&quot;dCas4T1Repl4_NSGLung&quot;,&quot;NSG Lung mets&quot;,&quot;NSG&quot;,&quot;Lung mets&quot;,
+  &quot;dCas9+Puro&quot;,&quot;dCas4T1Repl5_NSGLung&quot;,&quot;NSG Lung mets&quot;,&quot;NSG&quot;,&quot;Lung mets&quot;,
   &quot;Thy1&quot;,&quot;4T_TumoT_B5&quot;,&quot;Syngeneic tumor&quot;,&quot;Syngeneic&quot;,&quot;Primary tumor&quot;,
   &quot;Thy1&quot;,&quot;4T_TumoT_B3&quot;,&quot;Syngeneic tumor&quot;,&quot;Syngeneic&quot;,&quot;Primary tumor&quot;,
   &quot;Thy1&quot;,&quot;4T_TumoT_B4&quot;,&quot;Syngeneic tumor&quot;,&quot;Syngeneic&quot;,&quot;Primary tumor&quot;,
@@ -1918,8 +1935,6 @@ data_array &lt;- c(
   &quot;Puro&quot;,&quot;PY_TumoP_F2&quot;,&quot;Syngeneic tumor&quot;,&quot;Syngeneic&quot;,&quot;Primary tumor&quot;,
   &quot;Puro&quot;,&quot;PY_TumoP_F5&quot;,&quot;Syngeneic tumor&quot;,&quot;Syngeneic&quot;,&quot;Primary tumor&quot;,
   &quot;Puro&quot;,&quot;PY_TumoP_F1&quot;,&quot;Syngeneic tumor&quot;,&quot;Syngeneic&quot;,&quot;Primary tumor&quot;,
-  &quot;Puro&quot;,&quot;&quot;,&quot;Syngeneic tumor&quot;,&quot;Syngeneic&quot;,&quot;Primary tumor&quot;,
-  &quot;Puro&quot;,&quot;&quot;,&quot;Syngeneic tumor&quot;,&quot;Syngeneic&quot;,&quot;Primary tumor&quot;,
   &quot;dCas9+Puro&quot;,&quot;PlatePositionC2&quot;,&quot;Syngeneic tumor&quot;,&quot;Syngeneic&quot;,&quot;Primary tumor&quot;,
   &quot;dCas9+Puro&quot;,&quot;PlatePositionG2&quot;,&quot;Syngeneic tumor&quot;,&quot;Syngeneic&quot;,&quot;Primary tumor&quot;,
   &quot;dCas9+Puro&quot;,&quot;PlatePositionA3&quot;,&quot;Syngeneic tumor&quot;,&quot;Syngeneic&quot;,&quot;Primary tumor&quot;,
@@ -1962,13 +1977,13 @@ data_array &lt;- c(
   &quot;dCas9+Puro&quot;,&quot;PlatePositionD2&quot;,&quot;Syngeneic Lung mets&quot;,&quot;Syngeneic&quot;,&quot;Lung mets&quot;
 )
 
-
 use_sample_groups &lt;- matrix(data_array, ncol = 5, byrow = TRUE, 
        dimnames = list(c(), c(&#39;vector_short&#39;, &#39;sample_alias&#39;, &#39;model_sample_type&#39;, &#39;mouse_model_short&#39;, &#39;sample_type&#39;))) %&gt;% 
   data.frame %&gt;% 
   unique
 
 
+# use_sample_groups[!use_sample_groups$sample_alias %in% colnames(se),]
 
 chunk_data &lt;- colData(se) %&gt;% data.frame %&gt;% 
   mutate(
@@ -1986,18 +2001,32 @@ chunk_data &lt;- colData(se) %&gt;% data.frame %&gt;%
  
 
 
-# # Exclude samples because PCR amplification problems, these samples showed unconvincing bands
+chunk_data %&gt;% filter(sample_alias == &#39;Replacement_6bis&#39;)</code></pre>
+<p>[1] sample_alias guides_over_1 guides_over_5<br />
+[4] guides_over_10 guides_over_30 guides_over_100<br />
+[7] guides_over_500 guides_over_100_pct guides_over_30_pct [10]
+guides_over_1_pct vector_short model_sample_type<br />
+[13] mouse_model_short sample_type<br />
+&lt;0 rows&gt; (or 0-length row.names)</p>
+<pre class="r"><code>chunk_data[&#39;Replacement_6bis&#39;,]</code></pre>
+<p>sample_alias guides_over_1 guides_over_5 guides_over_10
+guides_over_30 NA <NA> NA NA NA NA guides_over_100 guides_over_500
+guides_over_100_pct guides_over_30_pct NA NA NA NA NA guides_over_1_pct
+vector_short model_sample_type mouse_model_short NA NA <NA> <NA> <NA>
+sample_type NA <NA></p>
+<pre class="r"><code># # Exclude samples because PCR amplification problems, these samples showed unconvincing bands
 # use_samples &lt;- c(
 #   &#39;dCas4T1Repl1_NSGTum&#39;,
 #   &#39;dCas4T1Repl2_NSGTum&#39;,
 #   &#39;dCas4T1Repl3_NSGTum&#39;,
 #   &#39;dCas4T1Repl4_NSGTum&#39;,
-#   &#39;Replacement_5bis&#39;,
-#   &#39;Replacement_7bis&#39;,
-#   &#39;Replacement_8bis&#39;,
-#   &#39;Replacement_9bis&#39;
+#   &#39;dCas4T1Repl1_NSGLung&#39;,
+#   &#39;dCas4T1Repl3_NSGLung&#39;,
+#   &#39;dCas4T1Repl4_NSGLung&#39;,
+#   &#39;dCas4T1Repl5_NSGLung&#39;
 # )
 
+  
 # chunk_data %&lt;&gt;% filter(!sample_alias %in% use_samples)
 # 
 use_comparisons &lt;- list(
@@ -2025,7 +2054,7 @@ use_comparisons &lt;- list(
             )
             )</code></pre>
 <div class="datatables html-widget html-fill-item" id="htmlwidget-cf74d9caecbce7389320" style="width:100%;height:auto;"></div>
-<script type="application/json" data-for="htmlwidget-cf74d9caecbce7389320">{"x":{"filter":"top","vertical":false,"filterHTML":"<tr>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"factor\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"width: 100%; display: none;\">\n      <select multiple=\"multiple\" style=\"width: 100%;\" data-options=\"[&quot;Thy1&quot;,&quot;Puro&quot;,&quot;dCas9+Puro&quot;]\"><\/select>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"39.64\" data-max=\"99.59\" data-scale=\"2\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"1.26\" data-max=\"98.6\" data-scale=\"2\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"0.63\" data-max=\"96.88\" data-scale=\"2\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n<\/tr>","extensions":["Buttons"],"caption":"<caption>Source data for the plots<\/caption>","data":[["4T_LungsP_B1","4T_LungsP_B2","4T_LungsP_B3","4T_LungsP_B4","4T_LungsP_N1","4T_LungsP_N2","4T_LungsP_N3","4T_LungsP_N4","4T_LungsP_N5","4T_LungsT_B1","4T_LungsT_B2","4T_LungsT_B3","4T_LungsT_B4","4T_LungsT_B5","4T_LungsT_N1","4T_LungsT_N2","4T_LungsT_N3","4T_LungsT_N4","4T_LungsT_N5","MVT_LungsP_F1","MVT_LungsP_F2","MVT_LungsP_F5","MVT_LungsP_N1","MVT_LungsP_N2","MVT_LungsP_N3","MVT_LungsP_N4","MVT_LungsP_N5","MVT_LungsT_F1","MVT_LungsT_F1","MVT_LungsT_F2","MVT_LungsT_F2","MVT_LungsT_F3","MVT_LungsT_F3","MVT_LungsT_F4","MVT_LungsT_F4","MVT_LungsT_F5","MVT_LungsT_F5","MVT_LungsT_N1","MVT_LungsT_N2","MVT_LungsT_N3","MVT_LungsT_N4","MVT_LungsT_N5","PY_LungsP_F3","PY_LungsP_F4","PY_LungsP_N1","PY_LungsP_N2","PY_LungsP_N3","PY_LungsP_N4","PY_LungsP_N5","PY_LungsT_F1","PY_LungsT_F2","PY_LungsT_F3","PY_LungsT_F4","PY_LungsT_F5","PY_LungsT_N1","PY_LungsT_N2","PY_LungsT_N3","PY_LungsT_N4","PY_LungsT_N5","4T_TumoP_B1","4T_TumoP_B2","4T_TumoP_B3","4T_TumoP_B4","4T_TumoP_N1","4T_TumoP_N2","4T_TumoP_N3","4T_TumoP_N4","4T_TumoP_N5","4T_TumoT_B1","4T_TumoT_B2","4T_TumoT_B3","4T_TumoT_B4","4T_TumoT_B5","4T_TumoT_N1","4T_TumoT_N2","4T_TumoT_N3","4T_TumoT_N4","4T_TumoT_N5","MVT_TumoP_N1","MVT_TumoP_N2","MVT_TumoP_N3","MVT_TumoP_N4","MVT_TumoP_N5","MVT_TumoT_F1","MVT_TumoT_F2","MVT_TumoT_F3","MVT_TumoT_F4","MVT_TumoT_F5","MVT_TumoT_N1","MVT_TumoT_N2","MVT_TumoT_N3","MVT_TumoT_N4","MVT_TumoT_N5","PY_TumoP_N1","PY_TumoP_N2","PY_TumoP_N3","PY_TumoP_N4","PY_TumoP_N5","PY_TumoT_F1","PY_TumoT_F2","PY_TumoT_F3","PY_TumoT_F4","PY_TumoT_F5","PY_TumoT_N1","PY_TumoT_N2","PY_TumoT_N3","PY_TumoT_N4","PY_TumoT_N5","4T_LungsP_B5","MVT_LungsP_F3","MVT_LungsP_F4","PY_LungsP_F1","PY_LungsP_F2","PY_LungsP_F5","PY_TumoP_F1","PY_TumoP_F2","PY_TumoP_F5","sample_5","PlatePositionA1","PlatePositionA2","PlatePositionA3","PlatePositionB1","PlatePositionB2","PlatePositionB3","PlatePositionC1","PlatePositionC2","PlatePositionC3","PlatePositionD1","PlatePositionD2","PlatePositionD3","PlatePositionE1","PlatePositionE2","PlatePositionF1","PlatePositionF2","PlatePositionG1","PlatePositionG2","PlatePositionH1","PlatePositionH2","dCas4T1Repl1_NSGTum","dCas4T1Repl2_NSGTum","dCas4T1Repl3_NSGTum","dCas4T1Repl4_NSGTum","dCas4T1Repl5_NSGTum"],["Puro","Puro","Puro","Puro","Puro","Puro","Puro","Puro","Puro","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Puro","Puro","Puro","Puro","Puro","Puro","Puro","Puro","Puro","Thy1","Puro","Thy1","Puro","Thy1","Puro","Thy1","Puro","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Puro","Puro","Puro","Puro","Puro","Puro","Puro","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Puro","Puro","Puro","Puro","Puro","Puro","Puro","Puro","Puro","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Puro","Puro","Puro","Puro","Puro","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Puro","Puro","Puro","Puro","Puro","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Puro","Puro","Puro","Puro","Puro","Puro","Puro","Puro","Puro","Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro"],["Syngeneic","Syngeneic","Syngeneic","Syngeneic","NSG","NSG","NSG","NSG","NSG","Syngeneic","Syngeneic","Syngeneic","Syngeneic","Syngeneic","NSG","NSG","NSG","NSG","NSG","Syngeneic","Syngeneic","Syngeneic","NSG","NSG","NSG","NSG","NSG","Syngeneic","Syngeneic","Syngeneic","Syngeneic","Syngeneic","Syngeneic","Syngeneic","Syngeneic","Syngeneic","Syngeneic","NSG","NSG","NSG","NSG","NSG","Syngeneic","Syngeneic","NSG","NSG","NSG","NSG","NSG","Syngeneic","Syngeneic","Syngeneic","Syngeneic","Syngeneic","NSG","NSG","NSG","NSG","NSG","Syngeneic","Syngeneic","Syngeneic","Syngeneic","NSG","NSG","NSG","NSG","NSG","Syngeneic","Syngeneic","Syngeneic","Syngeneic","Syngeneic","NSG","NSG","NSG","NSG","NSG","NSG","NSG","NSG","NSG","NSG","Syngeneic","Syngeneic","Syngeneic","Syngeneic","Syngeneic","NSG","NSG","NSG","NSG","NSG","NSG","NSG","NSG","NSG","NSG","Syngeneic","Syngeneic","Syngeneic","Syngeneic","Syngeneic","NSG","NSG","NSG","NSG","NSG","Syngeneic","Syngeneic","Syngeneic","Syngeneic","Syngeneic","Syngeneic","Syngeneic","Syngeneic","Syngeneic","Syngeneic","NSG","NSG","Syngeneic","NSG","NSG","Syngeneic","NSG","Syngeneic","Syngeneic","NSG","Syngeneic","Syngeneic","NSG","Syngeneic","NSG","Syngeneic","NSG","Syngeneic","NSG","Syngeneic","NSG","NSG","NSG","NSG","NSG"],[45.15,62.03,98.69,97.7,61.63,64.56,72.45999999999999,70.7,80,68.94,49.3,58.15,53.05,62.93,66.41,56.3,62.17,64.23999999999999,63.25,56.66,71.15000000000001,97.47,65.01000000000001,67.90000000000001,60.32,52.05,70.43000000000001,51.06,51.06,62.53,62.53,56.21,56.21,54.54,54.54,64.88,64.88,79.5,70.29000000000001,76.34,79.59,64.92,97.88,97.7,62.48,69.70999999999999,53.77,81.34999999999999,76.7,50.2,70.47,67.90000000000001,57.29,97.7,46.37,64.02,71.11,69.8,57.43,83.61,82.98,91.42,99.59,98.87,99.37,97.88,99.14,98.95999999999999,98.47,87.58,98.92,98.69,99.37,93.18000000000001,97.2,94.63,97.92,98.37,98.15000000000001,98.73999999999999,98.78,98.01000000000001,98.95999999999999,98.92,98.47,99.05,98.83,89.20999999999999,99.05,98.87,98.78,99.23,99.09999999999999,99.28,99.23,98.51000000000001,99.23,99.09999999999999,99.28,99.5,98.78,99.55,98.56,98.19,99.05,98.37,99.19,99.31999999999999,46.41,55.49,54.63,75.53,70.2,60.95,67.04000000000001,65.59999999999999,75.48999999999999,59.64,93.63,93.68000000000001,70.47,65.45999999999999,51.96,52.51,96.03,49.16,63.16,57.83,39.64,41.44,92.78,51.6,46.09,43.25,96.66,78.59999999999999,49.03,51.15,85.01000000000001,79.64,75.26000000000001,80.41,79.5],[5.37,7.04,23.48,11.74,5.33,5.78,6,8.130000000000001,6.59,8.17,8.890000000000001,7.95,8.26,6.91,6.46,5.91,7.99,7,7.72,6.14,7.18,10.11,10.16,13.32,7.99,6.59,10.2,12.82,12.82,11.65,11.65,14.04,14.04,12.46,12.46,12.69,12.69,10.61,11.65,10.88,12.14,11.51,16.48,15.94,4.2,4.7,3.88,4.24,5.91,4.92,4.97,5.87,6.77,13.45,4.83,7.27,5.91,5.96,7.27,8.98,28.04,38.6,97.43000000000001,97.65000000000001,98.01000000000001,83.97,97.52,97.2,92.64,9.44,94.31,92.42,95.3,28.8,84.7,69.70999999999999,91.29000000000001,86.05,92.95999999999999,96.79000000000001,96.48,95.89,97.34,97.65000000000001,91.06,97.73999999999999,97.29000000000001,18.37,96.34,96.20999999999999,95.53,98.59999999999999,98.19,98.59999999999999,96.48,92.91,97.29000000000001,97.06999999999999,92.23,93.45,89.34999999999999,94.72,88.76000000000001,74.76000000000001,97.02,91.83,96.52,96.3,2.39,4.29,3.25,2.57,3.79,3.93,2.57,3.93,3.12,3.3,74.09,85.15000000000001,8.529999999999999,7.31,13.81,4.65,82.93000000000001,8.17,7.63,12.37,1.26,3.07,81.90000000000001,3.75,13.86,1.85,79.31999999999999,11.74,16.79,2.8,50.65,55.85,46.28,55.17,57.65],[2.98,4.42,5.28,2.71,3.66,3.7,3.88,5.46,4.29,5.6,5.64,4.65,5.28,3.88,4.11,3.7,5.6,4.97,4.92,3.57,3.52,1.72,7,9.529999999999999,6.05,5.19,6.82,8.710000000000001,8.710000000000001,7.13,7.13,9.07,9.07,8.26,8.26,8.130000000000001,8.130000000000001,7.72,8.31,7.9,8.44,7.67,2.75,3.39,2.39,2.39,2.75,2.84,3.7,1.35,2.3,2.08,2.8,2.3,2.21,4.74,3.21,3.43,4.15,2.98,18.83,29.07,92.64,94.76000000000001,94.27,64.42,93.54000000000001,94.04000000000001,83.7,2.17,86.59,83.39,86.31999999999999,19.46,71.15000000000001,52.69,82.56999999999999,69.39,83.3,92.05,91.06,91.56,92.78,93.27,79.45999999999999,94.63,94.67,9.48,91.29000000000001,90.06999999999999,89.06999999999999,96.39,96.88,96.34,90.7,83.61,92.69,91.87,77.65000000000001,80.31999999999999,74.63,84.33,76.06999999999999,52.51,92.91,79.5,89.84,90.16,0.63,1.63,0.99,0.95,1.58,1.76,1.04,1.72,1.44,1.26,57.83,72.33,3.39,3.12,12.6,1.17,64.11,6.37,3.3,5.19,0.63,1.22,66.05,1.58,9.57,0.68,61.94,3.97,15.49,1.13,34.49,38.56,30.2,38.01,41.22]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>sample_alias<\/th>\n      <th>vector_short<\/th>\n      <th>mouse_model_short<\/th>\n      <th>guides_over_1_pct<\/th>\n      <th>guides_over_30_pct<\/th>\n      <th>guides_over_100_pct<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"Blfrtip","buttons":["csv","excel"],"columnDefs":[{"width":120,"targets":[1,2]},{"className":"dt-right","targets":[3,4,5]},{"name":"sample_alias","targets":0},{"name":"vector_short","targets":1},{"name":"mouse_model_short","targets":2},{"name":"guides_over_1_pct","targets":3},{"name":"guides_over_30_pct","targets":4},{"name":"guides_over_100_pct","targets":5}],"order":[],"autoWidth":false,"orderClasses":false,"orderCellsTop":true}},"evals":[],"jsHooks":[]}</script>
+<script type="application/json" data-for="htmlwidget-cf74d9caecbce7389320">{"x":{"filter":"top","vertical":false,"filterHTML":"<tr>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"factor\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"width: 100%; display: none;\">\n      <select multiple=\"multiple\" style=\"width: 100%;\" data-options=\"[&quot;Thy1&quot;,&quot;Puro&quot;,&quot;dCas9+Puro&quot;]\"><\/select>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"37.07\" data-max=\"99.59\" data-scale=\"2\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"1.26\" data-max=\"98.6\" data-scale=\"2\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"0.63\" data-max=\"96.88\" data-scale=\"2\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n<\/tr>","extensions":["Buttons"],"caption":"<caption>Source data for the plots<\/caption>","data":[["4T_LungsP_B1","4T_LungsP_B2","4T_LungsP_B3","4T_LungsP_B4","4T_LungsP_N1","4T_LungsP_N2","4T_LungsP_N3","4T_LungsP_N4","4T_LungsP_N5","4T_LungsT_B1","4T_LungsT_B2","4T_LungsT_B3","4T_LungsT_B4","4T_LungsT_B5","4T_LungsT_N1","4T_LungsT_N2","4T_LungsT_N3","4T_LungsT_N4","4T_LungsT_N5","MVT_LungsP_F1","MVT_LungsP_F2","MVT_LungsP_F5","MVT_LungsP_N1","MVT_LungsP_N2","MVT_LungsP_N3","MVT_LungsP_N4","MVT_LungsP_N5","MVT_LungsT_F1","MVT_LungsT_F1","MVT_LungsT_F2","MVT_LungsT_F2","MVT_LungsT_F3","MVT_LungsT_F3","MVT_LungsT_F4","MVT_LungsT_F4","MVT_LungsT_F5","MVT_LungsT_F5","MVT_LungsT_N1","MVT_LungsT_N2","MVT_LungsT_N3","MVT_LungsT_N4","MVT_LungsT_N5","PY_LungsP_F3","PY_LungsP_F4","PY_LungsP_N1","PY_LungsP_N2","PY_LungsP_N3","PY_LungsP_N4","PY_LungsP_N5","PY_LungsT_F1","PY_LungsT_F2","PY_LungsT_F3","PY_LungsT_F4","PY_LungsT_F5","PY_LungsT_N1","PY_LungsT_N2","PY_LungsT_N3","PY_LungsT_N4","PY_LungsT_N5","4T_TumoP_B1","4T_TumoP_B2","4T_TumoP_B3","4T_TumoP_B4","4T_TumoP_N1","4T_TumoP_N2","4T_TumoP_N3","4T_TumoP_N4","4T_TumoP_N5","4T_TumoT_B1","4T_TumoT_B2","4T_TumoT_B3","4T_TumoT_B4","4T_TumoT_B5","4T_TumoT_N1","4T_TumoT_N2","4T_TumoT_N3","4T_TumoT_N4","4T_TumoT_N5","MVT_TumoP_N1","MVT_TumoP_N2","MVT_TumoP_N3","MVT_TumoP_N4","MVT_TumoP_N5","MVT_TumoT_F1","MVT_TumoT_F2","MVT_TumoT_F3","MVT_TumoT_F4","MVT_TumoT_F5","MVT_TumoT_N1","MVT_TumoT_N2","MVT_TumoT_N3","MVT_TumoT_N4","MVT_TumoT_N5","PY_TumoP_N1","PY_TumoP_N2","PY_TumoP_N3","PY_TumoP_N4","PY_TumoP_N5","PY_TumoT_F1","PY_TumoT_F2","PY_TumoT_F3","PY_TumoT_F4","PY_TumoT_F5","PY_TumoT_N1","PY_TumoT_N2","PY_TumoT_N3","PY_TumoT_N4","PY_TumoT_N5","4T_LungsP_B5","MVT_LungsP_F3","MVT_LungsP_F4","PY_LungsP_F1","PY_LungsP_F2","PY_LungsP_F5","PY_TumoP_F1","PY_TumoP_F2","PY_TumoP_F5","sample_5","PlatePositionA1","PlatePositionA2","PlatePositionA3","PlatePositionB1","PlatePositionB2","PlatePositionB3","PlatePositionC1","PlatePositionC2","PlatePositionC3","PlatePositionD1","PlatePositionD2","PlatePositionD3","PlatePositionE1","PlatePositionE2","PlatePositionF1","PlatePositionF2","PlatePositionG1","PlatePositionG2","PlatePositionH1","PlatePositionH2","dCas4T1Repl1_NSGTum","dCas4T1Repl2_NSGTum","dCas4T1Repl3_NSGTum","dCas4T1Repl4_NSGTum","dCas4T1Repl5_NSGTum","dCas4T1Repl1_NSGLung","dCas4T1Repl2_NSGLung","dCas4T1Repl3_NSGLung","dCas4T1Repl4_NSGLung","dCas4T1Repl5_NSGLung"],["Puro","Puro","Puro","Puro","Puro","Puro","Puro","Puro","Puro","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Puro","Puro","Puro","Puro","Puro","Puro","Puro","Puro","Puro","Thy1","Puro","Thy1","Puro","Thy1","Puro","Thy1","Puro","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Puro","Puro","Puro","Puro","Puro","Puro","Puro","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Puro","Puro","Puro","Puro","Puro","Puro","Puro","Puro","Puro","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Puro","Puro","Puro","Puro","Puro","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Puro","Puro","Puro","Puro","Puro","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Thy1","Puro","Puro","Puro","Puro","Puro","Puro","Puro","Puro","Puro","Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro","dCas9+Puro"],["Syngeneic","Syngeneic","Syngeneic","Syngeneic","NSG","NSG","NSG","NSG","NSG","Syngeneic","Syngeneic","Syngeneic","Syngeneic","Syngeneic","NSG","NSG","NSG","NSG","NSG","Syngeneic","Syngeneic","Syngeneic","NSG","NSG","NSG","NSG","NSG","Syngeneic","Syngeneic","Syngeneic","Syngeneic","Syngeneic","Syngeneic","Syngeneic","Syngeneic","Syngeneic","Syngeneic","NSG","NSG","NSG","NSG","NSG","Syngeneic","Syngeneic","NSG","NSG","NSG","NSG","NSG","Syngeneic","Syngeneic","Syngeneic","Syngeneic","Syngeneic","NSG","NSG","NSG","NSG","NSG","Syngeneic","Syngeneic","Syngeneic","Syngeneic","NSG","NSG","NSG","NSG","NSG","Syngeneic","Syngeneic","Syngeneic","Syngeneic","Syngeneic","NSG","NSG","NSG","NSG","NSG","NSG","NSG","NSG","NSG","NSG","Syngeneic","Syngeneic","Syngeneic","Syngeneic","Syngeneic","NSG","NSG","NSG","NSG","NSG","NSG","NSG","NSG","NSG","NSG","Syngeneic","Syngeneic","Syngeneic","Syngeneic","Syngeneic","NSG","NSG","NSG","NSG","NSG","Syngeneic","Syngeneic","Syngeneic","Syngeneic","Syngeneic","Syngeneic","Syngeneic","Syngeneic","Syngeneic","Syngeneic","NSG","NSG","Syngeneic","NSG","NSG","Syngeneic","NSG","Syngeneic","Syngeneic","NSG","Syngeneic","Syngeneic","NSG","Syngeneic","NSG","Syngeneic","NSG","Syngeneic","NSG","Syngeneic","NSG","NSG","NSG","NSG","NSG","NSG","NSG","NSG","NSG","NSG"],[45.15,62.03,98.69,97.7,61.63,64.56,72.45999999999999,70.7,80,68.94,49.3,58.15,53.05,62.93,66.41,56.3,62.17,64.23999999999999,63.25,56.66,71.15000000000001,97.47,65.01000000000001,67.90000000000001,60.32,52.05,70.43000000000001,51.06,51.06,62.53,62.53,56.21,56.21,54.54,54.54,64.88,64.88,79.5,70.29000000000001,76.34,79.59,64.92,97.88,97.7,62.48,69.70999999999999,53.77,81.34999999999999,76.7,50.2,70.47,67.90000000000001,57.29,97.7,46.37,64.02,71.11,69.8,57.43,83.61,82.98,91.42,99.59,98.87,99.37,97.88,99.14,98.95999999999999,98.47,87.58,98.92,98.69,99.37,93.18000000000001,97.2,94.63,97.92,98.37,98.15000000000001,98.73999999999999,98.78,98.01000000000001,98.95999999999999,98.92,98.47,99.05,98.83,89.20999999999999,99.05,98.87,98.78,99.23,99.09999999999999,99.28,99.23,98.51000000000001,99.23,99.09999999999999,99.28,99.5,98.78,99.55,98.56,98.19,99.05,98.37,99.19,99.31999999999999,46.41,55.49,54.63,75.53,70.2,60.95,67.04000000000001,65.59999999999999,75.48999999999999,59.64,93.63,93.68000000000001,70.47,65.45999999999999,51.96,52.51,96.03,49.16,63.16,57.83,39.64,41.44,92.78,51.6,46.09,43.25,96.66,78.59999999999999,49.03,51.15,85.01000000000001,79.64,75.26000000000001,80.41,79.5,87.86,37.07,66.41,41.99,82.66],[5.37,7.04,23.48,11.74,5.33,5.78,6,8.130000000000001,6.59,8.17,8.890000000000001,7.95,8.26,6.91,6.46,5.91,7.99,7,7.72,6.14,7.18,10.11,10.16,13.32,7.99,6.59,10.2,12.82,12.82,11.65,11.65,14.04,14.04,12.46,12.46,12.69,12.69,10.61,11.65,10.88,12.14,11.51,16.48,15.94,4.2,4.7,3.88,4.24,5.91,4.92,4.97,5.87,6.77,13.45,4.83,7.27,5.91,5.96,7.27,8.98,28.04,38.6,97.43000000000001,97.65000000000001,98.01000000000001,83.97,97.52,97.2,92.64,9.44,94.31,92.42,95.3,28.8,84.7,69.70999999999999,91.29000000000001,86.05,92.95999999999999,96.79000000000001,96.48,95.89,97.34,97.65000000000001,91.06,97.73999999999999,97.29000000000001,18.37,96.34,96.20999999999999,95.53,98.59999999999999,98.19,98.59999999999999,96.48,92.91,97.29000000000001,97.06999999999999,92.23,93.45,89.34999999999999,94.72,88.76000000000001,74.76000000000001,97.02,91.83,96.52,96.3,2.39,4.29,3.25,2.57,3.79,3.93,2.57,3.93,3.12,3.3,74.09,85.15000000000001,8.529999999999999,7.31,13.81,4.65,82.93000000000001,8.17,7.63,12.37,1.26,3.07,81.90000000000001,3.75,13.86,1.85,79.31999999999999,11.74,16.79,2.8,50.65,55.85,46.28,55.17,57.65,71.92,8.08,46.23,19.05,49.62],[2.98,4.42,5.28,2.71,3.66,3.7,3.88,5.46,4.29,5.6,5.64,4.65,5.28,3.88,4.11,3.7,5.6,4.97,4.92,3.57,3.52,1.72,7,9.529999999999999,6.05,5.19,6.82,8.710000000000001,8.710000000000001,7.13,7.13,9.07,9.07,8.26,8.26,8.130000000000001,8.130000000000001,7.72,8.31,7.9,8.44,7.67,2.75,3.39,2.39,2.39,2.75,2.84,3.7,1.35,2.3,2.08,2.8,2.3,2.21,4.74,3.21,3.43,4.15,2.98,18.83,29.07,92.64,94.76000000000001,94.27,64.42,93.54000000000001,94.04000000000001,83.7,2.17,86.59,83.39,86.31999999999999,19.46,71.15000000000001,52.69,82.56999999999999,69.39,83.3,92.05,91.06,91.56,92.78,93.27,79.45999999999999,94.63,94.67,9.48,91.29000000000001,90.06999999999999,89.06999999999999,96.39,96.88,96.34,90.7,83.61,92.69,91.87,77.65000000000001,80.31999999999999,74.63,84.33,76.06999999999999,52.51,92.91,79.5,89.84,90.16,0.63,1.63,0.99,0.95,1.58,1.76,1.04,1.72,1.44,1.26,57.83,72.33,3.39,3.12,12.6,1.17,64.11,6.37,3.3,5.19,0.63,1.22,66.05,1.58,9.57,0.68,61.94,3.97,15.49,1.13,34.49,38.56,30.2,38.01,41.22,53.77,7.49,36.21,15.58,29.3]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>sample_alias<\/th>\n      <th>vector_short<\/th>\n      <th>mouse_model_short<\/th>\n      <th>guides_over_1_pct<\/th>\n      <th>guides_over_30_pct<\/th>\n      <th>guides_over_100_pct<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"Blfrtip","buttons":["csv","excel"],"columnDefs":[{"width":120,"targets":[1,2]},{"className":"dt-right","targets":[3,4,5]},{"name":"sample_alias","targets":0},{"name":"vector_short","targets":1},{"name":"mouse_model_short","targets":2},{"name":"guides_over_1_pct","targets":3},{"name":"guides_over_30_pct","targets":4},{"name":"guides_over_100_pct","targets":5}],"order":[],"autoWidth":false,"orderClasses":false,"orderCellsTop":true}},"evals":[],"jsHooks":[]}</script>
 </div>
 <div id="threshold-30x" class="section level4" number="7.1.2">
 <h4><span class="header-section-number">7.1.2</span> Threshold 30x</h4>
@@ -2088,6 +2117,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/0e8d1db849f537c8abb88e943b7f6fd049d838fc/docs/figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-30x-1.png" target="_blank">0e8d1db</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-05-13
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/e4cd8b5b49c70c2dac6df9053e5582afcfcd89c5/docs/figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-30x-1.png" target="_blank">e4cd8b5</a>
@@ -2167,6 +2207,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/0e8d1db849f537c8abb88e943b7f6fd049d838fc/docs/figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-30x-padj-panel-1.png" target="_blank">0e8d1db</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-05-13
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/e4cd8b5b49c70c2dac6df9053e5582afcfcd89c5/docs/figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-30x-padj-panel-1.png" target="_blank">e4cd8b5</a>
 </td>
 <td>
@@ -2242,6 +2293,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/0e8d1db849f537c8abb88e943b7f6fd049d838fc/docs/figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-30x-padj-group-1.png" target="_blank">0e8d1db</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-05-13
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/e4cd8b5b49c70c2dac6df9053e5582afcfcd89c5/docs/figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-30x-padj-group-1.png" target="_blank">e4cd8b5</a>
@@ -2321,6 +2383,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/0e8d1db849f537c8abb88e943b7f6fd049d838fc/docs/figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-100x-1.png" target="_blank">0e8d1db</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-05-13
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/e4cd8b5b49c70c2dac6df9053e5582afcfcd89c5/docs/figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-100x-1.png" target="_blank">e4cd8b5</a>
 </td>
 <td>
@@ -2398,6 +2471,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/0e8d1db849f537c8abb88e943b7f6fd049d838fc/docs/figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-100x-padj-panel-1.png" target="_blank">0e8d1db</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-05-13
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/e4cd8b5b49c70c2dac6df9053e5582afcfcd89c5/docs/figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-100x-padj-panel-1.png" target="_blank">e4cd8b5</a>
 </td>
 <td>
@@ -2473,6 +2557,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/0e8d1db849f537c8abb88e943b7f6fd049d838fc/docs/figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-100x-padj-group-1.png" target="_blank">0e8d1db</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-05-13
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/e4cd8b5b49c70c2dac6df9053e5582afcfcd89c5/docs/figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-100x-padj-group-1.png" target="_blank">e4cd8b5</a>
@@ -2676,17 +2771,18 @@ chunk_data &lt;- colData(se) %&gt;% data.frame %&gt;%
  
 
 
-# Exclude samples because PCR amplification problems, these samples showed unconvincing bands
+# # Exclude samples because PCR amplification problems, these samples showed unconvincing bands
 use_samples &lt;- c(
   &#39;dCas4T1Repl1_NSGTum&#39;,
   &#39;dCas4T1Repl2_NSGTum&#39;,
   &#39;dCas4T1Repl3_NSGTum&#39;,
   &#39;dCas4T1Repl4_NSGTum&#39;,
-  &#39;Replacement_5bis&#39;,
-  &#39;Replacement_7bis&#39;,
-  &#39;Replacement_8bis&#39;,
-  &#39;Replacement_9bis&#39;
+  &#39;dCas4T1Repl1_NSGLung&#39;,
+  &#39;dCas4T1Repl3_NSGLung&#39;,
+  &#39;dCas4T1Repl4_NSGLung&#39;,
+  &#39;dCas4T1Repl5_NSGLung&#39;
 )
+
 
 chunk_data %&lt;&gt;% filter(!sample_alias %in% use_samples)
 
@@ -2757,6 +2853,43 @@ use_comparisons &lt;- list(
     strip.text = element_text(size = 6)
   )</code></pre>
 <p><img src="figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-v2-30x-1.png" width="1200" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-complexity-dynamics-v2-30x-1">
+Past versions of complexity-dynamics-v2-30x-1.png
+</button>
+</p>
+<div id="fig-complexity-dynamics-v2-30x-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/0e8d1db849f537c8abb88e943b7f6fd049d838fc/docs/figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-v2-30x-1.png" target="_blank">0e8d1db</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-05-13
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>Same plot, with P.adjust at panel level</p>
 <pre class="r"><code>chunk_data %&gt;% 
   ggplot(aes(vector_short, guides_over_30_pct,
@@ -2797,6 +2930,43 @@ use_comparisons &lt;- list(
     strip.text = element_text(size = 6)
   )</code></pre>
 <p><img src="figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-v2-30x-padj-panel-1.png" width="1200" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-complexity-dynamics-v2-30x-padj-panel-1">
+Past versions of complexity-dynamics-v2-30x-padj-panel-1.png
+</button>
+</p>
+<div id="fig-complexity-dynamics-v2-30x-padj-panel-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/0e8d1db849f537c8abb88e943b7f6fd049d838fc/docs/figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-v2-30x-padj-panel-1.png" target="_blank">0e8d1db</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-05-13
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>Same plot, with P.adjust at group level</p>
 <pre class="r"><code>chunk_data %&gt;% 
   ggplot(aes(vector_short, guides_over_30_pct,
@@ -2837,6 +3007,43 @@ use_comparisons &lt;- list(
     strip.text = element_text(size = 6)
   )</code></pre>
 <p><img src="figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-v2-30x-padj-group-1.png" width="1200" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-complexity-dynamics-v2-30x-padj-group-1">
+Past versions of complexity-dynamics-v2-30x-padj-group-1.png
+</button>
+</p>
+<div id="fig-complexity-dynamics-v2-30x-padj-group-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/0e8d1db849f537c8abb88e943b7f6fd049d838fc/docs/figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-v2-30x-padj-group-1.png" target="_blank">0e8d1db</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-05-13
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 <div id="threshold-100x-1" class="section level4" number="7.2.3">
 <h4><span class="header-section-number">7.2.3</span> Threshold 100x</h4>
@@ -2877,6 +3084,43 @@ use_comparisons &lt;- list(
     strip.text = element_text(size = 6)
   )</code></pre>
 <p><img src="figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-v2-100x-1.png" width="1200" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-complexity-dynamics-v2-100x-1">
+Past versions of complexity-dynamics-v2-100x-1.png
+</button>
+</p>
+<div id="fig-complexity-dynamics-v2-100x-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/0e8d1db849f537c8abb88e943b7f6fd049d838fc/docs/figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-v2-100x-1.png" target="_blank">0e8d1db</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-05-13
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>Same plot, with P.adjust at panel level</p>
 <pre class="r"><code>chunk_data %&gt;% 
   ggplot(aes(vector_short, guides_over_100_pct,
@@ -2917,6 +3161,43 @@ use_comparisons &lt;- list(
     strip.text = element_text(size = 6)
   )</code></pre>
 <p><img src="figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-v2-100x-padj-panel-1.png" width="1200" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-complexity-dynamics-v2-100x-padj-panel-1">
+Past versions of complexity-dynamics-v2-100x-padj-panel-1.png
+</button>
+</p>
+<div id="fig-complexity-dynamics-v2-100x-padj-panel-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/0e8d1db849f537c8abb88e943b7f6fd049d838fc/docs/figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-v2-100x-padj-panel-1.png" target="_blank">0e8d1db</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-05-13
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>Same plot, with P.adjust at group level</p>
 <pre class="r"><code>chunk_data %&gt;% 
   ggplot(aes(vector_short, guides_over_100_pct,
@@ -2957,6 +3238,43 @@ use_comparisons &lt;- list(
     strip.text = element_text(size = 6)
   )</code></pre>
 <p><img src="figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-v2-100x-padj-group-1.png" width="1200" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-complexity-dynamics-v2-100x-padj-group-1">
+Past versions of complexity-dynamics-v2-100x-padj-group-1.png
+</button>
+</p>
+<div id="fig-complexity-dynamics-v2-100x-padj-group-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/0e8d1db849f537c8abb88e943b7f6fd049d838fc/docs/figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-v2-100x-padj-group-1.png" target="_blank">0e8d1db</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-05-13
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 </div>
 </div>
 <div id="figure-3h-first-draft" class="section level3" number="7.3">
@@ -3746,7 +4064,7 @@ use_sample_groups &lt;- matrix(data_array, ncol =4, byrow = TRUE,
   unique</code></pre>
 <p>standardGeneric for “unique” defined from package “BiocGenerics”</p>
 <p>function (x, incomparables = FALSE, …) standardGeneric(“unique”)
-&lt;bytecode: 0x1367ad618&gt; &lt;environment: 0x1367b64c0&gt; Methods
+&lt;bytecode: 0x10c7054a8&gt; &lt;environment: 0x10c70cb20&gt; Methods
 may be defined for arguments: x Use showMethods(unique) for currently
 available ones.</p>
 <pre class="r"><code># use_sample_groups$sample_alias[!use_sample_groups$sample_alias %in% colnames(se)]
@@ -4198,7 +4516,7 @@ use_sample_groups &lt;- matrix(data_array, ncol =4, byrow = TRUE,
   unique</code></pre>
 <p>standardGeneric for “unique” defined from package “BiocGenerics”</p>
 <p>function (x, incomparables = FALSE, …) standardGeneric(“unique”)
-&lt;bytecode: 0x1367ad618&gt; &lt;environment: 0x1367b64c0&gt; Methods
+&lt;bytecode: 0x10c7054a8&gt; &lt;environment: 0x10c70cb20&gt; Methods
 may be defined for arguments: x Use showMethods(unique) for currently
 available ones.</p>
 <pre class="r"><code># use_sample_groups$sample_alias[!use_sample_groups$sample_alias %in% colnames(se)]
