@@ -554,15 +554,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtreee44ea0acc70862adfcb553a7665b2088b6b70685targetblanke44ea0aa">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtree955e660e6b3db518c2503d721fe3dcce4cf21132targetblank955e660a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/e44ea0acc70862adfcb553a7665b2088b6b70685" target="_blank">e44ea0a</a>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/955e660e6b3db518c2503d721fe3dcce4cf21132" target="_blank">955e660</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtreee44ea0acc70862adfcb553a7665b2088b6b70685targetblanke44ea0aa"
+id="strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtree955e660e6b3db518c2503d721fe3dcce4cf21132targetblank955e660a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -572,7 +572,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/e44ea0acc70862adfcb553a7665b2088b6b70685" target="_blank">e44ea0a</a>.
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/955e660e6b3db518c2503d721fe3dcce4cf21132" target="_blank">955e660</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -646,6 +646,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/955e660e6b3db518c2503d721fe3dcce4cf21132/analysis/crispr-mm_2215_sgRNA-r2oC.Rmd" target="_blank">955e660</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-06-18
+</td>
+<td>
+revert changes to Mueller plots
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/TheAcetoLab/saini-stealTHY/42a6e68872c1eba52f7e90f5eb701f6e55f18a5f/docs/crispr-mm_2215_sgRNA-r2oC.html" target="_blank">42a6e68</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-06-18
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -1142,7 +1176,7 @@ gene_levels_list[[&#39;stealthy_ko_syngeneic_cmt167&#39;]]  &lt;- c(
   # &quot;Met&quot;,&quot;Igf1r&quot;,&quot;Igf2r&quot;,&quot;Egfr&quot;,&quot;Axl&quot;,&quot;Erbb3&quot;,&quot;Erbb2&quot;,&quot;Egf&quot;,&quot;Gas6&quot;,
   &#39;Met&#39;, &#39;Igf1r&#39;, &#39;Igf2r&#39;, &#39;Egfr&#39;, &#39;Mertk&#39;, &#39;Axl&#39;, &#39;Angpt2&#39;,
   &quot;Plk1&quot;,&quot;Trim72&quot;,
-  &quot;Cd30&quot;,&quot;Ifnlr1&quot;,&quot;Ifnar1&quot;,&quot;Trail&quot;,&quot;Ifne&quot;,&quot;Lta&quot;,&quot;Ltbr&quot;,&quot;Tnfr2&quot;,&quot;Light&quot;, 
+  &quot;Cd30&quot;,&quot;Ifnlr1&quot;,&quot;Ifnar1&quot;,&quot;Trail&quot;,&quot;Ifne&quot;,&quot;Lta&quot;,&quot;Ltbr&quot;,&quot;Tnfr2&quot;,&quot;Light&quot;,
   &quot;Ccl25&quot;,&quot;Cxcl9&quot;,&quot;Ccrl2&quot;,&quot;Cxcr5&quot;,&quot;Ccr6&quot;,&quot;Ccr4&quot;,&quot;Relt&quot;, &quot;Il18ra1&quot;, &quot;Il13ra2&quot;, &quot;Il13ra1&quot;, &quot;Il18&quot;,&quot;Cxcl4&quot;,&quot;Ccl4&quot;,&quot;Cxcl14&quot;
   )</code></pre>
 <div id="differential-abundance-of-selected-genes"
@@ -1456,10 +1490,26 @@ genes_list_1 &lt;- gene_info %&gt;%
 genes_list_2 &lt;- gene_info %&gt;% 
   filter(!gene_set %in% c(&quot;TGF-β family related&quot;, &quot;RTK signaling&quot;, &quot;Positive controls&quot;)) %&gt;% 
   pull(id)</code></pre>
-<p>Generate muller plots for genes in main figure 5C</p>
+<p>Generate Muller plots for genes in main figure 5C</p>
 <pre class="r"><code>cpm_threshold &lt;- 10000
 comp_list &lt;- comp_list_muller
-use_genes &lt;- genes_list_1
+# use_genes &lt;- genes_list_1
+use_genes &lt;- c(
+  &quot;Egfr&quot;,
+  &#39;Met&#39;,
+  &#39;Igf1r&#39;,
+  &#39;Igf2r&#39;,
+  &#39;Amhr2&#39;,
+  &#39;Tgfbr1&#39;,
+  &#39;Tgfb2&#39;,
+  &#39;Tgfb3&#39;,
+  &#39;Gdf9&#39;,
+  &#39;Mertk&#39;,
+  &#39;Gas9&#39;,
+  &#39;Axl&#39;,
+  &#39;Trim72&#39;
+)
+
 
 # Create DF
 use_df &lt;- assay(se, &#39;cpm&#39;) %&gt;% data.frame(check.names = FALSE) %&gt;% 
@@ -1490,7 +1540,8 @@ muller_plots &lt;- foreach(j = names(comp_list)) %do% {
       group_by(gene, sample_alias, sample_type) %&gt;% 
       summarise(cpm = sum(cpm)) %&gt;% 
       mutate(
-        gene = fct_reorder(gene, cpm)
+        # gene = fct_reorder(gene, cpm)
+        gene = factor(gene, levels = use_genes)
       )
 
     # # Select guides with cpm &gt; cpm_threshold
@@ -1515,7 +1566,7 @@ muller_plots &lt;- foreach(j = names(comp_list)) %do% {
     
     use_cols &lt;- c(
       &#39;low abundant&#39; = &#39;grey80&#39;,
-      colorRampPalette(rev(palette_OkabeIto))(nlevels(x$gene) - 1) %&gt;% set_names(levels(x$gene)[-1])
+      colorRampPalette(palette_OkabeIto)(nlevels(x$gene)) %&gt;% set_names(levels(x$gene))
     )
     
     x %&gt;% 
@@ -1580,6 +1631,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/42a6e68872c1eba52f7e90f5eb701f6e55f18a5f/docs/figure/crispr-mm_2215_sgRNA-r2oC.Rmd/muller-plots-1.png" target="_blank">42a6e68</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-06-18
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/869f9ddb746a80777734b9d21ef4d8a4c9f8aebb/docs/figure/crispr-mm_2215_sgRNA-r2oC.Rmd/muller-plots-1.png" target="_blank">869f9dd</a>
 </td>
 <td>
@@ -1621,6 +1683,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/42a6e68872c1eba52f7e90f5eb701f6e55f18a5f/docs/figure/crispr-mm_2215_sgRNA-r2oC.Rmd/muller-plots-2.png" target="_blank">42a6e68</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-06-18
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/869f9ddb746a80777734b9d21ef4d8a4c9f8aebb/docs/figure/crispr-mm_2215_sgRNA-r2oC.Rmd/muller-plots-2.png" target="_blank">869f9dd</a>
 </td>
 <td>
@@ -1660,6 +1733,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/42a6e68872c1eba52f7e90f5eb701f6e55f18a5f/docs/figure/crispr-mm_2215_sgRNA-r2oC.Rmd/muller-plots-3.png" target="_blank">42a6e68</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-06-18
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/869f9ddb746a80777734b9d21ef4d8a4c9f8aebb/docs/figure/crispr-mm_2215_sgRNA-r2oC.Rmd/muller-plots-3.png" target="_blank">869f9dd</a>
