@@ -5,7 +5,7 @@ author: "Francesc Castro-Giner"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 output: workflowr::wflow_html
 editor_options:
-  chunk_output_type: inline
+  chunk_output_type: console
 params:
   data_dir: ./data/crispr/mm_2215_sgRNA
   output_dir: ./output/crispr/mm_2215_sgRNA
@@ -615,21 +615,21 @@ muller_plots <- foreach(j = names(comp_list)) %do% {
       mutate(
         gene = fct_reorder(gene, cpm)
       )
-    # 
+
     # # Select guides with cpm > cpm_threshold
-    # x_guides_keep <- x %>% 
-    #   group_by(sample_type, guide) %>% 
-    #   summarise(cpm = max(cpm)) %>% 
-    #   filter(cpm > cpm_threshold) %>% 
+    # x_guides_keep <- x %>%
+    #   group_by(sample_type, guide) %>%
+    #   summarise(cpm = max(cpm)) %>%
+    #   filter(cpm > cpm_threshold) %>%
     #   pull(guide)
-    
+
     # # Group guides with cpm < cpm_threshold into the low abundant category, and sum counts for low abundant
-    # x %<>% 
+    # x %<>%
     #   mutate(
     #     guide = ifelse(guide %in%  x_guides_keep, guide, 'low abundant')
-    #   ) %>% 
+    #   ) %>%
     #   group_by(sample_type, guide) %>%
-    #   summarise(cpm = sum(cpm)) %>% 
+    #   summarise(cpm = sum(cpm)) %>%
     #   ungroup() %>%
     #   mutate(
     #     guide = fct_reorder(guide, cpm),
@@ -652,7 +652,8 @@ muller_plots <- foreach(j = names(comp_list)) %do% {
         fill = ''
       ) +
       scale_x_discrete(expand = c(0, 0)) +
-      scale_y_continuous(expand = c(0, 0), limits = c(0, 1000000/10000)) +
+      # scale_y_continuous(expand = c(0, 0), limits = c(0, 1000000/10000)) +
+      scale_y_continuous(expand = c(0, 0)) +
       # guides(fill = 'none') +
       theme(
         panel.background = element_rect(fill = "grey90"),
