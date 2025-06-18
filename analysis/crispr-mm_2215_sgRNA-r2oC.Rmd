@@ -389,7 +389,7 @@ gene_levels_list[['stealthy_ko_syngeneic_cmt167']]  <- c(
   # "Met","Igf1r","Igf2r","Egfr","Axl","Erbb3","Erbb2","Egf","Gas6",
   'Met', 'Igf1r', 'Igf2r', 'Egfr', 'Mertk', 'Axl', 'Angpt2',
   "Plk1","Trim72",
-  "Cd30","Ifnlr1","Ifnar1","Trail","Ifne","Lta","Ltbr","Tnfr2","Light", 
+  "Cd30","Ifnlr1","Ifnar1","Trail","Ifne","Lta","Ltbr","Tnfr2","Light",
   "Ccl25","Cxcl9","Ccrl2","Cxcr5","Ccr6","Ccr4","Relt", "Il18ra1", "Il13ra2", "Il13ra1", "Il18","Cxcl4","Ccl4","Cxcl14"
   )
 
@@ -578,11 +578,28 @@ genes_list_2 <- gene_info %>%
 
 ```
 
-Generate muller plots for genes in main figure 5C
+
+Generate Muller plots for genes in main figure 5C
 ```{r run-muller-plots}
 cpm_threshold <- 10000
 comp_list <- comp_list_muller
-use_genes <- genes_list_1
+# use_genes <- genes_list_1
+use_genes <- c(
+  "Egfr",
+  'Met',
+  'Igf1r',
+  'Igf2r',
+  'Amhr2',
+  'Tgfbr1',
+  'Tgfb2',
+  'Tgfb3',
+  'Gdf9',
+  'Mertk',
+  'Gas9',
+  'Axl',
+  'Trim72'
+)
+
 
 # Create DF
 use_df <- assay(se, 'cpm') %>% data.frame(check.names = FALSE) %>% 
@@ -613,7 +630,8 @@ muller_plots <- foreach(j = names(comp_list)) %do% {
       group_by(gene, sample_alias, sample_type) %>% 
       summarise(cpm = sum(cpm)) %>% 
       mutate(
-        gene = fct_reorder(gene, cpm)
+        # gene = fct_reorder(gene, cpm)
+        gene = factor(gene, levels = use_genes)
       )
 
     # # Select guides with cpm > cpm_threshold
@@ -638,7 +656,7 @@ muller_plots <- foreach(j = names(comp_list)) %do% {
     
     use_cols <- c(
       'low abundant' = 'grey80',
-      colorRampPalette(rev(palette_OkabeIto))(nlevels(x$gene) - 1) %>% set_names(levels(x$gene)[-1])
+      colorRampPalette(palette_OkabeIto)(nlevels(x$gene)) %>% set_names(levels(x$gene))
     )
     
     x %>% 
