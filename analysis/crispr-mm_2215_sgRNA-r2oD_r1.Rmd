@@ -1,0 +1,398 @@
+---
+title: "Clonal dynamics using mock CRISPR screen"
+subtitle: "Mouse libray (n = 2215) - Reviewer 2 Observation D"
+author: "Francesc Castro-Giner"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: inline
+params:
+  data_dir: ./data/crispr/mm_2215_sgRNA
+---
+
+## Load libraries, additional functions and data
+
+Setup environment
+```{r setup, include=TRUE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(results='asis', echo=TRUE, message=FALSE, warning=FALSE, error=FALSE, fig.align = 'center', fig.width = 3.5, fig.asp = 0.618, dpi = 600, dev = c("png", "pdf"), fig.showtext = FALSE, engine.opts = list(bash = "-l"))
+
+options(stringsAsFactors = FALSE)
+
+use_seed <- 1100101
+
+set.seed(use_seed)
+
+# dir.create(params$output_dir, recursive = TRUE, showWarnings = FALSE)
+```
+
+Load packages
+```{r load-libraries}
+library(tidyverse)
+library(knitr)
+library(foreach)
+library(magrittr)
+library(DT)
+library(kableExtra)
+library(diptest)
+library(SummarizedExperiment)
+
+library(ggridges)
+library(ggh4x)
+library(patchwork)
+library(colorblindr)
+library(ggbeeswarm)
+library(ggpubr)
+```
+
+Load ggplot theme
+```{r ggplot-theme}
+source("./configuration/rmarkdown/ggplot_theme.R")
+```
+
+Load ggplot theme
+```{r color-palette}
+source("./configuration/rmarkdown/color_palettes.R")
+```
+
+Load Summarized Experiment object
+```{r load-se}
+se <- readRDS(file.path(params$data_dir, 'se.rds'))
+```
+
+Filter samples used for this analysis
+```{r dw-sel-cols, eval = FALSE}
+use_cols <- colData(se) %>% 
+  data.frame %>% 
+  # filter(effect_type_short == 'noKO') %>% 
+  # filter(vector_short != "Thy1_EF1alpha_dCas9") %>% 
+  rownames
+
+se <- se[,use_cols]
+```
+
+
+```{r, eval = FALSE}
+x <- colData(se) %>% data.frame
+x['dC9BL6_LungIV_C167_1',]$vector_short
+x['dC9BL6_LiverIV_C167_5',]$vector_short
+x['dC9BL6_LungIV_LLC1_1',]$vector_short
+x['dC9BL6_LiverIV_LLC1_4',]$vector_short
+x['dC9NSG_LungIV_C167_1',]$vector_short
+x['Replacement_1bis',]$vector_short
+
+
+
+use_samples <- c('dC9BL6_LungIV_C167_1',
+'dC9BL6_LungIV_C167_2',
+'dC9BL6_LungIV_C167_3',
+'dC9BL6_LungIV_C167_4',
+'dC9BL6_LungIV_C167_5',
+'dC9BL6_LungIV_LLC1_1',
+'dC9BL6_LungIV_LLC1_2',
+'dC9BL6_LungIV_LLC1_3',
+'dC9BL6_LungIV_LLC1_4',
+'dC9BL6_LungIV_LLC1_5',
+'dC9NSG_LungIV_C167_1',
+'dC9NSG_LungIV_C167_2',
+'dC9NSG_LungIV_C167_3',
+'dC9NSG_LungIV_C167_4',
+'dC9NSG_LungIV_C167_5',
+'dC9NSG_LungIV_LLC1_1',
+'dC9NSG_LungIV_LLC1_2',
+'dC9NSG_LungIV_LLC1_3',
+'dC9NSG_LungIV_LLC1_4',
+'dC9NSG_LungIV_LLC1_5',
+'dC9NSG_LungIV_C167_1',
+'dC9NSG_LungIV_C167_2',
+'dC9NSG_LungIV_C167_3',
+'dC9NSG_LungIV_C167_4',
+'dC9NSG_LungIV_C167_5',
+'dC9NSG_LungIV_LLC1_1',
+'dC9NSG_LungIV_LLC1_2',
+'dC9NSG_LungIV_LLC1_3',
+'dC9NSG_LungIV_LLC1_4',
+'dC9NSG_LungIV_LLC1_5',
+'Replacement_9',
+'Replacement_5',
+'Replacement_2bis',
+'Replacement_7',
+'dC9BL6_LiverIV_C167_1',
+'dC9BL6_LiverIV_C167_2',
+'dC9BL6_LiverIV_C167_3',
+'dC9BL6_LiverIV_C167_4',
+'dC9BL6_LiverIV_C167_5',
+'dC9BL6_LiverIV_LLC1_1',
+'dC9BL6_LiverIV_LLC1_2',
+'dC9BL6_LiverIV_LLC1_3',
+'dC9BL6_LiverIV_LLC1_4',
+'dC9BL6_LiverIV_LLC1_5',
+'dC9NSG_LiverIV_C167_1',
+'dC9NSG_LiverIV_C167_2',
+'dC9NSG_LiverIV_C167_3',
+'dC9NSG_LiverIV_C167_4',
+'dC9NSG_LiverIV_C167_5',
+'dC9NSG_LiverIV_LLC1_1',
+'dC9NSG_LiverIV_LLC1_2',
+'dC9NSG_LiverIV_LLC1_3',
+'dC9NSG_LiverIV_LLC1_4',
+'dC9NSG_LiverIV_LLC1_5',
+'dC9NSG_LungIV_C167_1',
+'dC9NSG_LungIV_C167_2',
+'dC9NSG_LungIV_C167_3',
+'dC9NSG_LungIV_C167_4',
+'dC9NSG_LungIV_C167_5',
+'dC9NSG_LungIV_LLC1_1',
+'dC9NSG_LungIV_LLC1_2',
+'dC9NSG_LungIV_LLC1_3',
+'dC9NSG_LungIV_LLC1_4',
+'dC9NSG_LungIV_LLC1_5',
+'Replacement_1bis',
+'Replacement_6',
+'Replacement_3bis',
+'Replacement_8')
+
+# use_samples <- intersect(use_samples, rownames(x))
+# x <- x[use_samples,]
+# x$effect_type_short %>% unique
+# x$vector_short %>% unique 
+```
+
+Data wrangling
+```{r dw-colData}
+chunk_colData <- colData(se) %>% data.frame %>%
+  mutate(
+    vector_short = ifelse(vector_short == 'Puro_EF1alpha_SpCas9', 
+                          'Cas9+Puro', vector_short),
+    vector_short = ifelse(vector_short == 'Puro+ dCas9', 
+                          'Cas9+Puro', vector_short),
+    vector_short = factor(vector_short, levels = c('Thy1', 'Puro', 'Cas9+Puro')),
+    mouse_model_short = case_match(mouse_model_global,
+                                   'immunodeficient' ~ 'NSG',
+                                   'immunocompetent' ~ 'Syngeneic',
+                                   'C57BL6' ~ 'Syngeneic'
+                                   ),
+    mouse_model_short = factor(mouse_model_short, levels = c('NSG', 'Syngeneic')),
+    vector_mhost = paste0(vector_short, ', ', mouse_model_short),
+    model_vector_mhost = paste0(donor,', ', vector_short, ', ', mouse_model_short),
+    sample_type = ifelse(cancer_type %in% c('Breast', 'CRC'),
+                         case_match(sample_type, 
+                             'whole_tumor' ~ 'Primary tumor', 
+                             'whole_lung' ~ 'Lung mets',
+                             'bulk' ~ 'Bulk',
+                             'cell_culture' ~ 'Cell culture'),
+                         sample_type
+                         ),
+        sample_type = ifelse(cancer_type %in% c('NSCLC'),
+                         case_match(sample_type, 
+                             'met_liver' ~ 'Liver mets', 
+                             'whole_lung' ~ 'Primary tumor',
+                             'bulk' ~ 'Bulk',
+                             'cell_culture' ~ 'Cell culture'),
+                         sample_type
+                         ),
+    
+    sample_type = factor(sample_type, levels = c('Primary tumor', 'Lung mets', 'Liver mets', 'Bulk', 'Cell culture'))
+    
+  )
+
+colData(se) <- chunk_colData %>% DataFrame
+
+
+```
+
+## Muller plots
+
+Define selected comparisons for muller plots
+```{r define-comparisons-muller-plots}
+x <- colData(se) %>% data.frame
+
+comp_list_muller <- list(
+  `Comparison 1: CMT167 Syngeneic Thy1.1` = list(
+    `CMT167 Syngeneic Thy1.1 1` = c('C167_StealTHY_Tum_1',	'C167_StealTHY_Met_1'),
+    `CMT167 Syngeneic Thy1.1 3` = c('C167_StealTHY_Tum_3',	'C167_StealTHY_Met_3'),
+    `CMT167 Syngeneic Thy1.1 4` = c('C167_StealTHY_Tum_4',	'C167_StealTHY_Met_4'),
+    `CMT167 Syngeneic Thy1.1 5` = c('C167_StealTHY_Tum_5',	'C167_StealTHY_Met_5')
+  ),
+  `Comparison 2: LLC1 Syngeneic Thy1.1` = list( 
+   `LLC1 Syngeneic Thy1.1 1` =  c('LLC1_StealTHY_Tum_1',	'LLC1_StealTHY_Met_1'),
+   `LLC1 Syngeneic Thy1.1 2` =  c('LLC1_StealTHY_Tum_2',	'LLC1_StealTHY_Met_2'),
+   `LLC1 Syngeneic Thy1.1 3` =  c('LLC1_StealTHY_Tum_3',	'LLC1_StealTHY_Met_3'),
+   `LLC1 Syngeneic Thy1.1 4` =  c('LLC1_StealTHY_Tum_4',	'LLC1_StealTHY_Met_4'),
+   `LLC1 Syngeneic Thy1.1 5` =  c('LLC1_StealTHY_Tum_5',	'LLC1_StealTHY_Met_5')
+  ),
+  `Comparison 3: CT26 Syngeneic Thy1.1` = list( 
+    `CT26 Syngeneic Thy1.1 1` = c('ColoCT26_StealTHY_Tum_1',	'ColoCT26_StealTHY_Met_1'),
+    `CT26 Syngeneic Thy1.1 2` = c('ColoCT26_StealTHY_Tum_2',	'ColoCT26_StealTHY_Met_2'),
+    `CT26 Syngeneic Thy1.1 3` = c('ColoCT26_StealTHY_Tum_3',	'Replacement_1'),
+    `CT26 Syngeneic Thy1.1 4` = c('Replacement_2',	'Replacement_3'),
+    `CT26 Syngeneic Thy1.1 5` = c('Replacement_4',	'Replacement_4bis')
+  ),
+  `Comparison 4: CMT167 Syngeneic dCas9 + Puro` = list(
+    `CMT167 Syngeneic dCas9 + Puro 3` = c('dC9BL6_LungIV_C167_3',	'dC9BL6_LiverIV_C167_3'),
+    `CMT167 Syngeneic dCas9 + Puro 5` = c('dC9BL6_LungIV_C167_5',	'dC9BL6_LiverIV_C167_5')
+  ),
+  
+  `Comparison 5: LLC1 Syngeneic dCas9 + Puro` = list(
+    `LLC1 Syngeneic dCas9 + Puro 1` = c('dC9BL6_LungIV_LLC1_1',	'dC9BL6_LiverIV_LLC1_1'),
+    `LLC1 Syngeneic dCas9 + Puro 3` = c('dC9BL6_LungIV_LLC1_3',	'dC9BL6_LiverIV_LLC1_3'),
+    `LLC1 Syngeneic dCas9 + Puro 4` = c('dC9BL6_LungIV_LLC1_4',	'dC9BL6_LiverIV_LLC1_4'),
+    `LLC1 Syngeneic dCas9 + Puro 5` = c('dC9BL6_LungIV_LLC1_5',	'dC9BL6_LiverIV_LLC1_5')
+  ),
+  
+  `Comparison 6: CMT167 NSG dCas9 + Puro` = list(
+    `CMT167 NSG dCas9 + Puro 1` = c('dC9NSG_LungIV_C167_1',	'dC9NSG_LiverIV_C167_1'),
+    `CMT167 NSG dCas9 + Puro 2` = c('dC9NSG_LungIV_C167_2',	'dC9NSG_LiverIV_C167_2'),
+    `CMT167 NSG dCas9 + Puro 3` = c('dC9NSG_LungIV_C167_3',	'dC9NSG_LiverIV_C167_3'),
+    `CMT167 NSG dCas9 + Puro 4` = c('dC9NSG_LungIV_C167_4',	'dC9NSG_LiverIV_C167_4'),
+    `CMT167 NSG dCas9 + Puro 5` = c('dC9NSG_LungIV_C167_5',	'dC9NSG_LiverIV_C167_5')
+  ),
+  
+  `Comparison 7: LLC1 NSG dCas9 + Puro` = list(
+    `LLC1 NSG dCas9 + Puro 1` = c('dC9NSG_LungIV_LLC1_1',	'dC9NSG_LiverIV_LLC1_1'),
+    `LLC1 NSG dCas9 + Puro 2` = c('dC9NSG_LungIV_LLC1_2',	'dC9NSG_LiverIV_LLC1_2'),
+    `LLC1 NSG dCas9 + Puro 3` = c('dC9NSG_LungIV_LLC1_3',	'dC9NSG_LiverIV_LLC1_3'),
+    `LLC1 NSG dCas9 + Puro 4` = c('dC9NSG_LungIV_LLC1_4',	'dC9NSG_LiverIV_LLC1_4'),
+    `LLC1 NSG dCas9 + Puro 5` = c('dC9NSG_LungIV_LLC1_5',	'dC9NSG_LiverIV_LLC1_5')
+  ),
+  `Comparison 10: Thy1.1 in BL6` = list(
+    `CMT167 BL6 Thy1.1` = c('Replacement_9',	'Replacement_1bis'),
+    `LLC1 BL6 Thy1.1` = c('Replacement_5',	'Replacement_6')
+  ),
+  `Comparison 11: Thy1.1 in NSG` = list(
+    `CMT167 NSG Thy1.1` = c('Replacement_2bis',	'Replacement_3bis'),
+    `LLC1 NSG Thy1.1` = c('Replacement_7',	'Replacement_8')
+  )
+)
+
+
+```
+
+Generate muller plots
+```{r run-muller-plots}
+cpm_threshold <- 10000
+comp_list <- comp_list_muller
+
+use_df <- assay(se, 'cpm') %>% data.frame(check.names = FALSE) %>% 
+  rownames_to_column('guide') %>% 
+  mutate(
+    gene = rowData(se)$Gene,
+    gene = ifelse(grepl('Non_Target', gene), 'Non_Target', gene)
+  ) %>%
+  pivot_longer(-c(guide, gene), names_to = 'sample_alias', values_to = 'cpm')
+
+j <-  names(comp_list)[1]
+muller_plots <- foreach(j = names(comp_list)) %do% {
+  i <- comp_list[[j]][[1]]
+  res <- foreach(iname = names(comp_list[[j]])) %do% {
+    i <- comp_list[[j]][[iname]]
+    x <- use_df %>% 
+      filter(sample_alias %in% i) %>% 
+      mutate(
+        sample_type = ifelse(sample_alias == i[1], 'Primary tumor', 'Metastasis'),
+        sample_type = factor(sample_type, levels = c('Primary tumor', 'Metastasis'))
+      )
+    
+    # Select guides with cpm > cpm_threshold
+    x_guides_keep <- x %>% 
+      group_by(sample_type, guide) %>% 
+      summarise(cpm = max(cpm)) %>% 
+      filter(cpm > cpm_threshold) %>% 
+      pull(guide)
+    
+    # Group guides with cpm < cpm_threshold into the low abundant category, and sum counts for low abundant
+    x %<>% 
+      mutate(
+        guide = ifelse(guide %in%  x_guides_keep, guide, 'low abundant')
+      ) %>% 
+      group_by(sample_type, guide) %>%
+      summarise(cpm = sum(cpm)) %>% 
+      ungroup() %>%
+      mutate(
+        guide = fct_reorder(guide, cpm),
+        guide = relevel(guide, ref = 'low abundant')
+      )
+    
+    use_cols <- c(
+      'low abundant' = 'grey80',
+      colorRampPalette(rev(palette_OkabeIto))(nlevels(x$guide) - 1) %>% set_names(levels(x$guide)[-1])
+    )
+    
+    x %>% 
+      ggplot( aes(x = sample_type, y = cpm/10000, group = guide, fill = guide)) + 
+      geom_area(colour = alpha("white", 0.1), linewidth = 0.08, alpha = 0.8) +
+      scale_fill_manual(values = use_cols, guide = guide_legend(ncol = 3)) +
+      labs(
+        x = '',
+        y = expression("CPM x 10"^-4),
+        title = iname,
+        fill = ''
+      ) +
+      scale_x_discrete(expand = c(0, 0)) +
+      scale_y_continuous(expand = c(0, 0), limits = c(0, 1000000/10000)) +
+      guides(fill = guide_legend(nrow=8)) +
+      theme(
+        panel.background = element_rect(fill = "grey90"),
+        # plot.margin = margin(0.5, 1.5, 0.5, 0, "cm"),
+        plot.margin = margin(0, 0.5, 0, 0, "cm"),
+        axis.text =  element_text(size=3),
+        axis.title =  element_text(size=3),
+        plot.title = element_text(size=3, hjust = 0.5),
+        legend.text = element_text(size=3),
+        legend.title = element_text(size=3),
+        legend.position = 'bottom',
+        legend.key.size = unit(0.1, 'cm'),
+        legend.key.spacing.y = unit(0.1, 'mm'),
+        legend.key.spacing.x = unit(0.1, 'mm')
+      )
+  }
+  names(res) <- names(comp_list[[j]])
+  return(res)
+
+}
+names(muller_plots) <- names(comp_list)
+# muller_syngeneic_representative <- muller_plots
+```
+
+### Supplementary Figure 2D (left upper)
+```{r muller-sfig2-d-left-upper, fig.width = 2.5, fig.asp = 0.7}
+plot_list <- list(
+  muller_plots[['Comparison 7: LLC1 NSG dCas9 + Puro']][['LLC1 NSG dCas9 + Puro 2']] + guides(fill = 'none'),
+  muller_plots[['Comparison 5: LLC1 Syngeneic dCas9 + Puro']][['LLC1 Syngeneic dCas9 + Puro 1']]+  guides(fill = 'none'),
+  muller_plots[['Comparison 6: CMT167 NSG dCas9 + Puro']][['CMT167 NSG dCas9 + Puro 4']] + guides(fill = 'none') ,
+  muller_plots[['Comparison 4: CMT167 Syngeneic dCas9 + Puro']][['CMT167 Syngeneic dCas9 + Puro 3']] + guides(fill = 'none')
+)
+
+wrap_plots(plot_list, ncol = 2, byrow = TRUE) %>% print
+```
+
+### Supplementary Figure 2D (right upper)
+```{r muller-sfig2-d-right-upper, fig.width = 2.5, fig.asp = 0.7}
+plot_list <- list(
+  muller_plots[['Comparison 11: Thy1.1 in NSG']][['LLC1 NSG Thy1.1']]+ guides(fill = 'none'),
+  muller_plots[['Comparison 10: Thy1.1 in BL6']][['LLC1 BL6 Thy1.1']]+ guides(fill = 'none'),
+  muller_plots[['Comparison 11: Thy1.1 in NSG']][['CMT167 NSG Thy1.1']]+ guides(fill = 'none'),
+  muller_plots[['Comparison 10: Thy1.1 in BL6']][['CMT167 BL6 Thy1.1']]+ guides(fill = 'none')
+)
+
+wrap_plots(plot_list, ncol = 2, byrow = TRUE) %>% print
+```
+
+### Supplementary Figure 2F
+```{r muller-sfig2-f, fig.width = 1.5}
+print(muller_plots[['Comparison 3: CT26 Syngeneic Thy1.1']][['CT26 Syngeneic Thy1.1 3']] + guides(fill = 'none'))
+```
+
+### Supplementary Figure 4L
+```{r muller-sfig4-l, fig.width = 1.5, fig.asp = 2}
+plot_list <- list(
+  muller_plots[['Comparison 2: LLC1 Syngeneic Thy1.1']][['LLC1 Syngeneic Thy1.1 4']],
+  muller_plots[['Comparison 3: CT26 Syngeneic Thy1.1']][['CT26 Syngeneic Thy1.1 1']]
+)
+
+wrap_plots(plot_list, ncol = 1) %>% print
+
+```
+
+
+
+

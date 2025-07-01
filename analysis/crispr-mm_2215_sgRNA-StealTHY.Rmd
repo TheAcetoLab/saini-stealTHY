@@ -527,7 +527,7 @@ use_assay <- assay(se[,use_samples], 'cpm') %>%
 
 ```
 
-### Figure 5B: sgRNA distribution in mice transplanted with 4T1 cells previously subjected to StealTHY KO
+### Figure 4B: sgRNA distribution in mice transplanted with 4T1 cells previously subjected to StealTHY KO
 ```{r test-dist-stealthy-ko-ridges_plot-4t1, fig.width=1.5, fig.asp=1.32}
 use_samples <- selected_panels_df %>% 
   filter(group == '4T1') %>% 
@@ -576,7 +576,7 @@ use_assay %>%
   )
 ```
 
-### Supplementary figure 5B: sgRNA distribution in mice transplanted with 4T1 cells previously subjected to StealTHY KO
+### Supplementary figure 4B: sgRNA distribution in mice transplanted with 4T1 cells previously subjected to StealTHY KO
 ```{r test-dist-stealthy-ko-ridges_plot-mvt1-py2t, fig.width=3, fig.asp=0.66}
 use_samples <- selected_panels_df %>% 
   filter(group %in% c('MVT1', 'Py2T')) %>% 
@@ -690,7 +690,7 @@ for(i in names(comp_list_modality)) {
 }
 ```
 
-### Supplementary Figure 2C left : K-S test table 
+### Supplementary Figure 4D : K-S test table 
 ```{r modality-comparisons-ks-table}
 ks_test_df %>% 
   dplyr::select(-case, -reference) %>% 
@@ -735,7 +735,7 @@ modality_test_df %<>%
   
 ```
 
-### Supplementary Figure 5D left: Dip test table for Syngeneic and NSG models
+### Dip test table for Syngeneic and NSG models
 ```{r test-dip-syngeneic-table}
 modality_test_df %>% 
   filter(!is.na(modality_group)) %>% 
@@ -823,7 +823,7 @@ gene_levels <- gene_summ[['stealthy_ko_syngeneic']] %>%
   levels
 ```
 
-### Figure 5C and Supplementary Figure 5F
+### Figure 4C and Supplementary Figure 4F
 Differential abundance of selected genes in carcinoma cells subjected to StealTHY KO or Cas9+Puro
 
 ```{r da-selected-genes-dotplot, fig.width=2.37, fig.asp=2.2}
@@ -936,7 +936,7 @@ for(i in use_comp)  {
 ```
 
 
-### Supplementary Figure 5E
+### Supplementary Figure 4E
 Differential abundance of selected genes in carcinoma cells subjected to StealTHY KO with respect to a mock KO reference
 
 ```{r da-positive-controls-genes-dotplot, fig.width=2.37, fig.asp=0.6}
@@ -1552,58 +1552,7 @@ hits_stats_py2t <- hits_stats %>%
 ```
 
 
-### Figure 5D: Fold-change of non-expressed hits
-```{r non-expressed-hits-barplot-lfc, fig.width=1.5, fig.asp=1}
-chunk_data <- hits_stats_global
-max_lfc <- max(chunk_data$lfc[chunk_data$lfc < Inf], na.rm = TRUE)
-max_lfc <- ceiling(max_lfc + 0.5)
-min_lfc <- min(chunk_data$lfc[chunk_data$lfc > -Inf], na.rm = TRUE)
-min_lfc <- -1*ceiling(abs(min_lfc) + 0.5)
-
-chunk_data %<>%
-  mutate(
-    lfc = ifelse(lfc == Inf, max_lfc, lfc),
-    lfc = ifelse(lfc == -Inf, min_lfc, lfc),
-  )
-
-y_range <- range(chunk_data$lfc, na.rm = TRUE) %>% abs
-y_range <- y_range * c(-1, 1)
-y_breaks <- seq(y_range[1], y_range[2], by = 0.5)
-y_labels <- as.character(y_breaks)
-y_labels[y_breaks == min_lfc] <- '-\u221e'
-y_labels[y_breaks == max_lfc] <- '\u221e'
-
-chunk_data %>%
-  ggplot(aes(comparison, lfc, fill = comparison)) +
-  geom_col() +
-  geom_hline(yintercept = 0, linetype = 'solid',
-             linewidth = one_pt/4) +
-  coord_flip() +
-  scale_y_continuous(
-    # expand = expansion(mult = c(0, 0.05)),
-    breaks = y_breaks, 
-    labels = y_labels
-    )  +
-  scale_fill_manual(values = use_color_palette) +
-  theme_facet +
-  theme(
-    axis.line = element_line(linewidth = one_pt/4, color = 'black'),
-    axis.ticks = element_line(linewidth = one_pt/4, color = 'black'),
-    panel.border = element_blank(),
-    axis.text = element_text(size=5), 
-    axis.title = element_text(size = 5),
-    legend.title = element_text(size=5),
-    legend.text = element_text(size=5),
-    strip.text.y = element_text(size = 4, angle = 0)
-  ) +
-  guides(fill = 'none') +
-  labs(
-    x = '',
-    y = 'Proportion of\nnon-expressed hits\nLog2(Fold change)'
-  )
-```
-
-### Figure 5D: Proportion of non-expressed hits
+### Figure 4D: Proportion of non-expressed hits
 ```{r non-expressed-hits-barplot-prop, fig.width=1.5, fig.asp=1}
 chunk_data <- hits_stats_global
 
@@ -1638,7 +1587,7 @@ chunk_data %>%
 ```
 
 
-### Supplementary figure 5G: Fold-change of non-expressed hits
+### Supplementary figure 4G: Fold-change of non-expressed hits
 ```{r non-expressed-hits-barplot-lfc-bymodel, fig.width=1.5, fig.asp=1.5}
 chunk_data <- rbind(hits_stats_4t1, hits_stats_mvt1, hits_stats_py2t) %>% 
   mutate(
@@ -1674,7 +1623,7 @@ chunk_data %>%
 
 ```
 
-### Supplementary figure 5G: Proportion of non-expressed hits
+### Supplementary figure 4G: Proportion of non-expressed hits
 ```{r non-expressed-hits-barplot-prop-bymodel, fig.width=1.5, fig.asp=1.5}
 chunk_data <- rbind(hits_stats_4t1, hits_stats_mvt1, hits_stats_py2t) %>% 
   mutate(
