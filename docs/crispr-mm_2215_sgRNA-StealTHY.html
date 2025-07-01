@@ -1,0 +1,2699 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Francesc Castro-Giner" />
+
+<meta name="date" content="2025-07-01" />
+
+<title>StealTHY CRISPR screen</title>
+
+<script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/htmltools-fill-0.5.8.1/fill.css" rel="stylesheet" />
+<script src="site_libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<link href="site_libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="site_libs/datatables-binding-0.33/datatables.js"></script>
+<link href="site_libs/dt-core-1.13.6/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="site_libs/dt-core-1.13.6/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="site_libs/dt-core-1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="site_libs/jszip-1.13.6/jszip.min.js"></script>
+<link href="site_libs/dt-ext-buttons-1.13.6/css/buttons.dataTables.min.css" rel="stylesheet" />
+<script src="site_libs/dt-ext-buttons-1.13.6/js/dataTables.buttons.min.js"></script>
+<script src="site_libs/dt-ext-buttons-1.13.6/js/buttons.html5.min.js"></script>
+<script src="site_libs/dt-ext-buttons-1.13.6/js/buttons.colVis.min.js"></script>
+<script src="site_libs/dt-ext-buttons-1.13.6/js/buttons.print.min.js"></script>
+<link href="site_libs/nouislider-7.0.10/jquery.nouislider.min.css" rel="stylesheet" />
+<script src="site_libs/nouislider-7.0.10/jquery.nouislider.min.js"></script>
+<link href="site_libs/selectize-0.12.0/selectize.bootstrap3.css" rel="stylesheet" />
+<script src="site_libs/selectize-0.12.0/selectize.min.js"></script>
+<link href="site_libs/crosstalk-1.2.1/css/crosstalk.min.css" rel="stylesheet" />
+<script src="site_libs/crosstalk-1.2.1/js/crosstalk.min.js"></script>
+<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.5.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">StealTHY</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/TheAcetoLab/saini-stealTHY">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">StealTHY CRISPR screen</h1>
+<h3 class="subtitle">Mouse libray (n = 2215)</h3>
+<h4 class="author">Francesc Castro-Giner</h4>
+<h4 class="date">July 01, 2025</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+</a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2025-07-01
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 0
+</p>
+<p>
+<strong>Knit directory:</strong> <code>saini-stealTHY/</code> <span
+class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.1). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date
+</a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguptodate"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great! Since the R Markdown file has been committed to the Git
+repository, you know the exact version of the code that produced these
+results.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20240517code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20240517)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20240517code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20240517)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtreee391b94d2101a3ebbb4ef002cf4887c5d14738d0targetblanke391b94a">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/e391b94d2101a3ebbb4ef002cf4887c5d14738d0" target="_blank">e391b94</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtreee391b94d2101a3ebbb4ef002cf4887c5d14738d0targetblanke391b94a"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/e391b94d2101a3ebbb4ef002cf4887c5d14738d0" target="_blank">e391b94</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .DS_Store
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+    Ignored:    analysis/.DS_Store
+    Ignored:    code/.DS_Store
+    Ignored:    code/raw_data_processing/rnaseq/p27851_o32062/pipelines/
+    Ignored:    configuration/.DS_Store
+    Ignored:    data/.DS_Store
+    Ignored:    data/crispr/
+    Ignored:    data/resources/
+    Ignored:    data/rnaseq/
+    Ignored:    output/.DS_Store
+    Ignored:    output/clinical/
+    Ignored:    output/crispr/
+    Ignored:    output/rnaseq/
+
+Untracked files:
+    Untracked:  analysis/crispr-hsapiens_2180_sgRNA_r1.Rmd
+    Untracked:  analysis/crispr-mm_2215_sgRNA-CMT167-LLC1-CT26.Rmd
+    Untracked:  analysis/crispr-mm_2215_sgRNA-clonality_r1.Rmd
+    Untracked:  analysis/templates/
+    Untracked:  code/R-functions/subchunkify.R
+
+Unstaged changes:
+    Modified:   .gitignore
+    Modified:   analysis/crispr-hsapiens_2180_sgRNA.Rmd
+    Modified:   analysis/crispr-mm_2215_sgRNA-clonality.Rmd
+    Modified:   analysis/crispr-mm_2215_sgRNA-r2oC.Rmd
+    Modified:   code/R-functions/gse_report.r
+    Modified:   configuration/rmarkdown/ggplot_theme.R
+    Modified:   update_workflowr.R
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+These are the previous versions of the repository in which changes were
+made to the R Markdown
+(<code>analysis/crispr-mm_2215_sgRNA-StealTHY.Rmd</code>) and HTML
+(<code>docs/crispr-mm_2215_sgRNA-StealTHY.html</code>) files. If you’ve
+configured a remote Git repository (see <code>?wflow_git_remote</code>),
+click on the hyperlinks in the table below to view the files as they
+were in that past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/e391b94d2101a3ebbb4ef002cf4887c5d14738d0/analysis/crispr-mm_2215_sgRNA-StealTHY.Rmd" target="_blank">e391b94</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-07-01
+</td>
+<td>
+update crispr plots
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/00ae28bcb2715ec6f4030d74d92f51359fa43ce4/analysis/crispr-mm_2215_sgRNA-StealTHY.Rmd" target="_blank">00ae28b</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-05-05
+</td>
+<td>
+updated r1oa
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/1c45f78451a8507c8de37da9a7d78c2e7cd92a3a/analysis/crispr-mm_2215_sgRNA-StealTHY.Rmd" target="_blank">1c45f78</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-04-30
+</td>
+<td>
+rm temporary files
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/5fab19d765a869233e820f2aed94595a89d5fe9b/analysis/crispr-mm_2215_sgRNA-StealTHY.Rmd" target="_blank">5fab19d</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2024-05-28
+</td>
+<td>
+clean code
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/1920712c9ede8023880e174fc87f3cd238c3d612/analysis/crispr-mm_2215_sgRNA-StealTHY.Rmd" target="_blank">1920712</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2024-05-24
+</td>
+<td>
+added F5
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div id="load-libraries-additional-functions-and-data"
+class="section level2" number="1">
+<h2><span class="header-section-number">1</span> Load libraries,
+additional functions and data</h2>
+<p>Setup environment</p>
+<pre class="r"><code>knitr::opts_chunk$set(results=&#39;asis&#39;, echo=TRUE, message=FALSE, warning=FALSE, error=FALSE, fig.align = &#39;center&#39;, fig.width = 3.5, fig.asp = 0.618, dpi = 600, dev = c(&quot;png&quot;, &quot;pdf&quot;), fig.showtext = FALSE, engine.opts = list(bash = &quot;-l&quot;))
+
+options(stringsAsFactors = FALSE)
+
+use_seed &lt;- 1100101
+
+set.seed(use_seed)
+
+# dir.create(params$output_dir, recursive = TRUE, showWarnings = FALSE)</code></pre>
+<p>Load packages</p>
+<pre class="r"><code>library(tidyverse)
+library(knitr)
+library(foreach)
+library(magrittr)
+library(DT)
+library(kableExtra)
+library(diptest)
+library(SummarizedExperiment)
+
+library(ggridges)
+library(ggh4x)
+library(patchwork)
+library(colorblindr)
+library(ggbeeswarm)
+library(ggpubr)
+
+library(MAGeCKFlute)</code></pre>
+<p>Load ggplot theme</p>
+<pre class="r"><code>source(&quot;./configuration/rmarkdown/ggplot_theme.R&quot;)</code></pre>
+<p>Load ggplot theme</p>
+<pre class="r"><code>source(&quot;./configuration/rmarkdown/color_palettes.R&quot;)</code></pre>
+<p>Load Summarized Experiment object</p>
+<pre class="r"><code>se &lt;- readRDS(file.path(params$data_dir, &#39;se.rds&#39;))</code></pre>
+<p>Filter samples used for this analysis</p>
+<pre class="r"><code>use_cols &lt;- colData(se) %&gt;% 
+  data.frame %&gt;% 
+  rownames
+
+se &lt;- se[,use_cols]</code></pre>
+<p>Data wrangling</p>
+<pre class="r"><code>chunk_colData &lt;- colData(se) %&gt;% data.frame %&gt;%
+  mutate(
+    vector_short = ifelse(vector_short == &#39;Puro_EF1alpha_SpCas9&#39;, 
+                          &#39;Cas9+Puro&#39;, vector_short),
+    vector_short = factor(vector_short, levels = c(&#39;Thy1&#39;, &#39;Puro&#39;, &#39;Cas9+Puro&#39;)),
+    mouse_model_short = case_match(mouse_model_global,
+                                   &#39;immunodeficient&#39; ~ &#39;NSG&#39;,
+                                   &#39;immunocompetent&#39; ~ &#39;Syngeneic&#39;
+                                   ),
+    mouse_model_short = factor(mouse_model_short, levels = c(&#39;NSG&#39;, &#39;Syngeneic&#39;)),
+    vector_mhost = paste0(vector_short, &#39;, &#39;, mouse_model_short),
+    model_vector_mhost = paste0(donor,&#39;, &#39;, vector_short, &#39;, &#39;, mouse_model_short),
+    
+    sample_type = case_match(sample_type, 
+                             &#39;whole_tumor&#39; ~ &#39;Primary tumor&#39;, 
+                             &#39;whole_lung&#39; ~ &#39;Lung mets&#39;),
+    sample_type = factor(sample_type, levels = c(&#39;Primary tumor&#39;, &#39;Lung mets&#39;))
+  )
+
+colData(se) &lt;- chunk_colData %&gt;% DataFrame</code></pre>
+</div>
+<div id="configure-analyses" class="section level2" number="2">
+<h2><span class="header-section-number">2</span> Configure analyses</h2>
+<div id="sgrna-distribution" class="section level3" number="2.1">
+<h3><span class="header-section-number">2.1</span> sgRNA
+distribution</h3>
+<p>Define comparisons for modality and Kolmogorov-Smirnov test</p>
+<pre class="r"><code>x &lt;- colData(se) %&gt;% data.frame
+
+group_list_modality &lt;- list(
+  `StealTHY syngeneic` = x %&gt;% 
+    filter(vector_mmodel %in% c(&#39;4T1-KO-Thy1-BALB&#39;, &#39;MVT1-KO-Thy1-FVB&#39;, &#39;Py2T-KO-Thy1-FVB&#39;) &amp; sample_type == &#39;Primary tumor&#39;) %&gt;%
+    pull(sample_alias),
+  
+  `Cas9+Puro syngeneic` = x %&gt;% 
+    filter(vector_mmodel == &#39;4T1-KO-Puro_EF1alpha_SpCas9-BALB&#39; &amp; sample_type == &#39;Primary tumor&#39;) %&gt;% 
+    pull(sample_alias),
+  
+  `StealTHY NSG` = x %&gt;% 
+    filter(vector_mmodel %in% c(&#39;4T1-KO-Thy1-NSG&#39;, &#39;MVT1-KO-Thy1-NSG&#39;, &#39;Py2T-KO-Thy1-NSG&#39;) &amp; sample_type == &#39;Primary tumor&#39;) %&gt;%
+    pull(sample_alias),
+  
+  `Cas9+Puro NSG` = x %&gt;% 
+    filter(vector_mmodel == &#39;4T1-KO-Puro_EF1alpha_SpCas9-NSG&#39; &amp; sample_type == &#39;Primary tumor&#39;) %&gt;% 
+    pull(sample_alias),
+  
+  `StealTHY syngeneic 4T1` = x %&gt;% 
+    filter(vector_mmodel == &#39;4T1-KO-Thy1-BALB&#39; &amp; sample_type == &#39;Primary tumor&#39;) %&gt;%
+    pull(sample_alias)
+  
+)
+
+
+comp_list_modality &lt;- list(
+  `StealTHY syngeneic vs. StealTHY NSG` = list(
+    `StealTHY syngeneic` = group_list_modality$`StealTHY syngeneic`,
+    `StealTHY NSG` = group_list_modality$`StealTHY NSG`
+  ),
+  `StealTHY syngeneic vs. Cas9+Puro` = list(
+    `StealTHY syngeneic` = group_list_modality$`StealTHY syngeneic 4T1`,
+    `Cas9+Puro syngeneic` = group_list_modality$`Cas9+Puro syngeneic`
+  )
+)
+
+group_df_modality &lt;- foreach(i = names(group_list_modality), .combine = rbind) %do% {
+  data.frame(
+    sample_alias = group_list_modality[[i]],
+    modality_group = i
+  )
+}</code></pre>
+</div>
+<div id="mageck-analysis" class="section level3" number="2.2">
+<h3><span class="header-section-number">2.2</span> MAGeCK analysis</h3>
+<div id="list-of-comparisons" class="section level4" number="2.2.1">
+<h4><span class="header-section-number">2.2.1</span> List of
+comparisons</h4>
+<p>List of comparisons for differential abundance using MAGeCK</p>
+<pre class="r"><code>x &lt;- colData(se) %&gt;% data.frame
+
+mageck_comp_list &lt;- list(
+  `StealTHY KO Syngeneic` = list(
+    `Primary tumor` = x %&gt;% filter(vector_mmodel %in% list(&#39;4T1-KO-Thy1-BALB&#39;, &#39;MVT1-KO-Thy1-FVB&#39;, &#39;Py2T-KO-Thy1-FVB&#39;) &amp; sample_type == &#39;Primary tumor&#39;) %&gt;% pull(sample_alias),
+    `Lung mets` = x %&gt;% filter(vector_mmodel %in% list(&#39;4T1-KO-Thy1-BALB&#39;, &#39;MVT1-KO-Thy1-FVB&#39;, &#39;Py2T-KO-Thy1-FVB&#39;) &amp; sample_type == &#39;Lung mets&#39;) %&gt;% pull(sample_alias)
+    ),
+  `StealTHY KO NSG` = list(
+    `Primary tumor` = x %&gt;% filter(global_vector_mmodel == &#39;whole_tumor-KO-Thy1-immunodeficient&#39;) %&gt;% pull(sample_alias),
+    `Lung mets` = x %&gt;% filter(global_vector_mmodel == &#39;whole_lung-KO-Thy1-immunodeficient&#39;) %&gt;% pull(sample_alias)
+  ),
+  `Cas9+Puro Syngeneic` = list(
+    `Primary tumor` = x %&gt;% filter(vector_mmodel == &#39;4T1-KO-Puro_EF1alpha_SpCas9-BALB&#39; &amp; sample_type == &#39;Primary tumor&#39;) %&gt;% pull(sample_alias),
+    `Lung mets` = x %&gt;% filter(vector_mmodel == &#39;4T1-KO-Puro_EF1alpha_SpCas9-BALB&#39; &amp; sample_type == &#39;Lung mets&#39;) %&gt;% pull(sample_alias)
+  ),
+  
+  `StealTHY KO over dCas9 In vitro` = list(
+    `StealTHY` = x %&gt;% filter(global_vector_mmodel_invitro_cas9transfection == &#39;bulk-KO-Thy1-Invitro-pre-Cas9&#39;) %&gt;% pull(sample_alias),
+    `dCas9` = x %&gt;% filter(global_vector_mmodel_invitro_cas9transfection_grouped == &#39;KO-Thy1-Invitro-post-Cas9&#39;) %&gt;% pull(sample_alias)
+    ),
+  
+  `StealTHY KO over dCas9 In vivo` = list(
+    `StealTHY` = x %&gt;% filter(vector_mmodel %in% list(&#39;4T1-KO-Thy1-BALB&#39;, &#39;MVT1-KO-Thy1-FVB&#39;, &#39;Py2T-KO-Thy1-FVB&#39;) &amp; sample_type == &#39;Primary tumor&#39;) %&gt;% pull(sample_alias),
+    `dCas9 mets` = x %&gt;% filter(vector_mmodel %in% list(&#39;4T1-noKO-Thy1-BALB&#39;, &#39;MVT1-noKO-Thy1-FVB&#39;, &#39;Py2T-noKO-Thy1-FVB&#39;) &amp; sample_type == &#39;Primary tumor&#39;) %&gt;% pull(sample_alias)
+    )
+)
+
+
+mageck_comp_list_names &lt;- names(mageck_comp_list) 
+names(mageck_comp_list_names) &lt;- names(mageck_comp_list) %&gt;% gsub(&quot; &quot;, &quot;_&quot;,.) %&gt;% tolower</code></pre>
+<pre class="r"><code>data_comp &lt;- foreach(i = names(mageck_comp_list), .combine = rbind) %do% {
+  c(
+    Comparison = i,
+    Case = paste(mageck_comp_list[[i]][[1]], collapse = &quot; &quot;),
+    Control = paste(mageck_comp_list[[i]][[2]], collapse = &quot; &quot;)
+  )
+}
+
+data_comp %&gt;% 
+  datatable(., 
+            rownames = FALSE, 
+            filter = &#39;top&#39;, 
+            caption = &#39;List of comparisons for MAGeCK analysis&#39;,
+            extensions = &#39;Buttons&#39;, 
+            options = list(
+              dom = &#39;Blfrtip&#39;,
+              buttons = c(&#39;csv&#39;, &#39;excel&#39;),
+              columnDefs = list(
+                list(width = 120, targets = 1:2)
+              )
+            )
+            )</code></pre>
+<div class="datatables html-widget html-fill-item" id="htmlwidget-0e41329c1963262c826a" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-0e41329c1963262c826a">{"x":{"filter":"top","vertical":false,"filterHTML":"<tr>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n<\/tr>","extensions":["Buttons"],"caption":"<caption>List of comparisons for MAGeCK analysis<\/caption>","data":[["StealTHY KO Syngeneic","StealTHY KO NSG","Cas9+Puro Syngeneic","StealTHY KO over dCas9 In vitro","StealTHY KO over dCas9 In vivo"],["CRISPRKO_Clone_1 CRISPRKO_Clone_10 CRISPRKO_Clone_11 CRISPRKO_Clone_12 CRISPRKO_Clone_13 CRISPRKO_Clone_14 CRISPRKO_Clone_2 CRISPRKO_Clone_20 CRISPRKO_Clone_21 CRISPRKO_Clone_22 CRISPRKO_Clone_23 CRISPRKO_Clone_24 CRISPRKO_Clone_3 CRISPRKO_Clone_4 CRISPRKO","CRISPRKO_Clone_45 CRISPRKO_Clone_46 CRISPRKO_Clone_47 CRISPRKO_Clone_48 CRISPRKO_Clone_49 CRISPRKO_Clone_5 CRISPRKO_Clone_50 CRISPRKO_Clone_51 CRISPRKO_Clone_52 CRISPRKO_Clone_53 CRISPRKO_Clone_54 CRISPRKO_Clone_6 CRISPRKO_Clone_7 CRISPRKO_Clone_8 CRISPRKO_Clone_9","PlatePositionA5 PlatePositionA6 PlatePositionC5 PlatePositionC6 PlatePositionE5 PlatePositionE6 PlatePositionG4 PlatePositionG5 PlatePositionG6","CRISPRKO_Clone_61 CRISPRKO_Clone_64 CRISPRKO_Clone_67","CRISPRKO_Clone_1 CRISPRKO_Clone_10 CRISPRKO_Clone_11 CRISPRKO_Clone_12 CRISPRKO_Clone_13 CRISPRKO_Clone_14 CRISPRKO_Clone_2 CRISPRKO_Clone_20 CRISPRKO_Clone_21 CRISPRKO_Clone_22 CRISPRKO_Clone_23 CRISPRKO_Clone_24 CRISPRKO_Clone_3 CRISPRKO_Clone_4 CRISPRKO"],["CRISPRKO_Clone_15 CRISPRKO_Clone_16 CRISPRKO_Clone_17 CRISPRKO_Clone_18 CRISPRKO_Clone_19 CRISPRKO_Clone_30 CRISPRKO_Clone_31 CRISPRKO_Clone_32 CRISPRKO_Clone_33 CRISPRKO_Clone_34 CRISPRKO_Clone_35 CRISPRKO_Clone_36 CRISPRKO_Clone_37 CRISPRKO_Clone_38 CRISPRKO_Clone_39","CRISPRKO_Clone_25 CRISPRKO_Clone_26 CRISPRKO_Clone_27 CRISPRKO_Clone_28 CRISPRKO_Clone_29 CRISPRKO_Clone_40 CRISPRKO_Clone_41 CRISPRKO_Clone_42 CRISPRKO_Clone_43 CRISPRKO_Clone_44 CRISPRKO_Clone_55 CRISPRKO_Clone_56 CRISPRKO_Clone_57 CRISPRKO_Clone_58 CRISPRKO_Clone_59","PlatePositionB5 PlatePositionD5 PlatePositionD6 PlatePositionF3 PlatePositionF5 PlatePositionF6 PlatePositionH4 PlatePositionH5 PlatePositionH6","CRISPRKO_Clone_60 CRISPRKO_Clone_65 CRISPRKO_Clone_68 PlatePositionA11 PlatePositionB11 PlatePositionC11 PlatePositionD11 PlatePositionG10 PlatePositionH10","4T_TumoT_B1 4T_TumoT_B2 4T_TumoT_B3 4T_TumoT_B4 4T_TumoT_B5 MVT_TumoT_F1 MVT_TumoT_F2 MVT_TumoT_F3 MVT_TumoT_F4 MVT_TumoT_F5 PY_TumoT_F1 PY_TumoT_F2 PY_TumoT_F3 PY_TumoT_F4 PY_TumoT_F5"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>Comparison<\/th>\n      <th>Case<\/th>\n      <th>Control<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"Blfrtip","buttons":["csv","excel"],"columnDefs":[{"width":120,"targets":[1,2]},{"name":"Comparison","targets":0},{"name":"Case","targets":1},{"name":"Control","targets":2}],"order":[],"autoWidth":false,"orderClasses":false,"orderCellsTop":true}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="genes-to-remove" class="section level4" number="2.2.2">
+<h4><span class="header-section-number">2.2.2</span> Genes to
+remove</h4>
+<pre class="r"><code>min_counts &lt;- 1
+min_prop &lt;- 0.30</code></pre>
+<p>Remove genes not expressed in the RNA-seq experiment: we keep genes
+that have counts above 1 counts in 30 % of the samples from at least one
+group. The group is defined by the cell model. We consider only non-NSG
+samples for this analysis. additionally we also remove
+<em>Gt(ROSA)26Sor</em> and <em>Cd4</em> (they cannot be expressed by
+cancer cells).</p>
+<pre class="r"><code># Read RNA-seq data
+se_rna &lt;- readRDS(params$se_rnaseq_bulk)
+assay(se_rna, &#39;cpm&#39;) &lt;- edgeR::cpm(se_rna)
+
+# CRISPR library genes
+crispr_genes &lt;- unique(rowData(se)$Gene) %&gt;% grep(&#39;Non_Target&#39;, ., invert = T, value = T)
+
+# RNA-seq : Select genes and non-NSG samples
+use_cols &lt;- colData(se_rna)$mouse_model != &#39;NSG&#39;
+use_se &lt;- se_rna[rowData(se_rna)$gene_name %in% crispr_genes, use_cols]
+
+# Proportion of samples with min_counts at each group
+use_group &lt;- as.factor(use_se$donor)
+counts_mat &lt;- assay(use_se, &#39;counts&#39;)
+counts_stats &lt;- foreach(i=levels(use_group), .combine = cbind) %do% {
+  use_cols &lt;- use_se$donor == i
+  rowSums(counts_mat[,use_cols] &gt;= min_counts)  / sum(use_cols)
+} %&gt;% data.frame
+colnames(counts_stats) &lt;- levels(use_group)
+counts_stats$all &lt;- rowSums(counts_mat &gt;= min_counts)  / ncol(counts_mat)
+  
+# Keep genes with min_counts threshold in &gt;=min_prop of samples in at least 1 group
+rows_to_keep &lt;- rownames(counts_stats)[rowSums(counts_stats &gt;= min_prop) &gt; 0]
+
+# Change to gene names
+genes_to_keep &lt;- rowData(use_se[rows_to_keep,])$gene_name %&gt;% 
+  unique
+
+# Remove Rosa26 and Cd4 : cannot be expressed by cancer cells
+genes_to_keep &lt;- genes_to_keep[!genes_to_keep %in% c(&#39;Gt(ROSA)26Sor&#39;, &#39;Cd4&#39;)]
+
+# Define genes to remove
+genes_to_rm &lt;- setdiff(crispr_genes, genes_to_keep)
+
+# Show stats for removed genes
+counts_stats$gene_name &lt;- rowData(use_se[rownames(counts_stats),])$gene_name
+counts_stats %&lt;&gt;% dplyr::select(gene_name, everything()) 
+
+counts_stats_filterByExpr &lt;- counts_stats
+
+# Filter Crispr Data
+keep_gene_guides &lt;- rownames(se)[rowData(se)$Gene %in% genes_to_keep]
+keep_ctrl_guides &lt;- rownames(se)[grepl(&#39;Non_Target&#39;, rowData(se)$Gene)]
+# se &lt;- se[c(keep_gene_guides, keep_ctrl_guides),]</code></pre>
+<p>The table below shows the proportion of samples with counts &gt;= 1in
+each group for genes removed (n = 66`).</p>
+<pre class="r"><code>counts_stats_filterByExpr %&gt;% 
+  filter(gene_name %in% genes_to_rm) %&gt;% 
+  arrange(desc(all)) %&gt;% 
+  datatable(., 
+            rownames = FALSE, 
+            filter = &#39;top&#39;, 
+            caption = &#39;Statistics&#39;,
+            extensions = &#39;Buttons&#39;, 
+            options = list(
+              dom = &#39;Blfrtip&#39;,
+              buttons = c(&#39;csv&#39;, &#39;excel&#39;)
+              )) %&gt;% 
+  formatRound(columns = 2:5)</code></pre>
+<div class="datatables html-widget html-fill-item" id="htmlwidget-cf74d9caecbce7389320" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-cf74d9caecbce7389320">{"x":{"filter":"top","vertical":false,"filterHTML":"<tr>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"0\" data-max=\"1\" data-scale=\"15\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"0\" data-max=\"0.916666666666667\" data-scale=\"15\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"0\" data-max=\"0.416666666666667\" data-scale=\"15\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"0\" data-max=\"0.777777777777778\" data-scale=\"15\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n<\/tr>","extensions":["Buttons"],"caption":"<caption>Statistics<\/caption>","data":[["Cd4","Bmp5","Acvr1c","Il12a","Il4","Mpl","Fgf23","Gdf2","Cxcl15","Il31","Lep","Ccr1l1","Nrg3","Cd40lg","Il21","Angptl3","Il5ra","Fgf3","Il13","Fgf14","Tnfrsf17","Cd70","Fgf8","Cxcr1","Ifnk","Ifna12","Ifna2","Fgf6","Fgf4","Nodal","Il9","Il17a","Mstn","Erbb4","Il1f10","Ccl21b","Ccl27b","Il11ra2","Ifna15","Ifna14","Ifna9","Ifna7","Ifna11","Ifna6","Ifna5","Ifna4","Ifna1","Ccl26","Ifnl2","Ifnl3","Klk1b4","Inhbc","Igfbp1","Il3","Prl","Il25","Fgf12","Dkk1","Fgf16"],[1,0.25,0.25,0.25,0.25,0.08333333333333333,0.25,0.08333333333333333,0.1666666666666667,0.1666666666666667,0,0,0,0.1666666666666667,0.1666666666666667,0,0.08333333333333333,0,0.1666666666666667,0,0.1666666666666667,0,0.08333333333333333,0,0.08333333333333333,0,0,0,0,0,0.08333333333333333,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0.9166666666666666,0.25,0.08333333333333333,0.1666666666666667,0.08333333333333333,0,0.08333333333333333,0.25,0,0,0.08333333333333333,0.1666666666666667,0,0.08333333333333333,0,0.1666666666666667,0.08333333333333333,0,0,0.08333333333333333,0,0.1666666666666667,0,0.08333333333333333,0,0.08333333333333333,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0.4166666666666667,0.1666666666666667,0.08333333333333333,0,0.08333333333333333,0.25,0,0,0.08333333333333333,0.08333333333333333,0.1666666666666667,0.08333333333333333,0.25,0,0,0,0,0.1666666666666667,0,0.08333333333333333,0,0,0.08333333333333333,0,0,0,0.08333333333333333,0.08333333333333333,0.08333333333333333,0.08333333333333333,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0.7777777777777778,0.2222222222222222,0.1388888888888889,0.1388888888888889,0.1388888888888889,0.1111111111111111,0.1111111111111111,0.1111111111111111,0.08333333333333333,0.08333333333333333,0.08333333333333333,0.08333333333333333,0.08333333333333333,0.08333333333333333,0.05555555555555555,0.05555555555555555,0.05555555555555555,0.05555555555555555,0.05555555555555555,0.05555555555555555,0.05555555555555555,0.05555555555555555,0.05555555555555555,0.02777777777777778,0.02777777777777778,0.02777777777777778,0.02777777777777778,0.02777777777777778,0.02777777777777778,0.02777777777777778,0.02777777777777778,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>gene_name<\/th>\n      <th>4T1<\/th>\n      <th>MVT1<\/th>\n      <th>Py2T<\/th>\n      <th>all<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"Blfrtip","buttons":["csv","excel"],"columnDefs":[{"targets":1,"render":"function(data, type, row, meta) {\n    return type !== 'display' ? data : DTWidget.formatRound(data, 2, 3, \",\", \".\", null);\n  }"},{"targets":2,"render":"function(data, type, row, meta) {\n    return type !== 'display' ? data : DTWidget.formatRound(data, 2, 3, \",\", \".\", null);\n  }"},{"targets":3,"render":"function(data, type, row, meta) {\n    return type !== 'display' ? data : DTWidget.formatRound(data, 2, 3, \",\", \".\", null);\n  }"},{"targets":4,"render":"function(data, type, row, meta) {\n    return type !== 'display' ? data : DTWidget.formatRound(data, 2, 3, \",\", \".\", null);\n  }"},{"className":"dt-right","targets":[1,2,3,4]},{"name":"gene_name","targets":0},{"name":"4T1","targets":1},{"name":"MVT1","targets":2},{"name":"Py2T","targets":3},{"name":"all","targets":4}],"order":[],"autoWidth":false,"orderClasses":false,"orderCellsTop":true}},"evals":["options.columnDefs.0.render","options.columnDefs.1.render","options.columnDefs.2.render","options.columnDefs.3.render"],"jsHooks":[]}</script>
+</div>
+<div id="run-mageck" class="section level4" number="2.2.3">
+<h4><span class="header-section-number">2.2.3</span> Run MAGeCK</h4>
+<p>Generate MAGeCK test scripts. To generate the script files change
+<code>eval = FALSE</code> to <code>eval = TRUE</code> in the chunk
+options.</p>
+<p>The scripts must be run in the terminal, inside the path
+./output/crispr/mm_2215_sgRNA/mageck_rra_expr. The script will activate
+the mageck environment and run the test for each comparison. The results
+will be saved in the same directory.</p>
+<pre class="r"><code>chunk_se &lt;- se[c(keep_gene_guides, keep_ctrl_guides),]
+out_dir &lt;- file.path(params$output_dir, params$mageck_dir)
+dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+
+# Generate count matrix
+count_mat &lt;- assay(chunk_se, &#39;counts&#39;) %&gt;% data.frame(check.names = FALSE) %&gt;% 
+  rownames_to_column(&#39;sgRNA&#39;) %&gt;% 
+  mutate(Gene = rowData(chunk_se)$Gene) %&gt;% 
+  dplyr::select(sgRNA, Gene, everything())
+write_tsv(count_mat, file = file.path(out_dir, &#39;counts.txt&#39;))
+
+# Generate list of control sgRNA IDs
+non_target_list &lt;- rownames(chunk_se) %&gt;% grep(&#39;Non_Target&#39;, ., value = T) %&gt;% data.frame
+write_tsv(non_target_list, file = file.path(out_dir, &#39;control_sgrna.txt&#39;), col_names = F)
+
+# Generate mageck commands
+res_cmd &lt;- data.frame(&#39;source activate mageckenv&#39;)
+res_cmd &lt;- foreach(i=names(mageck_comp_list), .combine = rbind) %do% {
+  paste(&#39;mageck test -k counts.txt --control-sgrna control_sgrna.txt --norm-method control -t&#39;, paste(mageck_comp_list[[i]][[1]], collapse = &#39;,&#39;),&#39;-c&#39;,  paste(mageck_comp_list[[i]][[2]], collapse = &#39;,&#39;), &#39;-n&#39;, tolower(gsub(&quot; &quot;, &quot;_&quot;, i)), &#39;\n&#39;)
+} %&gt;% data.frame()
+
+res_cmd &lt;- rbind(&#39;conda activate mageckenv&#39;, res_cmd, &#39;conda deactivate&#39;)
+write_tsv(res_cmd, file.path(out_dir, &#39;run_mageck_test.sh&#39;), col_names = FALSE)</code></pre>
+</div>
+<div id="load-mageck-results" class="section level4" number="2.2.4">
+<h4><span class="header-section-number">2.2.4</span> Load MAGeCK
+results</h4>
+<pre class="r"><code>gene_summ_files &lt;- list.files(path = file.path(params$output_dir, params$mageck_dir), pattern = &#39;gene_summary.txt&#39;, full.names = TRUE)
+analysis_prefix &lt;- basename(gene_summ_files) %&gt;% gsub(&quot;.gene_summary.txt&quot;, &quot;&quot;, .)
+gene_summ &lt;- foreach(i = gene_summ_files) %do% read.delim(i, check.names = FALSE)
+names(gene_summ) &lt;- analysis_prefix
+
+sgrna_summ_files &lt;- list.files(path = file.path(params$output_dir, params$mageck_dir), pattern = &#39;sgrna_summary.txt&#39;, full.names = TRUE)
+analysis_prefix &lt;- basename(sgrna_summ_files) %&gt;% gsub(&quot;.sgrna_summary.txt&quot;, &quot;&quot;, .)
+sgrna_summ &lt;- foreach(i = sgrna_summ_files) %do% read.delim(i, check.names = FALSE)
+names(sgrna_summ) &lt;- analysis_prefix</code></pre>
+</div>
+</div>
+<div id="mageck-analysis-with-non-expressed-genes"
+class="section level3" number="2.3">
+<h3><span class="header-section-number">2.3</span> MAGeCK analysis with
+non-expressed genes</h3>
+<div id="list-of-comparisons-1" class="section level4" number="2.3.1">
+<h4><span class="header-section-number">2.3.1</span> List of
+comparisons</h4>
+<p>List of comparisons for differential abundance using MAGeCK</p>
+<pre class="r"><code>x &lt;- colData(se) %&gt;% data.frame
+
+ne_mageck_comp_list &lt;- list(
+  
+  `StealTHY` = list(
+    `Primary tumor` = x %&gt;% filter(vector_mmodel %in% list(&#39;4T1-KO-Thy1-BALB&#39;, &#39;MVT1-KO-Thy1-FVB&#39;, &#39;Py2T-KO-Thy1-FVB&#39;) &amp; sample_type == &#39;Primary tumor&#39;) %&gt;% pull(sample_alias),
+    `Lung mets` = x %&gt;% filter(vector_mmodel %in% list(&#39;4T1-KO-Thy1-BALB&#39;, &#39;MVT1-KO-Thy1-FVB&#39;, &#39;Py2T-KO-Thy1-FVB&#39;) &amp; sample_type == &#39;Lung mets&#39;) %&gt;% pull(sample_alias)
+    ),
+  
+  `Puro` = list(
+    `Primary tumor` = x %&gt;% filter(global_vector_mmodel == &#39;whole_tumor-KO-Puro-immunocompetent&#39; ) %&gt;% pull(sample_alias),
+    `Lung mets` = x %&gt;% filter(global_vector_mmodel == &#39;whole_lung-KO-Puro-immunocompetent&#39; ) %&gt;% pull(sample_alias)
+  ),
+  
+  `Cas9+Puro` = list(
+    `Primary tumor` = x %&gt;% filter(vector_mmodel == &#39;4T1-KO-Puro_EF1alpha_SpCas9-BALB&#39; &amp; sample_type == &#39;Primary tumor&#39;) %&gt;% pull(sample_alias),
+    `Lung mets` = x %&gt;% filter(vector_mmodel == &#39;4T1-KO-Puro_EF1alpha_SpCas9-BALB&#39; &amp; sample_type == &#39;Lung mets&#39;) %&gt;% pull(sample_alias)
+  ),
+  
+  `StealTHY NSG` = list(
+    `Primary tumor` = x %&gt;% filter(global_vector_mmodel == &#39;whole_tumor-KO-Thy1-immunodeficient&#39;) %&gt;% pull(sample_alias),
+    `Lung mets` = x %&gt;% filter(global_vector_mmodel == &#39;whole_lung-KO-Thy1-immunodeficient&#39;) %&gt;% pull(sample_alias)
+  ),
+  
+  ## 4T1
+  `StealTHY 4T1` = list(
+    `Primary tumor` = x %&gt;% filter(vector_mmodel == &#39;4T1-KO-Thy1-BALB&#39; &amp; sample_type == &#39;Primary tumor&#39;) %&gt;% pull(sample_alias),
+    `Lung mets` = x %&gt;% filter(vector_mmodel == &#39;4T1-KO-Thy1-BALB&#39; &amp; sample_type == &#39;Lung mets&#39;) %&gt;% pull(sample_alias)
+    ),
+  
+  `Puro 4T1` = list(
+    `Primary tumor` = x %&gt;% filter(vector_mmodel == &#39;4T1-KO-Puro-BALB&#39; &amp; sample_type == &#39;Primary tumor&#39;) %&gt;% pull(sample_alias),
+    `In vitro` = x %&gt;% filter(vector_mmodel == &#39;4T1-KO-lentiguide-Puro-In vitro&#39; &amp; invitro_type == &#39;Puro-resistant&#39;) %&gt;% pull(sample_alias)
+  ),
+  
+  `Cas9+Puro 4T1` = list(
+    `Primary tumor` = x %&gt;% filter(vector_mmodel == &#39;4T1-KO-Puro_EF1alpha_SpCas9-BALB&#39; &amp; sample_type == &#39;Primary tumor&#39;) %&gt;% pull(sample_alias),
+    `Lung mets` = x %&gt;% filter(vector_mmodel == &#39;4T1-KO-Puro_EF1alpha_SpCas9-BALB&#39; &amp; sample_type == &#39;Lung mets&#39;) %&gt;% pull(sample_alias)
+  ),
+  
+  `StealTHY NSG 4T1` = list(
+    `Primary tumor` = x %&gt;% filter(vector_mmodel == &#39;4T1-KO-Thy1-NSG&#39; &amp; sample_type == &#39;Primary tumor&#39;) %&gt;% pull(sample_alias),
+    `Lung mets` = x %&gt;% filter(vector_mmodel == &#39;4T1-KO-Thy1-NSG&#39; &amp; sample_type == &#39;Lung mets&#39;) %&gt;% pull(sample_alias)
+    ),
+  
+  ## MVT1
+  `StealTHY MVT1` = list(
+    `Primary tumor` = x %&gt;% filter(vector_mmodel == &#39;MVT1-KO-Thy1-FVB&#39; &amp; sample_type == &#39;Primary tumor&#39;) %&gt;% pull(sample_alias),
+    `Lung mets` = x %&gt;% filter(vector_mmodel == &#39;MVT1-KO-Thy1-FVB&#39; &amp; sample_type == &#39;Lung mets&#39;) %&gt;% pull(sample_alias)
+    ),
+  
+  `Puro MVT1` = list(
+    `Primary tumor` = x %&gt;% filter(vector_mmodel == &#39;MVT1-KO-Puro-FVB&#39; &amp; sample_type == &#39;Primary tumor&#39;) %&gt;% pull(sample_alias),
+    `In vitro` = x %&gt;% filter(vector_mmodel == &#39;MVT1-KO-lentiguide-Puro-In vitro&#39; &amp; invitro_type == &#39;Puro-resistant&#39;) %&gt;% pull(sample_alias)
+  ),
+  
+  `StealTHY NSG MVT1` = list(
+    `Primary tumor` = x %&gt;% filter(vector_mmodel == &#39;MVT1-KO-Thy1-NSG&#39; &amp; sample_type == &#39;Primary tumor&#39;) %&gt;% pull(sample_alias),
+    `Lung mets` = x %&gt;% filter(vector_mmodel == &#39;MVT1-KO-Thy1-NSG&#39; &amp; sample_type == &#39;Lung mets&#39;) %&gt;% pull(sample_alias)
+    ),
+  
+  ## Py2T
+  `StealTHY Py2T` = list(
+    `Primary tumor` = x %&gt;% filter(vector_mmodel == &#39;Py2T-KO-Thy1-FVB&#39; &amp; sample_type == &#39;Primary tumor&#39;) %&gt;% pull(sample_alias),
+    `Lung mets` = x %&gt;% filter(vector_mmodel == &#39;Py2T-KO-Thy1-FVB&#39; &amp; sample_type == &#39;Lung mets&#39;) %&gt;% pull(sample_alias)
+    ),
+  
+  `Puro Py2T` = list(
+    `Primary tumor` = x %&gt;% filter(vector_mmodel == &#39;Py2T-KO-Puro-FVB&#39; &amp; sample_type == &#39;Primary tumor&#39;) %&gt;% pull(sample_alias),
+    `In vitro` = x %&gt;% filter(vector_mmodel == &#39;Py2T-KO-lentiguide-Puro-In vitro&#39; &amp; invitro_type == &#39;Puro-resistant&#39;) %&gt;% pull(sample_alias)
+  ),
+  
+  `StealTHY NSG Py2T` = list(
+    `Primary tumor` = x %&gt;% filter(vector_mmodel == &#39;Py2T-KO-Thy1-NSG&#39; &amp; sample_type == &#39;Primary tumor&#39;) %&gt;% pull(sample_alias),
+    `Lung mets` = x %&gt;% filter(vector_mmodel == &#39;Py2T-KO-Thy1-NSG&#39; &amp; sample_type == &#39;Lung mets&#39;) %&gt;% pull(sample_alias)
+    )
+  
+  
+)
+
+
+ne_mageck_comp_list_names &lt;- names(ne_mageck_comp_list) 
+names(ne_mageck_comp_list_names) &lt;- names(ne_mageck_comp_list) %&gt;% gsub(&quot; &quot;, &quot;_&quot;,.) %&gt;% tolower</code></pre>
+<pre class="r"><code>data_comp &lt;- foreach(i = names(ne_mageck_comp_list), .combine = rbind) %do% {
+  c(
+    Comparison = i,
+    Case = paste(ne_mageck_comp_list[[i]][[1]], collapse = &quot; &quot;),
+    Control = paste(ne_mageck_comp_list[[i]][[2]], collapse = &quot; &quot;)
+  )
+}
+
+data_comp %&gt;% 
+  datatable(., 
+            rownames = FALSE, 
+            filter = &#39;top&#39;, 
+            caption = &#39;List of comparisons for MAGeCK analysis&#39;,
+            extensions = &#39;Buttons&#39;, 
+            options = list(
+              dom = &#39;Blfrtip&#39;,
+              buttons = c(&#39;csv&#39;, &#39;excel&#39;),
+              columnDefs = list(
+                list(width = 120, targets = 1:2)
+              )
+            )
+            )</code></pre>
+<div class="datatables html-widget html-fill-item" id="htmlwidget-684d012f49e01d513276" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-684d012f49e01d513276">{"x":{"filter":"top","vertical":false,"filterHTML":"<tr>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n<\/tr>","extensions":["Buttons"],"caption":"<caption>List of comparisons for MAGeCK analysis<\/caption>","data":[["StealTHY","Puro","Cas9+Puro","StealTHY NSG","StealTHY 4T1","Puro 4T1","Cas9+Puro 4T1","StealTHY NSG 4T1","StealTHY MVT1","Puro MVT1","StealTHY NSG MVT1","StealTHY Py2T","Puro Py2T","StealTHY NSG Py2T"],["CRISPRKO_Clone_1 CRISPRKO_Clone_10 CRISPRKO_Clone_11 CRISPRKO_Clone_12 CRISPRKO_Clone_13 CRISPRKO_Clone_14 CRISPRKO_Clone_2 CRISPRKO_Clone_20 CRISPRKO_Clone_21 CRISPRKO_Clone_22 CRISPRKO_Clone_23 CRISPRKO_Clone_24 CRISPRKO_Clone_3 CRISPRKO_Clone_4 CRISPRKO","PlatePositionA7 PlatePositionA8 PlatePositionA9 PlatePositionB7 PlatePositionB8 PlatePositionB9 PlatePositionC7 PlatePositionC8 PlatePositionC9 PlatePositionD7 PlatePositionD9","PlatePositionA5 PlatePositionA6 PlatePositionC5 PlatePositionC6 PlatePositionE5 PlatePositionE6 PlatePositionG4 PlatePositionG5 PlatePositionG6","CRISPRKO_Clone_45 CRISPRKO_Clone_46 CRISPRKO_Clone_47 CRISPRKO_Clone_48 CRISPRKO_Clone_49 CRISPRKO_Clone_5 CRISPRKO_Clone_50 CRISPRKO_Clone_51 CRISPRKO_Clone_52 CRISPRKO_Clone_53 CRISPRKO_Clone_54 CRISPRKO_Clone_6 CRISPRKO_Clone_7 CRISPRKO_Clone_8 CRISPRKO_Clone_9","CRISPRKO_Clone_10 CRISPRKO_Clone_11 CRISPRKO_Clone_12 CRISPRKO_Clone_13 CRISPRKO_Clone_14","PlatePositionA7 PlatePositionB7 PlatePositionC7 PlatePositionD7","PlatePositionA5 PlatePositionA6 PlatePositionC5 PlatePositionC6 PlatePositionE5 PlatePositionE6 PlatePositionG4 PlatePositionG5 PlatePositionG6","CRISPRKO_Clone_45 CRISPRKO_Clone_46 CRISPRKO_Clone_47 CRISPRKO_Clone_48 CRISPRKO_Clone_49","CRISPRKO_Clone_20 CRISPRKO_Clone_21 CRISPRKO_Clone_22 CRISPRKO_Clone_23 CRISPRKO_Clone_24","PlatePositionA8 PlatePositionB8 PlatePositionC8","CRISPRKO_Clone_5 CRISPRKO_Clone_6 CRISPRKO_Clone_7 CRISPRKO_Clone_8 CRISPRKO_Clone_9","CRISPRKO_Clone_1 CRISPRKO_Clone_2 CRISPRKO_Clone_3 CRISPRKO_Clone_4 CRISPRKO","PlatePositionA9 PlatePositionB9 PlatePositionC9 PlatePositionD9","CRISPRKO_Clone_50 CRISPRKO_Clone_51 CRISPRKO_Clone_52 CRISPRKO_Clone_53 CRISPRKO_Clone_54"],["CRISPRKO_Clone_15 CRISPRKO_Clone_16 CRISPRKO_Clone_17 CRISPRKO_Clone_18 CRISPRKO_Clone_19 CRISPRKO_Clone_30 CRISPRKO_Clone_31 CRISPRKO_Clone_32 CRISPRKO_Clone_33 CRISPRKO_Clone_34 CRISPRKO_Clone_35 CRISPRKO_Clone_36 CRISPRKO_Clone_37 CRISPRKO_Clone_38 CRISPRKO_Clone_39","PlatePositionE7 PlatePositionE8 PlatePositionE9 PlatePositionF7 PlatePositionF8 PlatePositionF9 PlatePositionG7 PlatePositionG8 PlatePositionG9 PlatePositionH7 PlatePositionH9","PlatePositionB5 PlatePositionD5 PlatePositionD6 PlatePositionF3 PlatePositionF5 PlatePositionF6 PlatePositionH4 PlatePositionH5 PlatePositionH6","CRISPRKO_Clone_25 CRISPRKO_Clone_26 CRISPRKO_Clone_27 CRISPRKO_Clone_28 CRISPRKO_Clone_29 CRISPRKO_Clone_40 CRISPRKO_Clone_41 CRISPRKO_Clone_42 CRISPRKO_Clone_43 CRISPRKO_Clone_44 CRISPRKO_Clone_55 CRISPRKO_Clone_56 CRISPRKO_Clone_57 CRISPRKO_Clone_58 CRISPRKO_Clone_59","CRISPRKO_Clone_15 CRISPRKO_Clone_16 CRISPRKO_Clone_17 CRISPRKO_Clone_18 CRISPRKO_Clone_19","CRISPRKO_Clone_71","PlatePositionB5 PlatePositionD5 PlatePositionD6 PlatePositionF3 PlatePositionF5 PlatePositionF6 PlatePositionH4 PlatePositionH5 PlatePositionH6","CRISPRKO_Clone_40 CRISPRKO_Clone_41 CRISPRKO_Clone_42 CRISPRKO_Clone_43 CRISPRKO_Clone_44","CRISPRKO_Clone_35 CRISPRKO_Clone_36 CRISPRKO_Clone_37 CRISPRKO_Clone_38 CRISPRKO_Clone_39","CRISPRKO_Clone_70","CRISPRKO_Clone_55 CRISPRKO_Clone_56 CRISPRKO_Clone_57 CRISPRKO_Clone_58 CRISPRKO_Clone_59","CRISPRKO_Clone_30 CRISPRKO_Clone_31 CRISPRKO_Clone_32 CRISPRKO_Clone_33 CRISPRKO_Clone_34","CRISPRKO_Clone_63","CRISPRKO_Clone_25 CRISPRKO_Clone_26 CRISPRKO_Clone_27 CRISPRKO_Clone_28 CRISPRKO_Clone_29"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>Comparison<\/th>\n      <th>Case<\/th>\n      <th>Control<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"Blfrtip","buttons":["csv","excel"],"columnDefs":[{"width":120,"targets":[1,2]},{"name":"Comparison","targets":0},{"name":"Case","targets":1},{"name":"Control","targets":2}],"order":[],"autoWidth":false,"orderClasses":false,"orderCellsTop":true}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="run-mageck-1" class="section level4" number="2.3.2">
+<h4><span class="header-section-number">2.3.2</span> Run MAGeCK</h4>
+<p>Generate MAGeCK test scripts. To generate the script files change
+<code>eval = FALSE</code> to <code>eval = TRUE</code> in the chunk
+options.</p>
+<p>The scripts must be run in the terminal, inside the path
+./output/crispr/mm_2215_sgRNA/mageck_rra. The script will activate the
+mageck environment and run the test for each comparison. The results
+will be saved in the same directory.</p>
+<pre class="r"><code>chunk_se &lt;- se
+out_dir &lt;- file.path(params$output_dir, params$ne_mageck_dir)
+dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+
+# Generate count matrix
+count_mat &lt;- assay(chunk_se, &#39;counts&#39;) %&gt;% data.frame(check.names = FALSE) %&gt;% 
+  rownames_to_column(&#39;sgRNA&#39;) %&gt;% 
+  mutate(Gene = rowData(chunk_se)$Gene) %&gt;% 
+  dplyr::select(sgRNA, Gene, everything())
+write_tsv(count_mat, file = file.path(out_dir, &#39;counts.txt&#39;))
+
+# Generate list of control sgRNA IDs
+non_target_list &lt;- rownames(chunk_se) %&gt;% grep(&#39;Non_Target&#39;, ., value = T) %&gt;% data.frame
+write_tsv(non_target_list, file = file.path(out_dir, &#39;control_sgrna.txt&#39;), col_names = F)
+
+# Generate mageck commands
+res_cmd &lt;- data.frame(&#39;source activate mageckenv&#39;)
+res_cmd &lt;- foreach(i=names(ne_mageck_comp_list), .combine = rbind) %do% {
+  paste(&#39;mageck test -k counts.txt --control-sgrna control_sgrna.txt --norm-method control -t&#39;, paste(ne_mageck_comp_list[[i]][[1]], collapse = &#39;,&#39;),&#39;-c&#39;,  paste(ne_mageck_comp_list[[i]][[2]], collapse = &#39;,&#39;), &#39;-n&#39;, tolower(gsub(&quot; &quot;, &quot;_&quot;, i)), &#39;\n&#39;)
+} %&gt;% data.frame()
+
+res_cmd &lt;- rbind(&#39;conda activate mageckenv&#39;, res_cmd, &#39;conda deactivate&#39;)
+write_tsv(res_cmd, file.path(out_dir, &#39;run_mageck_test.sh&#39;), col_names = FALSE)</code></pre>
+</div>
+<div id="load-mageck-results-1" class="section level4" number="2.3.3">
+<h4><span class="header-section-number">2.3.3</span> Load MAGeCK
+results</h4>
+<pre class="r"><code>gene_summ_files &lt;- list.files(path = file.path(params$output_dir, params$ne_mageck_dir), pattern = &#39;gene_summary.txt&#39;, full.names = TRUE)
+analysis_prefix &lt;- basename(gene_summ_files) %&gt;% gsub(&quot;.gene_summary.txt&quot;, &quot;&quot;, .)
+ne_gene_summ &lt;- foreach(i = gene_summ_files) %do% read.delim(i, check.names = FALSE)
+names(ne_gene_summ) &lt;- analysis_prefix
+
+sgrna_summ_files &lt;- list.files(path = file.path(params$output_dir, params$ne_mageck_dir), pattern = &#39;sgrna_summary.txt&#39;, full.names = TRUE)
+analysis_prefix &lt;- basename(sgrna_summ_files) %&gt;% gsub(&quot;.sgrna_summary.txt&quot;, &quot;&quot;, .)
+ne_sgrna_summ &lt;- foreach(i = sgrna_summ_files) %do% read.delim(i, check.names = FALSE)
+names(ne_sgrna_summ) &lt;- analysis_prefix</code></pre>
+</div>
+</div>
+</div>
+<div id="sgrna-distribution-1" class="section level2" number="3">
+<h2><span class="header-section-number">3</span> sgRNA distribution</h2>
+<pre class="r"><code>selected_panels &lt;- list(
+  MVT1 = c(
+    rev(c(&#39;CRISPRKO_Clone_6&#39;, &#39;CRISPRKO_Clone_5&#39;, &#39;CRISPRKO_Clone_7&#39;, &#39;CRISPRKO_Clone_8&#39;, &#39;CRISPRKO_Clone_9&#39;)),
+    rev(c(&#39;CRISPRKO_Clone_23&#39;, &#39;CRISPRKO_Clone_20&#39;, &#39;CRISPRKO_Clone_21&#39;, &#39;CRISPRKO_Clone_24&#39;, &#39;CRISPRKO_Clone_22&#39;))
+    ),
+  `4T1` = c(
+    rev(c(&#39;CRISPRKO_Clone_46&#39;, &#39;CRISPRKO_Clone_47&#39;, &#39;CRISPRKO_Clone_49&#39;, &#39;CRISPRKO_Clone_45&#39;, &#39;CRISPRKO_Clone_48&#39;)),
+    rev(c(&#39;CRISPRKO_Clone_12&#39;, &#39;CRISPRKO_Clone_10&#39;, &#39;CRISPRKO_Clone_11&#39;, &#39;CRISPRKO_Clone_14&#39;, &#39;CRISPRKO_Clone_13&#39;))
+    ),
+  `Py2T` = c(
+    rev(c(&#39;CRISPRKO_Clone_50&#39;, &#39;CRISPRKO_Clone_51&#39;, &#39;CRISPRKO_Clone_52&#39;, &#39;CRISPRKO_Clone_53&#39;, &#39;CRISPRKO_Clone_54&#39;)),
+    rev(c(&#39;CRISPRKO&#39;, &#39;CRISPRKO_Clone_1&#39;, &#39;CRISPRKO_Clone_2&#39;, &#39;CRISPRKO_Clone_3&#39;, &#39;CRISPRKO_Clone_4&#39;))
+    )
+)
+
+selected_panels_df &lt;- foreach(i = names(selected_panels), .combine = rbind) %do% {
+  data.frame(group = i, sample_alias = selected_panels[[i]])
+}
+
+use_samples &lt;- unlist(selected_panels)
+use_assay &lt;- assay(se[,use_samples], &#39;cpm&#39;) %&gt;% 
+  as.data.frame(check.names = F) %&gt;% 
+  rownames_to_column(&#39;guide&#39;) %&gt;% 
+  pivot_longer(-guide, names_to = &#39;sample_alias&#39;, values_to = &#39;cpm&#39;) %&gt;% 
+  left_join(colData(se)%&gt;% data.frame) %&gt;% 
+  left_join(selected_panels_df) %&gt;% 
+  mutate(
+    sample_alias = factor(sample_alias, levels = use_samples),
+    group = factor(group, levels = names(selected_panels))
+  )</code></pre>
+<div
+id="figure-4b-sgrna-distribution-in-mice-transplanted-with-4t1-cells-previously-subjected-to-stealthy-ko"
+class="section level3" number="3.1">
+<h3><span class="header-section-number">3.1</span> Figure 4B: sgRNA
+distribution in mice transplanted with 4T1 cells previously subjected to
+StealTHY KO</h3>
+<pre class="r"><code>use_samples &lt;- selected_panels_df %&gt;% 
+  filter(group == &#39;4T1&#39;) %&gt;% 
+  pull(sample_alias)
+
+use_assay &lt;- assay(se[,use_samples], &#39;cpm&#39;) %&gt;% 
+  as.data.frame(check.names = F) %&gt;% 
+  rownames_to_column(&#39;guide&#39;) %&gt;% 
+  pivot_longer(-guide, names_to = &#39;sample_alias&#39;, values_to = &#39;cpm&#39;) %&gt;% 
+  left_join(colData(se)%&gt;% data.frame) %&gt;% 
+  left_join(selected_panels_df) %&gt;% 
+  mutate(
+    sample_alias = factor(sample_alias, levels = use_samples),
+    group = factor(group, levels = names(selected_panels))
+  )
+
+
+use_assay %&gt;% 
+  ggplot(aes(x=cpm + 1, y = sample_alias, 
+             fill = mouse_model_short, 
+             color = mouse_model_short, 
+             height = after_stat(density))) +
+  geom_density_ridges(size = one_pt/4, 
+                      alpha = 0.8, 
+                      scale = 4,
+                      rel_min_height = 0.001 # set the `rel_min_height` argument to remove tails,
+                      # stat = &quot;density&quot;
+                      ) +
+  scale_fill_manual(values = palette_mmodel) +
+  scale_color_manual(values = palette_mmodel_line) +
+  scale_x_log10(expand = expansion(mult = c(0, 0))
+                # breaks = c(1, 10, 1000, 100000)
+                ) +
+  scale_y_discrete(expand = c(0.01, 0)) +
+  labs(y = &#39;&#39;) +
+  guides(fill = &#39;none&#39;, color = &#39;none&#39;) +
+  theme_ridges(font_size = 8, grid = F) +
+  theme(
+    strip.background = element_blank(),
+    axis.line.x = element_line(linewidth = one_pt/4, color = &#39;black&#39;),
+    axis.ticks.x = element_line(linewidth = one_pt/4, color = &#39;black&#39;),
+    axis.text.y = element_blank(),
+    axis.text.x = element_text(size=2),
+    axis.title.x = element_text(size=2),
+    strip.text.x = element_text(size=4, hjust = 0)
+  )</code></pre>
+<p><img src="figure/crispr-mm_2215_sgRNA-StealTHY.Rmd/test-dist-stealthy-ko-ridges_plot-4t1-1.png" width="900" style="display: block; margin: auto;" /></p>
+</div>
+<div
+id="supplementary-figure-4b-sgrna-distribution-in-mice-transplanted-with-4t1-cells-previously-subjected-to-stealthy-ko"
+class="section level3" number="3.2">
+<h3><span class="header-section-number">3.2</span> Supplementary figure
+4B: sgRNA distribution in mice transplanted with 4T1 cells previously
+subjected to StealTHY KO</h3>
+<pre class="r"><code>use_samples &lt;- selected_panels_df %&gt;% 
+  filter(group %in% c(&#39;MVT1&#39;, &#39;Py2T&#39;)) %&gt;% 
+  pull(sample_alias)
+
+use_assay &lt;- assay(se[,use_samples], &#39;cpm&#39;) %&gt;% 
+  as.data.frame(check.names = F) %&gt;% 
+  rownames_to_column(&#39;guide&#39;) %&gt;% 
+  pivot_longer(-guide, names_to = &#39;sample_alias&#39;, values_to = &#39;cpm&#39;) %&gt;% 
+  left_join(colData(se)%&gt;% data.frame) %&gt;% 
+  left_join(selected_panels_df) %&gt;% 
+  mutate(
+    sample_alias = factor(sample_alias, levels = use_samples),
+    group = factor(group, levels = names(selected_panels))
+  )
+
+
+use_assay %&gt;% 
+  ggplot(aes(x=cpm + 1, y = sample_alias, 
+             fill = mouse_model_short, 
+             color = mouse_model_short, 
+             height = after_stat(density))) +
+  geom_density_ridges(size = one_pt/4, 
+                      alpha = 0.8, 
+                      scale = 4,
+                      rel_min_height = 0.001 # set the `rel_min_height` argument to remove tails,
+                      # stat = &quot;density&quot;
+                      ) +
+  scale_fill_manual(values = palette_mmodel) +
+  scale_color_manual(values = palette_mmodel_line) +
+  scale_x_log10(expand = expansion(mult = c(0, 0))
+                # breaks = c(1, 10, 1000, 100000)
+                ) +
+  scale_y_discrete(expand = c(0.01, 0)) +
+  labs(y = &#39;&#39;) +
+  guides(fill = &#39;none&#39;, color = &#39;none&#39;) +
+  ggh4x::facet_wrap2(vars(group), nrow = 1,
+                     scales = &#39;free_y&#39;, 
+                     # space = &quot;free_y&quot;,
+                     axes = &quot;x&quot;) +
+  theme_ridges(font_size = 8, grid = F) +
+  theme(
+    strip.background = element_blank(),
+    axis.line.x = element_line(linewidth = one_pt/4, color = &#39;black&#39;),
+    axis.ticks.x = element_line(linewidth = one_pt/4, color = &#39;black&#39;),
+    axis.text.y = element_blank(),
+    axis.text.x = element_text(size=2),
+    axis.title.x = element_text(size=2),
+    strip.text.x = element_text(size=4, hjust = 0)
+  )</code></pre>
+<p><img src="figure/crispr-mm_2215_sgRNA-StealTHY.Rmd/test-dist-stealthy-ko-ridges_plot-mvt1-py2t-1.png" width="1800" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="kolmogorov-smirnov-test-and-ecdf-plots" class="section level2"
+number="4">
+<h2><span class="header-section-number">4</span> Kolmogorov-Smirnov test
+and ECDF plots</h2>
+<p>Run Kolmogorov-Smirnov test to compare distributions merged by group
+and create Empirical Cumulative Density Function (ECDF) by
+comparison.</p>
+<pre class="r"><code>i &lt;- names(comp_list_modality)[1]
+ks_test_df &lt;- data.frame()
+ecdf_plots &lt;- list()
+for(i in names(comp_list_modality)) {
+  use_samples &lt;- comp_list_modality[[i]]
+  use_assay_c &lt;- assay(se[,use_samples[[1]]], &#39;cpm&#39;) %&gt;% 
+    data.frame(check.names = F) %&gt;% 
+    rownames_to_column(&#39;guide&#39;) %&gt;% 
+    pivot_longer(-guide, values_to = &#39;cpm&#39;,names_to = &#39;sample_alias&#39;) %&gt;% 
+    mutate(group = &#39;case&#39;, condition = names(use_samples)[1])
+  use_assay_r &lt;- assay(se[,use_samples[[2]]], &#39;cpm&#39;) %&gt;% 
+    data.frame(check.names = F) %&gt;% 
+    rownames_to_column(&#39;guide&#39;) %&gt;% 
+    pivot_longer(-guide, values_to = &#39;cpm&#39;,names_to = &#39;sample_alias&#39;) %&gt;% 
+    mutate(group = &#39;referene&#39;, condition = names(use_samples)[2])
+  use_assay &lt;- rbind(use_assay_c, use_assay_r)
+  
+  # Perform the Kolmogorov-Smirnov test
+  ks.res &lt;- ks.test(use_assay_c$cpm, use_assay_r$cpm)
+  ks_test_df &lt;- rbind(
+    ks_test_df,
+      data.frame(
+        comparison = i,
+        case = names(use_samples)[1],
+        reference = names(use_samples)[2],
+        D = ks.res$statistic,
+        P = ks.res$p.value
+      )
+    )
+
+  # Create ECDFs plot Empirical Cumulative Density Function
+  # use_colors &lt;- c(&#39;red&#39;, &#39;blue&#39;) %&gt;% set_names(names(use_samples))
+  ecdf_plots[[i]] &lt;- use_assay %&gt;% 
+    ggplot(aes(x = log(1+cpm), color = condition, group = sample_alias)) +
+    stat_ecdf(geom = &#39;step&#39;, alpha = 1, linewidth = one_pt/4) +
+    scale_color_manual(values = palette_vector_mmodel) +
+    labs(x = &quot;log(1+cpm)&quot;,
+         color = &#39;&#39;,
+         sub = i#,
+         # caption =paste(&quot;Kolmogorov-Smirnov test p-value:&quot;, round(ks.res$p.value, 3), &quot;\n&quot;,
+                        # &quot;Kolmogorov-Smirnov test D:&quot;, round(ks.res$statistic, 3))
+         ) +
+    theme(
+      text = element_text(size=2),
+      axis.text.y =  element_text(size=3),
+      axis.text.x =  element_text(size=3),
+      legend.text =  element_text(size=2),
+      legend.title =  element_text(size=2),
+      plot.subtitle = element_text(size=3),
+      plot.caption =  element_text(size=2)
+      
+    )
+
+}</code></pre>
+<div id="supplementary-figure-4d-k-s-test-table" class="section level3"
+number="4.1">
+<h3><span class="header-section-number">4.1</span> Supplementary Figure
+4D : K-S test table</h3>
+<pre class="r"><code>ks_test_df %&gt;% 
+  dplyr::select(-case, -reference) %&gt;% 
+  mutate(P = format.pval(P)) %&gt;% 
+  datatable(., 
+            rownames = FALSE, 
+            filter = &#39;top&#39;, 
+            caption = &#39;Results of Kolmogorov-Smirnov test&#39;,
+            extensions = &#39;Buttons&#39;, 
+            options = list(
+              dom = &#39;Blfrtip&#39;,
+              buttons = c(&#39;csv&#39;, &#39;excel&#39;),
+              columnDefs = list(
+                list(width = 120, targets = 1)
+              )
+            )
+            ) %&gt;% 
+    formatRound(columns = c(&#39;D&#39;), digits = 3)</code></pre>
+<div class="datatables html-widget html-fill-item" id="htmlwidget-832cd5f680003d8dd78c" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-832cd5f680003d8dd78c">{"x":{"filter":"top","vertical":false,"filterHTML":"<tr>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"number\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"0.21920240782541\" data-max=\"0.382583396037086\" data-scale=\"15\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\" disabled=\"\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n<\/tr>","extensions":["Buttons"],"caption":"<caption>Results of Kolmogorov-Smirnov test<\/caption>","data":[["StealTHY syngeneic vs. StealTHY NSG","StealTHY syngeneic vs. Cas9+Puro"],[0.2192024078254109,0.3825833960370851],["&lt; 2.22e-16","&lt; 2.22e-16"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>comparison<\/th>\n      <th>D<\/th>\n      <th>P<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"Blfrtip","buttons":["csv","excel"],"columnDefs":[{"targets":1,"render":"function(data, type, row, meta) {\n    return type !== 'display' ? data : DTWidget.formatRound(data, 3, 3, \",\", \".\", null);\n  }"},{"width":120,"targets":1},{"className":"dt-right","targets":1},{"name":"comparison","targets":0},{"name":"D","targets":1},{"name":"P","targets":2}],"order":[],"autoWidth":false,"orderClasses":false,"orderCellsTop":true}},"evals":["options.columnDefs.0.render"],"jsHooks":[]}</script>
+</div>
+</div>
+<div id="hartigans-dip-test" class="section level2" number="5">
+<h2><span class="header-section-number">5</span> Hartigans’ dip
+test</h2>
+<p>Hartigans’ dip test for unimodality. If the p-value is less than
+0.05, there’s enough evidence to claim that the data are not unimodal
+(multimodal, at least bimodal).</p>
+<pre class="r"><code>use_assay &lt;- assay(se, &#39;cpm&#39;)
+i &lt;- colnames(use_assay)[1]
+modality_test_df &lt;- foreach(i= colnames(use_assay), .combine = rbind) %do%{
+  x &lt;- use_assay[,i]
+  dip.res &lt;- dip.test(x, simulate.p.value = FALSE, B = 2000)
+  data.frame(
+    sample_alias = i,
+    dip.D = dip.res$statistic,
+    dip.p = dip.res$p.value,
+    dip.result = ifelse(dip.res$p.value &lt; 0.05, &#39;multimodal&#39;, &#39;unimodal&#39;)
+    )
+}
+
+modality_test_df %&lt;&gt;% 
+  left_join(group_df_modality) %&gt;% 
+  left_join(colData(se) %&gt;% data.frame)</code></pre>
+<div id="dip-test-table-for-syngeneic-and-nsg-models"
+class="section level3" number="5.1">
+<h3><span class="header-section-number">5.1</span> Dip test table for
+Syngeneic and NSG models</h3>
+<pre class="r"><code>modality_test_df %&gt;% 
+  filter(!is.na(modality_group)) %&gt;% 
+  filter(modality_group != &quot;StealTHY syngeneic&quot;) %&gt;%
+  mutate(
+    modality_group = factor(
+      modality_group, 
+      levels = c(&quot;StealTHY syngeneic 4T1&quot;,
+                 &quot;Cas9+Puro syngeneic&quot;,
+                 &quot;StealTHY NSG&quot;,
+                 &quot;Cas9+Puro NSG&quot;)
+      )
+  ) %&gt;%
+  mutate(modality_group = fct_recode(
+    modality_group, 
+    `StealTHY syngeneic` = &quot;StealTHY syngeneic 4T1&quot;)
+    ) %&gt;% 
+  group_by(modality_group) %&gt;%
+  summarise(
+    `Median D` = median(dip.D) %&gt;% round(3),
+    n = n(),
+    `Multimodal samples (n)` = sum(dip.result == &#39;multimodal&#39;),
+    `Unimodal samples (n)` = sum(dip.result == &#39;unimodal&#39;),
+    `Multimodal samples (%)` = round(100*`Multimodal samples (n)`/n, 1),
+    `Unimodal samples (%)` = round(100*`Unimodal samples (n)`/n, 1)
+  ) %&gt;% 
+  data.frame(check.names = F) %&gt;% 
+  kbl(caption = &#39;Dip test results for Syngeneic and NSG models&#39;) %&gt;%
+  kable_paper(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;), full_width = F)</code></pre>
+<table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+Dip test results for Syngeneic and NSG models
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+modality_group
+</th>
+<th style="text-align:right;">
+Median D
+</th>
+<th style="text-align:right;">
+n
+</th>
+<th style="text-align:right;">
+Multimodal samples (n)
+</th>
+<th style="text-align:right;">
+Unimodal samples (n)
+</th>
+<th style="text-align:right;">
+Multimodal samples (%)
+</th>
+<th style="text-align:right;">
+Unimodal samples (%)
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+StealTHY syngeneic
+</td>
+<td style="text-align:right;">
+0.019
+</td>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+60.0
+</td>
+<td style="text-align:right;">
+40.0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Cas9+Puro syngeneic
+</td>
+<td style="text-align:right;">
+0.068
+</td>
+<td style="text-align:right;">
+9
+</td>
+<td style="text-align:right;">
+9
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+100.0
+</td>
+<td style="text-align:right;">
+0.0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+StealTHY NSG
+</td>
+<td style="text-align:right;">
+0.031
+</td>
+<td style="text-align:right;">
+15
+</td>
+<td style="text-align:right;">
+13
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+86.7
+</td>
+<td style="text-align:right;">
+13.3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Cas9+Puro NSG
+</td>
+<td style="text-align:right;">
+0.021
+</td>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+80.0
+</td>
+<td style="text-align:right;">
+20.0
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="differential-abundance-analysis" class="section level2"
+number="6">
+<h2><span class="header-section-number">6</span> Differential abundance
+analysis</h2>
+<pre class="r"><code>gene_info &lt;- readxl::read_xlsx(&#39;./data/resources/selected_gene_list/gene_list_for_figure_5c.xlsx&#39;)
+
+use_colors &lt;- c(
+  `Immune system cytokines and chemokines` = &#39;grey&#39;,
+  `Immune system cytokines\nand chemokines` = &#39;grey&#39;,
+  
+  `Interferone, TNF and danger/death-inducing signals` = &#39;black&#39;,
+  `Interferon, TNF\nand danger/death-inducing\nsignals` = &#39;black&#39;,
+  `Interferon, TNF and\ndanger/death-inducing\nsignals` = &#39;black&#39;,
+  
+  `TGF-β family related` = &#39;red&#39;,
+  
+  `RTK signaling` = &#39;blue&#39;,
+  `Positive controls` = &#39;black&#39;
+)
+
+use_fill &lt;- c(
+  `Immune system cytokines and chemokines` = &#39;grey&#39;,
+  `Immune system cytokines\nand chemokines` = &#39;grey&#39;,
+  
+  `Interferone, TNF and danger/death-inducing signals` = &#39;black&#39;,
+  `Interferon, TNF\nand danger/death-inducing\nsignals` = &#39;black&#39;,
+  `Interferon, TNF and\ndanger/death-inducing\nsignals` = &#39;black&#39;,
+  `TGF-β family related` = &#39;red&#39;,
+  
+  `RTK signaling` = &#39;blue&#39;,
+  `Positive controls` = &#39;white&#39;
+)
+
+use_shape &lt;- c(
+  `Immune system cytokines and chemokines` = 16,
+  `Immune system cytokines\nand chemokines` = 16,
+  
+  `Interferone, TNF and danger/death-inducing signals` = 16,
+  `Interferon, TNF\nand danger/death-inducing\nsignals` = 16,
+  `Interferon, TNF and\ndanger/death-inducing\nsignals` = 16,
+  `TGF-β family related` = 16,
+  
+  `RTK signaling` = 16,
+  `Positive controls` = 1
+)
+
+# get gene order based on Comparison : `StealTHY KO Syngeneic` 
+gene_levels &lt;- gene_summ[[&#39;stealthy_ko_syngeneic&#39;]] %&gt;%
+  ReadRRA(score = &#39;lfc&#39;) %&gt;%
+  dplyr::rename(LFC = Score) %&gt;%
+  left_join(gene_info, by = c(&#39;id&#39; = &#39;id&#39;)) %&gt;%
+  filter(!is.na(gene_set)) %&gt;%
+  mutate(gene_name = fct_reorder(gene_name, LFC, .desc = FALSE)) %&gt;%
+  pull(gene_name) %&gt;%
+  levels</code></pre>
+<div id="figure-4c-and-supplementary-figure-4f" class="section level3"
+number="6.1">
+<h3><span class="header-section-number">6.1</span> Figure 4C and
+Supplementary Figure 4F</h3>
+<p>Differential abundance of selected genes in carcinoma cells subjected
+to StealTHY KO or Cas9+Puro</p>
+<pre class="r"><code>use_comp &lt;- c(&#39;stealthy_ko_syngeneic&#39;, &#39;stealthy_ko_nsg&#39;, &#39;cas9+puro_syngeneic&#39;)
+
+# FDR limits
+xfdr &lt;- foreach(i=gene_summ[use_comp], .combine = rbind) %do% {
+  i %&gt;% 
+    ReadRRA(score = &#39;lfc&#39;) %&gt;% 
+    dplyr::rename(LFC = Score) %&gt;% 
+    left_join(gene_info, by = c(&#39;id&#39; = &#39;id&#39;)) %&gt;% 
+    filter(!is.na(gene_set)) %&gt;% 
+    pull(FDR) %&gt;% 
+    min
+}
+maxFDR &lt;- -log10(xfdr[,1]) %&gt;% max
+ 
+# Set LFC (x-axis) for comparable plots to &quot;stealthy_ko_syngeneic&quot;: &quot;stealthy_ko_nsg&quot;
+stealthy_comp &lt;- c(&quot;stealthy_ko_syngeneic&quot;, &quot;stealthy_ko_nsg&quot;)
+xlfc &lt;- foreach(i=gene_summ[stealthy_comp], .combine = rbind) %do% {
+  i %&gt;% 
+    ReadRRA(score = &#39;lfc&#39;) %&gt;% 
+    dplyr::rename(LFC = Score) %&gt;% 
+    left_join(gene_info, by = c(&#39;id&#39; = &#39;id&#39;)) %&gt;% 
+    filter(!is.na(gene_set)) %&gt;% 
+    pull(LFC) %&gt;% 
+    abs %&gt;% max
+}
+stealthy_maxLFC &lt;- max(xlfc[,1])
+stealthy_xlim &lt;- c(-stealthy_maxLFC, stealthy_maxLFC)
+stealthy_breaks &lt;- c(-2.5, -1, 0, 1, 2.5)
+stealthy_labels &lt;- c(&#39;-2.5&#39;, &#39;-1&#39;, &#39;0&#39;, &#39;1&#39;, &#39;2.5&#39;)
+
+i &lt;- use_comp[1]
+for(i in use_comp)  {
+  cat(&quot;####&quot;, mageck_comp_list_names[i], &quot;\n\n&quot;)
+  
+  x &lt;- gene_summ[[i]] %&gt;% 
+    ReadRRA(score = &#39;lfc&#39;) %&gt;% 
+    dplyr::rename(LFC = Score) %&gt;% 
+    left_join(gene_info, by = c(&#39;id&#39; = &#39;id&#39;)) %&gt;% 
+    filter(!is.na(gene_set)) %&gt;% 
+    mutate(
+      gene_name = factor(gene_name, levels = gene_levels),
+      gene_set = ifelse(
+        gene_set == &#39;Immune system cytokines and chemokines&#39;,
+        &#39;Immune system cytokines\nand chemokines&#39;,
+        gene_set
+      ),
+      gene_set = ifelse(
+        gene_set == &#39;Interferone, TNF and danger/death-inducing signals&#39;,
+        &#39;Interferon, TNF and\ndanger/death-inducing\nsignals&#39;,
+        gene_set
+      ),
+      gene_set = factor(gene_set, names(use_colors))
+      )
+  xlim &lt;- c(-ceiling(max(abs(x$LFC), na.rm = TRUE)), 
+            ceiling(max(abs(x$LFC), na.rm = TRUE)))
+  size_breaks &lt;- c(0, 0.25, 0.5, 1, 2, ceiling(maxFDR))
+  res &lt;- x %&gt;% 
+    ggplot(aes(LFC, gene_name, color = gene_set, size = -log10(FDR))) +
+    geom_point(aes(shape = gene_set)) +
+    geom_vline(xintercept = 0, linetype = 3, linewidth = one_pt/2) +
+    scale_y_discrete(expand = expansion(add = c(1, 1))) + # add fixed units around each facet to avoid lines over points
+    # scale_x_continuous(
+    #   expand = expansion(add = c(1, 1))
+    #   ) + # add fixed units around each facet to avoid lines over points
+    scale_color_manual(values = use_colors) +
+    scale_size(range = c(0.5, 2.5), 
+               limits = c(0, ceiling(maxFDR)), 
+               breaks = size_breaks,
+               labels = size_breaks %&gt;% as.character # remove trailing 0 from decimals
+               ) +
+    scale_shape_manual(values = use_shape) +
+    scale_x_continuous(
+        expand = expansion(add = c(1, 1))
+        ) +
+    facet_grid(rows = vars(gene_set), scales = &#39;free_y&#39;, space = &#39;free_y&#39;) +
+    theme_facet +
+    theme(
+      # axis.line = element_line(linewidth = one_pt/2, color = &#39;black&#39;),
+      axis.ticks = element_line(linewidth = one_pt/2, color = &#39;black&#39;),
+      panel.border = element_rect(linewidth = one_pt/2, color = &#39;black&#39;),
+      axis.text = element_text(size=8), 
+      axis.title = element_text(size = 8),
+      legend.title = element_text(size=8),
+      legend.text = element_text(size=8),
+      strip.text = element_text(size = 4)
+    ) +
+    labs(
+      x = expression(paste(&quot;lo&quot;, g[2],&quot;(Fold change)&quot;)),
+      y = NULL,
+      size = expression(paste(&quot;-lo&quot;, g[10],&quot;(FDR)&quot;)),
+      title = 
+    ) +
+    guides(color = &#39;none&#39;, shape = &#39;none&#39;)
+  
+  if(i %in% stealthy_comp)
+    res &lt;- res +
+      scale_x_continuous(
+        expand = expansion(add = c(1, 1)), 
+        limits = stealthy_xlim,
+        breaks = stealthy_breaks,
+        labels = stealthy_labels
+      )
+  
+  print(res)
+  cat(&#39;\n\n&#39;)
+}</code></pre>
+<div id="stealthy-ko-syngeneic" class="section level4" number="6.1.1">
+<h4><span class="header-section-number">6.1.1</span> StealTHY KO
+Syngeneic</h4>
+<p><img src="figure/crispr-mm_2215_sgRNA-StealTHY.Rmd/da-selected-genes-dotplot-1.png" width="1422" style="display: block; margin: auto;" /></p>
+</div>
+<div id="stealthy-ko-nsg" class="section level4" number="6.1.2">
+<h4><span class="header-section-number">6.1.2</span> StealTHY KO
+NSG</h4>
+<p><img src="figure/crispr-mm_2215_sgRNA-StealTHY.Rmd/da-selected-genes-dotplot-2.png" width="1422" style="display: block; margin: auto;" /></p>
+</div>
+<div id="cas9puro-syngeneic" class="section level4" number="6.1.3">
+<h4><span class="header-section-number">6.1.3</span> Cas9+Puro
+Syngeneic</h4>
+<p><img src="figure/crispr-mm_2215_sgRNA-StealTHY.Rmd/da-selected-genes-dotplot-3.png" width="1422" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="supplementary-figure-4e" class="section level3" number="6.2">
+<h3><span class="header-section-number">6.2</span> Supplementary Figure
+4E</h3>
+<p>Differential abundance of selected genes in carcinoma cells subjected
+to StealTHY KO with respect to a mock KO reference</p>
+<pre class="r"><code>use_comp &lt;- c(&#39;stealthy_ko_over_dcas9_in_vitro&#39;, &#39;stealthy_ko_over_dcas9_in_vivo&#39;)
+
+# FDR limits
+xfdr &lt;- foreach(i=gene_summ[use_comp], .combine = rbind) %do% {
+  i %&gt;% 
+    ReadRRA(score = &#39;lfc&#39;) %&gt;% 
+    dplyr::rename(LFC = Score) %&gt;% 
+    left_join(gene_info, by = c(&#39;id&#39; = &#39;id&#39;)) %&gt;% 
+    filter(!is.na(gene_set)) %&gt;% 
+    pull(FDR) %&gt;% 
+    min
+}
+maxFDR &lt;- -log10(xfdr[,1]) %&gt;% max
+
+i &lt;- use_comp[1]
+for(i in use_comp)  {
+  cat(&quot;####&quot;, mageck_comp_list_names[i], &quot;\n\n&quot;)
+  
+  x &lt;- gene_summ[[i]] %&gt;% 
+    ReadRRA(score = &#39;lfc&#39;) %&gt;% 
+    dplyr::rename(LFC = Score) %&gt;% 
+    left_join(gene_info %&gt;% filter(gene_set == &#39;Positive controls&#39;), 
+              by = c(&#39;id&#39; = &#39;id&#39;)) %&gt;% 
+    filter(!is.na(gene_set)) %&gt;% 
+    mutate(
+      gene_name = factor(gene_name, levels = gene_levels),
+      gene_set = ifelse(
+        gene_set == &#39;Immune system cytokines and chemokines&#39;,
+        &#39;Immune system cytokines\nand chemokines&#39;,
+        gene_set
+      ),
+      gene_set = ifelse(
+        gene_set == &#39;Interferone, TNF and danger/death-inducing signals&#39;,
+        &#39;Interferon, TNF and\ndanger/death-inducing\nsignals&#39;,
+        gene_set
+      ),
+      gene_set = factor(gene_set, names(use_colors))
+      )
+  xlim &lt;- c(-ceiling(max(abs(x$LFC), na.rm = TRUE)), 
+            ceiling(max(abs(x$LFC), na.rm = TRUE)))
+  size_breaks &lt;- c(0, 0.25, 0.5, 1, 2, ceiling(maxFDR))
+  res &lt;- x %&gt;% 
+    ggplot(aes(LFC, gene_name, color = gene_set, size = -log10(FDR))) +
+    geom_point(aes(shape = gene_set)) +
+    geom_vline(xintercept = 0, linetype = 3, linewidth = one_pt/2) +
+    scale_y_discrete(expand = expansion(add = c(1, 1))) + # add fixed units around each facet to avoid lines over points
+    # scale_x_continuous(
+    #   expand = expansion(add = c(1, 1))
+    #   ) + # add fixed units around each facet to avoid lines over points
+    scale_color_manual(values = use_colors) +
+    scale_size(range = c(0.5, 2.5), 
+               limits = c(0, ceiling(maxFDR)), 
+               breaks = size_breaks,
+               labels = size_breaks %&gt;% as.character # remove trailing 0 from decimals
+               ) +
+    scale_shape_manual(values = use_shape) +
+    scale_x_continuous(
+        expand = expansion(add = c(1, 1))
+        ) +
+    facet_grid(rows = vars(gene_set), scales = &#39;free_y&#39;, space = &#39;free_y&#39;) +
+    theme_facet +
+    theme(
+      # axis.line = element_line(linewidth = one_pt/2, color = &#39;black&#39;),
+      axis.ticks = element_line(linewidth = one_pt/2, color = &#39;black&#39;),
+      panel.border = element_rect(linewidth = one_pt/2, color = &#39;black&#39;),
+      axis.text = element_text(size=8), 
+      axis.title = element_text(size = 8),
+      legend.title = element_text(size=8),
+      legend.text = element_text(size=8),
+      strip.text = element_text(size = 4)
+    ) +
+    labs(
+      x = expression(paste(&quot;lo&quot;, g[2],&quot;(Fold change)&quot;)),
+      y = NULL,
+      size = expression(paste(&quot;-lo&quot;, g[10],&quot;(FDR)&quot;)),
+      title = 
+    ) +
+    guides(color = &#39;none&#39;, shape = &#39;none&#39;)
+  
+  print(res)
+  cat(&#39;\n\n&#39;)
+}</code></pre>
+<div id="stealthy-ko-over-dcas9-in-vitro" class="section level4"
+number="6.2.1">
+<h4><span class="header-section-number">6.2.1</span> StealTHY KO over
+dCas9 In vitro</h4>
+<p><img src="figure/crispr-mm_2215_sgRNA-StealTHY.Rmd/da-positive-controls-genes-dotplot-1.png" width="1422" style="display: block; margin: auto;" /></p>
+</div>
+<div id="stealthy-ko-over-dcas9-in-vivo" class="section level4"
+number="6.2.2">
+<h4><span class="header-section-number">6.2.2</span> StealTHY KO over
+dCas9 In vivo</h4>
+<p><img src="figure/crispr-mm_2215_sgRNA-StealTHY.Rmd/da-positive-controls-genes-dotplot-2.png" width="1422" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+</div>
+<div id="non-expressed-hits" class="section level2" number="7">
+<h2><span class="header-section-number">7</span> Non-expressed hits</h2>
+<ul>
+<li><p>Definition of <strong>non-expressed genes</strong> : We keep
+genes with ≥ 1 read count in 1/3 of the samples for each site (whole
+tumor or whole lung). In this case, if only 3 samples for each site are
+available, the gene must have at least 1 read count in 1 sample. Then,
+the final list of non-expressed genes is defined as the intersection of
+non-expressed genes in whole tumor and whole lung.</p></li>
+<li><p>Definition of <strong>hits</strong> : Hits are defined as genes
+with a log2 fold-change ≤ -2 or ≥ 2.</p></li>
+</ul>
+<pre class="r"><code># Color palette
+use_color_palette &lt;- c(
+  `StealTHY`  = &#39;#F7EC13&#39;,
+  `Puro` = &#39;black&#39;,
+  `Cas9+Puro` = &#39;black&#39;,
+  `StealTHY NSG`  = &#39;#58595B&#39;
+)</code></pre>
+<pre class="r"><code>min_counts &lt;- 1
+min_prop &lt;- 1/3
+
+# Read RNA-seq data
+se_rna &lt;- readRDS(params$se_rnaseq_facs)
+
+# Calculate CPM
+assay(se_rna, &#39;cpm&#39;) &lt;- edgeR::cpm(se_rna)
+
+# CRISPR library genes
+crispr_genes &lt;- unique(rowData(se)$Gene) %&gt;% grep(&#39;Non_Target&#39;, ., invert = T, value = T)
+
+# Non-expressed genes
+non_expr_genes &lt;- list()
+expr_genes &lt;- list()</code></pre>
+<pre class="r"><code>use_samples &lt;- c(&#39;4T1_In_vivo_Thy1&#39;, &#39;MVT1_In_vivo_Thy1&#39;, &#39;Py2T_In_vivo_Thy1&#39;)
+
+# RNA-seq : Select genes and samples
+use_se &lt;- se_rna[rowData(se_rna)$gene_name %in% crispr_genes, use_samples]
+
+# Change rownames
+rownames(use_se) &lt;- rowData(use_se)$gene_name
+
+# Proportion of samples with min_counts at each group
+use_group &lt;- as.factor(use_se$donor)
+counts_mat &lt;- assay(use_se, &#39;counts&#39;)
+counts_stats &lt;- foreach(i=levels(use_group), .combine = cbind) %do% {
+  use_cols &lt;- use_se$donor == i
+  rowSums(counts_mat[,use_cols, drop = FALSE] &gt;= min_counts)  / sum(use_cols)
+} %&gt;% data.frame
+colnames(counts_stats) &lt;- levels(use_group)
+counts_stats$all &lt;- rowSums(counts_mat &gt;= min_counts)  / ncol(counts_mat)
+  
+# Keep genes with min_counts threshold in &gt;=min_prop of samples in at least 1 group
+# rows_to_keep &lt;- rownames(counts_stats)[rowSums(counts_stats &gt;= min_prop) &gt; 0]
+rows_to_keep &lt;- rownames(counts_stats)[counts_stats$all &gt;= min_prop]
+rows_to_remove &lt;- setdiff(rownames(counts_stats), rows_to_keep)
+
+expr_genes[[&#39;whole_tumor&#39;]] &lt;- rows_to_keep
+non_expr_genes[[&#39;whole_tumor&#39;]] &lt;- rows_to_remove</code></pre>
+<pre class="r"><code>use_samples &lt;- c(&#39;4T1_In_vivo_Thy1_Lungs&#39;, &#39;MVT1_In_vivo_Thy1_Lungs&#39;, &#39;Py2T_In_vivo_Thy1_Lungs&#39;)
+
+# RNA-seq : Select genes and samples
+use_se &lt;- se_rna[rowData(se_rna)$gene_name %in% crispr_genes, use_samples]
+
+# Change rownames
+rownames(use_se) &lt;- rowData(use_se)$gene_name
+
+# Proportion of samples with min_counts at each group
+use_group &lt;- as.factor(use_se$donor)
+counts_mat &lt;- assay(use_se, &#39;counts&#39;)
+counts_stats &lt;- foreach(i=levels(use_group), .combine = cbind) %do% {
+  use_cols &lt;- use_se$donor == i
+  rowSums(counts_mat[,use_cols, drop = FALSE] &gt;= min_counts)  / sum(use_cols)
+} %&gt;% data.frame
+colnames(counts_stats) &lt;- levels(use_group)
+counts_stats$all &lt;- rowSums(counts_mat &gt;= min_counts)  / ncol(counts_mat)
+  
+# Keep genes with min_counts threshold in &gt;=min_prop of samples in at least 1 group
+# rows_to_keep &lt;- rownames(counts_stats)[rowSums(counts_stats &gt;= min_prop) &gt; 0]
+rows_to_keep &lt;- rownames(counts_stats)[counts_stats$all &gt;= min_prop]
+rows_to_remove &lt;- setdiff(rownames(counts_stats), rows_to_keep)
+
+expr_genes[[&#39;whole_lung&#39;]] &lt;- rows_to_keep
+non_expr_genes[[&#39;whole_lung&#39;]] &lt;- rows_to_remove</code></pre>
+<pre class="r"><code>use_annot &lt;- colData(se)
+
+use_comp &lt;- c(&quot;StealTHY&quot;, &quot;Puro&quot;, &quot;Cas9+Puro&quot;, &quot;StealTHY NSG&quot;)
+i &lt;- &#39;StealTHY&#39;
+hits_stats &lt;- foreach(i = use_comp, .combine = rbind) %do% {
+  i_names &lt;- i %&gt;% gsub(&quot; &quot;, &quot;_&quot;, .) %&gt;% tolower
+  st1 &lt;- unique(use_annot[ne_mageck_comp_list[[i]][[1]],]$sample_type)
+  st2 &lt;- unique(use_annot[ne_mageck_comp_list[[i]][[2]],]$sample_type)
+  
+  genes_expr &lt;- intersect(expr_genes[[st1]], expr_genes[[st2]])
+ 
+  da_res &lt;- ne_gene_summ[[i_names]]  %&gt;%  
+    ReadRRA(score = &#39;lfc&#39;) %&gt;% 
+    dplyr::rename(LFC = Score) %&gt;% 
+    mutate(
+      expressed = id %in% genes_expr,
+      hit = (abs(LFC) &gt;= 2)
+      )
+  
+   prop_non_expr_genes &lt;- (nrow(da_res)-length(genes_expr)) / nrow(da_res)
+   prop_non_expr_hits &lt;- sum(da_res$hit &amp; !da_res$expressed) / sum(da_res$hit)
+   data.frame(
+     comparison = i,
+     total_genes = nrow(da_res),
+     n_nonexpr_genes = nrow(da_res)-length(genes_expr),
+     prop_non_expr_genes = (nrow(da_res)-length(genes_expr)) / nrow(da_res),
+     n_hits = sum(da_res$hit),
+     non_expr_hits = sum(da_res$hit &amp; !da_res$expressed),
+     n_nohits = sum(!da_res$hit)
+   ) %&gt;% 
+     mutate(
+       prop_non_expr_hits = non_expr_hits / n_hits,
+       lfc = log2(prop_non_expr_hits / prop_non_expr_genes)
+     )
+  
+}
+
+hits_stats &lt;- hits_stats %&gt;% 
+  mutate(
+    comparison = factor(comparison,levels = names(ne_mageck_comp_list) %&gt;% rev)
+  )
+
+hits_stats_global &lt;- hits_stats</code></pre>
+<pre class="r"><code>min_counts &lt;- 1
+min_prop &lt;- 1/3
+use_donor &lt;- &#39;4T1&#39;
+whole_tumor_sample &lt;- &#39;4T1_In_vivo_Thy1&#39;
+whole_lung_sample &lt;- &#39;4T1_In_vivo_Thy1_Lungs&#39;
+
+# Read RNA-seq data
+se_rna &lt;- readRDS(params$se_rnaseq_facs)
+
+# Calculate CPM
+assay(se_rna, &#39;cpm&#39;) &lt;- edgeR::cpm(se_rna)
+
+# CRISPR library genes
+crispr_genes &lt;- unique(rowData(se)$Gene) %&gt;% grep(&#39;Non_Target&#39;, ., invert = T, value = T)
+
+# Non-expressed genes
+non_expr_genes &lt;- list()
+expr_genes &lt;- list()</code></pre>
+<pre class="r"><code>use_samples &lt;- whole_tumor_sample
+
+# RNA-seq : Select genes and samples
+use_se &lt;- se_rna[rowData(se_rna)$gene_name %in% crispr_genes, use_samples]
+
+# Change rownames
+rownames(use_se) &lt;-make.names(rowData(use_se)$gene_name, unique = TRUE)
+
+# Proportion of samples with min_counts at each group
+use_group &lt;- as.factor(use_se$donor)
+counts_mat &lt;- assay(use_se, &#39;counts&#39;)
+counts_stats &lt;- foreach(i=levels(use_group), .combine = cbind) %do% {
+  use_cols &lt;- use_se$donor == i
+  rowSums(counts_mat[,use_cols, drop = FALSE] &gt;= min_counts)  / sum(use_cols)
+} %&gt;% data.frame
+colnames(counts_stats) &lt;- levels(use_group)
+counts_stats$all &lt;- rowSums(counts_mat &gt;= min_counts)  / ncol(counts_mat)
+  
+# Keep genes with min_counts threshold in &gt;=min_prop of samples in at least 1 group
+# rows_to_keep &lt;- rownames(counts_stats)[rowSums(counts_stats &gt;= min_prop) &gt; 0]
+rows_to_keep &lt;- rownames(counts_stats)[counts_stats$all &gt;= min_prop]
+rows_to_remove &lt;- setdiff(rownames(counts_stats), rows_to_keep)
+
+expr_genes[[&#39;whole_tumor&#39;]] &lt;- rows_to_keep
+non_expr_genes[[&#39;whole_tumor&#39;]] &lt;- rows_to_remove</code></pre>
+<pre class="r"><code>use_samples &lt;- whole_lung_sample
+
+# RNA-seq : Select genes and samples
+use_se &lt;- se_rna[rowData(se_rna)$gene_name %in% crispr_genes, use_samples]
+
+# Change rownames
+rownames(use_se) &lt;-make.names(rowData(use_se)$gene_name, unique = TRUE)
+
+# Proportion of samples with min_counts at each group
+use_group &lt;- as.factor(use_se$donor)
+counts_mat &lt;- assay(use_se, &#39;counts&#39;)
+counts_stats &lt;- foreach(i=levels(use_group), .combine = cbind) %do% {
+  use_cols &lt;- use_se$donor == i
+  rowSums(counts_mat[,use_cols, drop = FALSE] &gt;= min_counts)  / sum(use_cols)
+} %&gt;% data.frame
+colnames(counts_stats) &lt;- levels(use_group)
+counts_stats$all &lt;- rowSums(counts_mat &gt;= min_counts)  / ncol(counts_mat)
+  
+# Keep genes with min_counts threshold in &gt;=min_prop of samples in at least 1 group
+# rows_to_keep &lt;- rownames(counts_stats)[rowSums(counts_stats &gt;= min_prop) &gt; 0]
+rows_to_keep &lt;- rownames(counts_stats)[counts_stats$all &gt;= min_prop]
+rows_to_remove &lt;- setdiff(rownames(counts_stats), rows_to_keep)
+
+expr_genes[[&#39;whole_lung&#39;]] &lt;- rows_to_keep
+non_expr_genes[[&#39;whole_lung&#39;]] &lt;- rows_to_remove</code></pre>
+<pre class="r"><code>use_annot &lt;- colData(se)
+
+use_comp &lt;- c(&quot;StealTHY 4T1&quot;, &quot;Puro 4T1&quot;, &quot;Cas9+Puro 4T1&quot;, &quot;StealTHY NSG 4T1&quot;)
+
+i &lt;- use_comp[1]
+hits_stats &lt;- foreach(i = use_comp, .combine = rbind) %do% {
+  i_names &lt;- i %&gt;% gsub(&quot; &quot;, &quot;_&quot;, .) %&gt;% tolower
+  st1 &lt;- unique(use_annot[ne_mageck_comp_list[[i]][[1]],]$sample_type)
+  st2 &lt;- unique(use_annot[ne_mageck_comp_list[[i]][[2]],]$sample_type)
+  
+  genes_expr &lt;- intersect(expr_genes[[st1]], expr_genes[[st2]])
+ 
+  da_res &lt;- ne_gene_summ[[i_names]]  %&gt;%  
+    ReadRRA(score = &#39;lfc&#39;) %&gt;% 
+    dplyr::rename(LFC = Score) %&gt;% 
+    mutate(
+      expressed = id %in% genes_expr,
+      hit = (abs(LFC) &gt;= 2)
+      )
+  
+   prop_non_expr_genes &lt;- (nrow(da_res)-length(genes_expr)) / nrow(da_res)
+   prop_non_expr_hits &lt;- sum(da_res$hit &amp; !da_res$expressed) / sum(da_res$hit)
+   data.frame(
+     comparison = i,
+     total_genes = nrow(da_res),
+     n_nonexpr_genes = nrow(da_res)-length(genes_expr),
+     prop_non_expr_genes = (nrow(da_res)-length(genes_expr)) / nrow(da_res),
+     n_hits = sum(da_res$hit),
+     non_expr_hits = sum(da_res$hit &amp; !da_res$expressed),
+     n_nohits = sum(!da_res$hit)
+   ) %&gt;% 
+     mutate(
+       prop_non_expr_hits = non_expr_hits / n_hits,
+       prop_non_expr_hits_over_non_expr = non_expr_hits / prop_non_expr_genes,
+       lfc = log2(prop_non_expr_hits / prop_non_expr_genes)
+     )
+  
+}
+
+hits_stats &lt;- hits_stats %&gt;% 
+  mutate(
+    comparison = factor(comparison,levels = names(ne_mageck_comp_list) %&gt;% rev)
+  )
+
+hits_stats_4t1 &lt;- hits_stats %&gt;% 
+  mutate(
+    donor = &#39;4T1&#39;,
+    comparison = gsub(&quot; 4T1&quot;, &quot;&quot;, comparison)
+    )</code></pre>
+<pre class="r"><code>min_counts &lt;- 1
+min_prop &lt;- 1/3
+use_donor &lt;- &#39;mvt1&#39;
+whole_tumor_sample &lt;- &#39;MVT1_In_vivo_Thy1&#39;
+whole_lung_sample &lt;- &#39;MVT1_In_vivo_Thy1_Lungs&#39;
+
+# Read RNA-seq data
+se_rna &lt;- readRDS(params$se_rnaseq_facs)
+
+# Calculate CPM
+assay(se_rna, &#39;cpm&#39;) &lt;- edgeR::cpm(se_rna)
+
+# CRISPR library genes
+crispr_genes &lt;- unique(rowData(se)$Gene) %&gt;% grep(&#39;Non_Target&#39;, ., invert = T, value = T)
+
+# Non-expressed genes
+non_expr_genes &lt;- list()
+expr_genes &lt;- list()</code></pre>
+<pre class="r"><code>use_samples &lt;- whole_tumor_sample
+
+# RNA-seq : Select genes and samples
+use_se &lt;- se_rna[rowData(se_rna)$gene_name %in% crispr_genes, use_samples]
+
+# Change rownames
+rownames(use_se) &lt;-make.names(rowData(use_se)$gene_name, unique = TRUE)
+
+# Proportion of samples with min_counts at each group
+use_group &lt;- as.factor(use_se$donor)
+counts_mat &lt;- assay(use_se, &#39;counts&#39;)
+counts_stats &lt;- foreach(i=levels(use_group), .combine = cbind) %do% {
+  use_cols &lt;- use_se$donor == i
+  rowSums(counts_mat[,use_cols, drop = FALSE] &gt;= min_counts)  / sum(use_cols)
+} %&gt;% data.frame
+colnames(counts_stats) &lt;- levels(use_group)
+counts_stats$all &lt;- rowSums(counts_mat &gt;= min_counts)  / ncol(counts_mat)
+  
+# Keep genes with min_counts threshold in &gt;=min_prop of samples in at least 1 group
+# rows_to_keep &lt;- rownames(counts_stats)[rowSums(counts_stats &gt;= min_prop) &gt; 0]
+rows_to_keep &lt;- rownames(counts_stats)[counts_stats$all &gt;= min_prop]
+rows_to_remove &lt;- setdiff(rownames(counts_stats), rows_to_keep)
+
+expr_genes[[&#39;whole_tumor&#39;]] &lt;- rows_to_keep
+non_expr_genes[[&#39;whole_tumor&#39;]] &lt;- rows_to_remove</code></pre>
+<pre class="r"><code>use_samples &lt;- whole_lung_sample
+
+# RNA-seq : Select genes and samples
+use_se &lt;- se_rna[rowData(se_rna)$gene_name %in% crispr_genes, use_samples]
+
+# Change rownames
+rownames(use_se) &lt;-make.names(rowData(use_se)$gene_name, unique = TRUE)
+
+# Proportion of samples with min_counts at each group
+use_group &lt;- as.factor(use_se$donor)
+counts_mat &lt;- assay(use_se, &#39;counts&#39;)
+counts_stats &lt;- foreach(i=levels(use_group), .combine = cbind) %do% {
+  use_cols &lt;- use_se$donor == i
+  rowSums(counts_mat[,use_cols, drop = FALSE] &gt;= min_counts)  / sum(use_cols)
+} %&gt;% data.frame
+colnames(counts_stats) &lt;- levels(use_group)
+counts_stats$all &lt;- rowSums(counts_mat &gt;= min_counts)  / ncol(counts_mat)
+  
+# Keep genes with min_counts threshold in &gt;=min_prop of samples in at least 1 group
+# rows_to_keep &lt;- rownames(counts_stats)[rowSums(counts_stats &gt;= min_prop) &gt; 0]
+rows_to_keep &lt;- rownames(counts_stats)[counts_stats$all &gt;= min_prop]
+rows_to_remove &lt;- setdiff(rownames(counts_stats), rows_to_keep)
+
+expr_genes[[&#39;whole_lung&#39;]] &lt;- rows_to_keep
+non_expr_genes[[&#39;whole_lung&#39;]] &lt;- rows_to_remove</code></pre>
+<pre class="r"><code>use_annot &lt;- colData(se)
+
+use_comp &lt;- c(&quot;StealTHY MVT1&quot;, &quot;Puro MVT1&quot;, &quot;StealTHY NSG MVT1&quot;)
+
+i &lt;- use_comp[1]
+hits_stats &lt;- foreach(i = use_comp, .combine = rbind) %do% {
+  i_names &lt;- i %&gt;% gsub(&quot; &quot;, &quot;_&quot;, .) %&gt;% tolower
+  st1 &lt;- unique(use_annot[ne_mageck_comp_list[[i]][[1]],]$sample_type)
+  st2 &lt;- unique(use_annot[ne_mageck_comp_list[[i]][[2]],]$sample_type)
+  
+  genes_expr &lt;- intersect(expr_genes[[st1]], expr_genes[[st2]])
+ 
+  da_res &lt;- ne_gene_summ[[i_names]]  %&gt;%  
+    ReadRRA(score = &#39;lfc&#39;) %&gt;% 
+    dplyr::rename(LFC = Score) %&gt;% 
+    mutate(
+      expressed = id %in% genes_expr,
+      hit = (abs(LFC) &gt;= 2)
+      )
+  
+   prop_non_expr_genes &lt;- (nrow(da_res)-length(genes_expr)) / nrow(da_res)
+   prop_non_expr_hits &lt;- sum(da_res$hit &amp; !da_res$expressed) / sum(da_res$hit)
+   data.frame(
+     comparison = i,
+     total_genes = nrow(da_res),
+     n_nonexpr_genes = nrow(da_res)-length(genes_expr),
+     prop_non_expr_genes = (nrow(da_res)-length(genes_expr)) / nrow(da_res),
+     n_hits = sum(da_res$hit),
+     non_expr_hits = sum(da_res$hit &amp; !da_res$expressed),
+     n_nohits = sum(!da_res$hit)
+   ) %&gt;% 
+     mutate(
+       prop_non_expr_hits = non_expr_hits / n_hits,
+       prop_non_expr_hits_over_non_expr = non_expr_hits / n_nohits,
+       lfc = log2(prop_non_expr_hits / prop_non_expr_genes)
+     )
+  
+}
+
+hits_stats &lt;- hits_stats %&gt;% 
+  mutate(
+    comparison = factor(comparison,levels = names(ne_mageck_comp_list) %&gt;% rev)
+  )
+
+hits_stats_mvt1 &lt;- hits_stats %&gt;% 
+  mutate(
+    donor = &#39;MVT1&#39;,
+    comparison = gsub(&quot; MVT1&quot;, &quot;&quot;, comparison)
+    )</code></pre>
+<pre class="r"><code>min_counts &lt;- 1
+min_prop &lt;- 1/3
+use_donor &lt;- &#39;py2t&#39;
+whole_tumor_sample &lt;- &#39;Py2T_In_vivo_Thy1&#39;
+whole_lung_sample &lt;- &#39;Py2T_In_vivo_Thy1_Lungs&#39;
+
+# Read RNA-seq data
+se_rna &lt;- readRDS(params$se_rnaseq_facs)
+
+# Calculate CPM
+assay(se_rna, &#39;cpm&#39;) &lt;- edgeR::cpm(se_rna)
+
+# CRISPR library genes
+crispr_genes &lt;- unique(rowData(se)$Gene) %&gt;% grep(&#39;Non_Target&#39;, ., invert = T, value = T)
+
+# Non-expressed genes
+non_expr_genes &lt;- list()
+expr_genes &lt;- list()</code></pre>
+<pre class="r"><code>use_samples &lt;- whole_tumor_sample
+
+# RNA-seq : Select genes and samples
+use_se &lt;- se_rna[rowData(se_rna)$gene_name %in% crispr_genes, use_samples]
+
+# Change rownames
+rownames(use_se) &lt;-make.names(rowData(use_se)$gene_name, unique = TRUE)
+
+# Proportion of samples with min_counts at each group
+use_group &lt;- as.factor(use_se$donor)
+counts_mat &lt;- assay(use_se, &#39;counts&#39;)
+counts_stats &lt;- foreach(i=levels(use_group), .combine = cbind) %do% {
+  use_cols &lt;- use_se$donor == i
+  rowSums(counts_mat[,use_cols, drop = FALSE] &gt;= min_counts)  / sum(use_cols)
+} %&gt;% data.frame
+colnames(counts_stats) &lt;- levels(use_group)
+counts_stats$all &lt;- rowSums(counts_mat &gt;= min_counts)  / ncol(counts_mat)
+  
+# Keep genes with min_counts threshold in &gt;=min_prop of samples in at least 1 group
+# rows_to_keep &lt;- rownames(counts_stats)[rowSums(counts_stats &gt;= min_prop) &gt; 0]
+rows_to_keep &lt;- rownames(counts_stats)[counts_stats$all &gt;= min_prop]
+rows_to_remove &lt;- setdiff(rownames(counts_stats), rows_to_keep)
+
+expr_genes[[&#39;whole_tumor&#39;]] &lt;- rows_to_keep
+non_expr_genes[[&#39;whole_tumor&#39;]] &lt;- rows_to_remove</code></pre>
+<pre class="r"><code>use_samples &lt;- whole_lung_sample
+
+# RNA-seq : Select genes and samples
+use_se &lt;- se_rna[rowData(se_rna)$gene_name %in% crispr_genes, use_samples]
+
+# Change rownames
+rownames(use_se) &lt;-make.names(rowData(use_se)$gene_name, unique = TRUE)
+
+# Proportion of samples with min_counts at each group
+use_group &lt;- as.factor(use_se$donor)
+counts_mat &lt;- assay(use_se, &#39;counts&#39;)
+counts_stats &lt;- foreach(i=levels(use_group), .combine = cbind) %do% {
+  use_cols &lt;- use_se$donor == i
+  rowSums(counts_mat[,use_cols, drop = FALSE] &gt;= min_counts)  / sum(use_cols)
+} %&gt;% data.frame
+colnames(counts_stats) &lt;- levels(use_group)
+counts_stats$all &lt;- rowSums(counts_mat &gt;= min_counts)  / ncol(counts_mat)
+  
+# Keep genes with min_counts threshold in &gt;=min_prop of samples in at least 1 group
+# rows_to_keep &lt;- rownames(counts_stats)[rowSums(counts_stats &gt;= min_prop) &gt; 0]
+rows_to_keep &lt;- rownames(counts_stats)[counts_stats$all &gt;= min_prop]
+rows_to_remove &lt;- setdiff(rownames(counts_stats), rows_to_keep)
+
+expr_genes[[&#39;whole_lung&#39;]] &lt;- rows_to_keep
+non_expr_genes[[&#39;whole_lung&#39;]] &lt;- rows_to_remove</code></pre>
+<pre class="r"><code>use_annot &lt;- colData(se)
+
+use_comp &lt;- c(&quot;StealTHY Py2T&quot;, &quot;Puro Py2T&quot;, &quot;StealTHY NSG Py2T&quot;)
+
+i &lt;- use_comp[1]
+hits_stats &lt;- foreach(i = use_comp, .combine = rbind) %do% {
+  i_names &lt;- i %&gt;% gsub(&quot; &quot;, &quot;_&quot;, .) %&gt;% tolower
+  st1 &lt;- unique(use_annot[ne_mageck_comp_list[[i]][[1]],]$sample_type)
+  st2 &lt;- unique(use_annot[ne_mageck_comp_list[[i]][[2]],]$sample_type)
+  
+  genes_expr &lt;- intersect(expr_genes[[st1]], expr_genes[[st2]])
+ 
+  da_res &lt;- ne_gene_summ[[i_names]]  %&gt;%  
+    ReadRRA(score = &#39;lfc&#39;) %&gt;% 
+    dplyr::rename(LFC = Score) %&gt;% 
+    mutate(
+      expressed = id %in% genes_expr,
+      hit = (abs(LFC) &gt;= 2)
+      )
+  
+   prop_non_expr_genes &lt;- (nrow(da_res)-length(genes_expr)) / nrow(da_res)
+   prop_non_expr_hits &lt;- sum(da_res$hit &amp; !da_res$expressed) / sum(da_res$hit)
+   data.frame(
+     comparison = i,
+     total_genes = nrow(da_res),
+     n_nonexpr_genes = nrow(da_res)-length(genes_expr),
+     prop_non_expr_genes = (nrow(da_res)-length(genes_expr)) / nrow(da_res),
+     n_hits = sum(da_res$hit),
+     non_expr_hits = sum(da_res$hit &amp; !da_res$expressed),
+     n_nohits = sum(!da_res$hit)
+   ) %&gt;% 
+     mutate(
+       prop_non_expr_hits = non_expr_hits / n_hits,
+       prop_non_expr_hits_over_non_expr = non_expr_hits / n_nohits,
+       lfc = log2(prop_non_expr_hits / prop_non_expr_genes)
+     )
+  
+}
+
+hits_stats &lt;- hits_stats %&gt;% 
+  mutate(
+    comparison = factor(comparison,levels = names(ne_mageck_comp_list) %&gt;% rev)
+  )
+
+hits_stats_py2t &lt;- hits_stats %&gt;% 
+  mutate(
+    donor = &#39;Py2T&#39;,
+    comparison = gsub(&quot; Py2T&quot;, &quot;&quot;, comparison)
+  )</code></pre>
+<div id="figure-4d-proportion-of-non-expressed-hits"
+class="section level3" number="7.1">
+<h3><span class="header-section-number">7.1</span> Figure 4D: Proportion
+of non-expressed hits</h3>
+<pre class="r"><code>chunk_data &lt;- hits_stats_global
+
+chunk_data %&gt;%
+  ggplot(aes(comparison, prop_non_expr_hits, fill = comparison)) +
+  geom_col() +
+  geom_hline(yintercept = 0, linetype = &#39;solid&#39;,
+             linewidth = one_pt/4) +
+  coord_flip() +
+  scale_y_continuous(
+    expand = expansion(mult = c(0, 0.05)),
+  #   breaks = y_breaks, 
+  #   labels = y_labels
+    )  +
+  scale_fill_manual(values = use_color_palette) +
+  theme_facet +
+  theme(
+    axis.line = element_line(linewidth = one_pt/4, color = &#39;black&#39;),
+    axis.ticks = element_line(linewidth = one_pt/4, color = &#39;black&#39;),
+    panel.border = element_blank(),
+    axis.text = element_text(size=5), 
+    axis.title = element_text(size = 5),
+    legend.title = element_text(size=5),
+    legend.text = element_text(size=5),
+    strip.text.y = element_text(size = 4, angle = 0)
+  ) +
+  guides(fill = &#39;none&#39;) +
+  labs(
+    x = &#39;&#39;,
+    y = &#39;Proportion of\nnon-expressed hits&#39;
+  )</code></pre>
+<p><img src="figure/crispr-mm_2215_sgRNA-StealTHY.Rmd/non-expressed-hits-barplot-prop-1.png" width="900" style="display: block; margin: auto;" /></p>
+</div>
+<div id="supplementary-figure-4g-fold-change-of-non-expressed-hits"
+class="section level3" number="7.2">
+<h3><span class="header-section-number">7.2</span> Supplementary figure
+4G: Fold-change of non-expressed hits</h3>
+<pre class="r"><code>chunk_data &lt;- rbind(hits_stats_4t1, hits_stats_mvt1, hits_stats_py2t) %&gt;% 
+  mutate(
+    comparison = factor(comparison, levels = rev(c(&#39;StealTHY&#39;, &#39;Puro&#39;, &#39;Cas9+Puro&#39;, &#39;StealTHY NSG&#39;)))
+  )
+chunk_data %&gt;%
+  ggplot(aes(comparison, lfc, fill = comparison)) +
+  geom_col() +
+  geom_hline(yintercept = 0, 
+             linetype = &#39;dashed&#39;, 
+             linewidth = one_pt/4) +
+  coord_flip() +
+  scale_fill_manual(values = use_color_palette) +
+  facet_grid(rows = vars(donor),
+             scales = &#39;free_y&#39;,
+             space = &#39;free_y&#39;) +
+  theme_facet +
+  theme(
+    # axis.line = element_line(linewidth = one_pt/2, color = &#39;black&#39;),
+    axis.ticks = element_line(linewidth = one_pt/2, color = &#39;black&#39;),
+    panel.border = element_rect(linewidth = one_pt/2, color = &#39;black&#39;),
+    axis.text = element_text(size=4), 
+    axis.title = element_text(size = 4),
+    legend.title = element_text(size=4),
+    legend.text = element_text(size=4),
+    strip.text.y = element_text(size = 4, angle = 0)
+  ) +
+  guides(fill = &#39;none&#39;) +
+  labs(
+    x = &#39;&#39;,
+    y =  &#39;Proportion of\nnon-expressed hits\nLog2(Fold change)&#39;
+  )</code></pre>
+<p><img src="figure/crispr-mm_2215_sgRNA-StealTHY.Rmd/non-expressed-hits-barplot-lfc-bymodel-1.png" width="900" style="display: block; margin: auto;" /></p>
+</div>
+<div id="supplementary-figure-4g-proportion-of-non-expressed-hits"
+class="section level3" number="7.3">
+<h3><span class="header-section-number">7.3</span> Supplementary figure
+4G: Proportion of non-expressed hits</h3>
+<pre class="r"><code>chunk_data &lt;- rbind(hits_stats_4t1, hits_stats_mvt1, hits_stats_py2t) %&gt;% 
+  mutate(
+    comparison = factor(comparison, levels = rev(c(&#39;StealTHY&#39;, &#39;Puro&#39;, &#39;Cas9+Puro&#39;, &#39;StealTHY NSG&#39;)))
+  )
+chunk_data %&gt;%
+  ggplot(aes(comparison, prop_non_expr_hits, fill = comparison)) +
+  geom_col() +
+  # geom_hline(yintercept = 0, 
+  #            linetype = &#39;dashed&#39;, 
+  #            linewidth = one_pt/4) +
+  coord_flip() +
+  scale_y_continuous(
+    expand = expansion(mult = c(0, 0.05))
+    ) +
+  scale_fill_manual(values = use_color_palette) +
+  facet_grid(rows = vars(donor),
+             scales = &#39;free_y&#39;,
+             space = &#39;free_y&#39;) +
+  theme_facet +
+  theme(
+    # axis.line = element_line(linewidth = one_pt/2, color = &#39;black&#39;),
+    axis.ticks = element_line(linewidth = one_pt/2, color = &#39;black&#39;),
+    panel.border = element_rect(linewidth = one_pt/2, color = &#39;black&#39;),
+    axis.text = element_text(size=4), 
+    axis.title = element_text(size = 4),
+    legend.title = element_text(size=4),
+    legend.text = element_text(size=4),
+    strip.text.y = element_text(size = 4, angle = 0)
+  ) +
+  guides(fill = &#39;none&#39;) +
+  labs(
+    x = &#39;&#39;,
+    y =  &#39;Proportion of\nnon-expressed hits&#39;
+  )</code></pre>
+<p><img src="figure/crispr-mm_2215_sgRNA-StealTHY.Rmd/non-expressed-hits-barplot-prop-bymodel-1.png" width="900" style="display: block; margin: auto;" /></p>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<p>R version 4.4.3 (2025-02-28) Platform: aarch64-apple-darwin20 Running
+under: macOS Sequoia 15.5</p>
+<p>Matrix products: default BLAS:
+/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib
+LAPACK:
+/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRlapack.dylib;
+LAPACK version 3.12.0</p>
+<p>locale: [1]
+en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8</p>
+<p>time zone: Europe/Zurich tzcode source: internal</p>
+<p>attached base packages: [1] stats4 stats graphics grDevices utils
+datasets methods<br />
+[8] base</p>
+<p>other attached packages: [1] cowplot_1.1.3.9000
+MAGeCKFlute_2.9.0<br />
+[3] ggpubr_0.6.0 ggbeeswarm_0.7.2<br />
+[5] colorblindr_0.1.0 colorspace_2.1-1<br />
+[7] patchwork_1.3.0 ggh4x_0.3.0<br />
+[9] ggridges_0.5.6 SummarizedExperiment_1.36.0 [11] Biobase_2.66.0
+GenomicRanges_1.58.0<br />
+[13] GenomeInfoDb_1.42.3 IRanges_2.40.1<br />
+[15] S4Vectors_0.44.0 BiocGenerics_0.52.0<br />
+[17] MatrixGenerics_1.18.1 matrixStats_1.5.0<br />
+[19] diptest_0.77-1 kableExtra_1.4.0<br />
+[21] DT_0.33 magrittr_2.0.3<br />
+[23] foreach_1.5.2 knitr_1.50<br />
+[25] lubridate_1.9.4 forcats_1.0.0<br />
+[27] stringr_1.5.1 dplyr_1.1.4<br />
+[29] purrr_1.0.4 readr_2.1.5<br />
+[31] tidyr_1.3.1 tibble_3.2.1<br />
+[33] ggplot2_3.5.2 tidyverse_2.0.0<br />
+[35] workflowr_1.7.1</p>
+<p>loaded via a namespace (and not attached): [1] splines_4.4.3
+later_1.4.2 ggplotify_0.1.2<br />
+[4] bitops_1.0-9 filelock_1.0.3 cellranger_1.1.0<br />
+[7] R.oo_1.27.1 graph_1.84.1 XML_3.99-0.18<br />
+[10] lifecycle_1.0.4 httr2_1.1.2 rstatix_0.7.2<br />
+[13] edgeR_4.4.2 rprojroot_2.0.4 processx_3.8.6<br />
+[16] lattice_0.22-7 crosstalk_1.2.1 backports_1.5.0<br />
+[19] limma_3.62.2 sass_0.4.10 rmarkdown_2.29<br />
+[22] jquerylib_0.1.4 yaml_2.3.10 ggtangle_0.0.6<br />
+[25] httpuv_1.6.16 depmap_1.20.0 DBI_1.2.3<br />
+[28] RColorBrewer_1.1-3 abind_1.4-8 zlibbioc_1.52.0<br />
+[31] R.utils_2.13.0 RCurl_1.98-1.17 yulab.utils_0.2.0<br />
+[34] rappdirs_0.3.3 git2r_0.36.2 GenomeInfoDbData_1.2.13 [37]
+enrichplot_1.26.6 ggrepel_0.9.6 tidytree_0.4.6<br />
+[40] svglite_2.2.1 codetools_0.2-20 DelayedArray_0.32.0<br />
+[43] DOSE_4.0.1 xml2_1.3.8 tidyselect_1.2.1<br />
+[46] aplot_0.2.5 UCSC.utils_1.2.0 farver_2.1.2<br />
+[49] BiocFileCache_2.14.0 pathview_1.46.0 jsonlite_2.0.0<br />
+[52] Formula_1.2-5 iterators_1.0.14 systemfonts_1.2.3<br />
+[55] tools_4.4.3 treeio_1.30.0 Rcpp_1.0.14<br />
+[58] glue_1.8.0 gridExtra_2.3 SparseArray_1.6.2<br />
+[61] xfun_0.52 qvalue_2.38.0 withr_3.0.2<br />
+[64] BiocManager_1.30.25 fastmap_1.2.0 callr_3.7.6<br />
+[67] digest_0.6.37 gridGraphics_0.5-1 timechange_0.3.0<br />
+[70] R6_2.6.1 textshaping_1.0.1 GO.db_3.20.0<br />
+[73] dichromat_2.0-0.1 RSQLite_2.3.11 R.methodsS3_1.8.2<br />
+[76] generics_0.1.4 data.table_1.17.2 httr_1.4.7<br />
+[79] htmlwidgets_1.6.4 S4Arrays_1.6.0 whisker_0.4.1<br />
+[82] pkgconfig_2.0.3 gtable_0.3.6 blob_1.2.4<br />
+[85] XVector_0.46.0 clusterProfiler_4.14.6 htmltools_0.5.8.1<br />
+[88] carData_3.0-5 fgsea_1.32.4 scales_1.4.0<br />
+[91] png_0.1-8 ggfun_0.1.8 rstudioapi_0.17.1<br />
+[94] tzdb_0.5.0 reshape2_1.4.4 nlme_3.1-168<br />
+[97] curl_6.2.2 org.Hs.eg.db_3.20.0 cachem_1.1.0<br />
+[100] BiocVersion_3.20.0 parallel_4.4.3 vipor_0.4.7<br />
+[103] AnnotationDbi_1.68.0 pillar_1.10.2 grid_4.4.3<br />
+[106] vctrs_0.6.5 promises_1.3.2 car_3.1-3<br />
+[109] dbplyr_2.5.0 beeswarm_0.4.0 Rgraphviz_2.50.0<br />
+[112] evaluate_1.0.3 KEGGgraph_1.66.0 locfit_1.5-9.12<br />
+[115] cli_3.6.5 compiler_4.4.3 rlang_1.1.6<br />
+[118] crayon_1.5.3 ggsignif_0.6.4 labeling_0.4.3<br />
+[121] ps_1.9.1 getPass_0.2-4 plyr_1.8.9<br />
+[124] fs_1.6.6 stringi_1.8.7 viridisLite_0.4.2<br />
+[127] BiocParallel_1.40.2 Biostrings_2.74.1 lazyeval_0.2.2<br />
+[130] GOSemSim_2.32.0 Matrix_1.7-3 ExperimentHub_2.14.0<br />
+[133] hms_1.1.3 bit64_4.6.0-1 statmod_1.5.0<br />
+[136] KEGGREST_1.46.0 AnnotationHub_3.14.0 igraph_2.1.4<br />
+[139] broom_1.0.8 memoise_2.0.1 bslib_0.9.0<br />
+[142] ggtree_3.14.0 fastmatch_1.1-6 bit_4.6.0<br />
+[145] readxl_1.4.5 gson_0.1.0 ape_5.8-1</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3,h4,h5",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
