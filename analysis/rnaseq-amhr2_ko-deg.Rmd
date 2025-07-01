@@ -1,0 +1,974 @@
+---
+title: "Analysis of AMHR2 KO RNA-seq data"
+author: "Francesc Castro-Giner"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+params:
+  date: '`r format(Sys.Date(), "%B %d, %Y")`'
+  se_path: ./output/rnaseq/amhr2_ko/se.rds
+  output_dir: ./output/rnaseq/amhr2_ko
+  min_counts: 5
+  min_present_prop: 0.40
+  msigdb_dir: ./data/resources/MSigDB
+  msigdb_vs: v2023.2.Mm
+---
+
+## Load libraries, additional functions and data
+
+Setup environment
+```{r setup, include=TRUE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(results='asis', echo=TRUE, message=FALSE, warning=FALSE, error=FALSE, fig.align = 'center', fig.width = 3.5, fig.asp = 0.618, dpi = 600, dev = c("png", "pdf"), engine.opts = list(bash = "-l"))
+
+options(stringsAsFactors = FALSE)
+
+use_seed <- 1100101
+set.seed(use_seed)
+
+dir.create(params$output_dir, recursive = TRUE, showWarnings = FALSE)
+```
+
+Load packages
+```{r load-libraries}
+library(tidyverse)
+library(showtext)
+library(foreach)
+library(DT)
+library(knitr)
+library(kableExtra)
+library(cowplot)
+library(colorblindr)
+library(RColorBrewer)
+library(ggbeeswarm)
+library(ggrepel)
+library(magrittr)
+library(openxlsx)
+
+library(SummarizedExperiment)
+library(edgeR)
+library(DESeq2)
+library(scuttle)
+library(scran)
+library(pheatmap)
+library(PCAtools)
+library(org.Mm.eg.db)
+library(ComplexHeatmap)
+library(circlize)
+```
+
+
+Load ggplot theme
+```{r ggplot-theme}
+source("./configuration/rmarkdown/ggplot_theme.R")
+```
+
+Set color palettes
+```{r, echo = FALSE}
+source("./configuration/rmarkdown/color_palettes.R")
+```
+
+Load custom functions
+```{r load-functions}
+source('./code/R-functions/dge_wrappers.r')
+source('./code/R-functions/dge_report.r')
+source('./code/R-functions/gse_omnibus.r')
+source('./code/R-functions/gse_report.r')
+source('./code/R-functions/subchunkify.R')
+```
+
+Load MSigDB gene sets
+```{r load-msigdb}
+gmt_files_symbols <- list(
+  msigdb.h = paste0(params$msigdb_dir, '/', params$msigdb_vs, '/mh.all.', params$msigdb_vs, '.symbols.gmt')
+)
+```
+
+Clean files generated in previous runs
+```{r clean-files}
+rmd_file <- current_input()
+if(!is.null(rmd_file)) {
+  figures_dir <- file.path('./docs/figure',rmd_file)
+  if(dir.exists(figures_dir)) {
+    unlink(file.path(figures_dir, "*"))
+  }
+}
+
+```
+
+
+## Configure analyses
+
+### Data wrangling
+Load SE onjecct
+```{r dw-load-se}
+se <- readRDS(params$se_path)
+```
+
+Modify sample annotation
+```{r dw-coldata}
+se$sample_alias %>% 
+  gsub('_rep.', '', .) %>% 
+  unique
+
+colData(se) %<>% 
+  data.frame %>% 
+  mutate(
+    condition = sample_alias %>% gsub('_rep.', '', .),
+    condition_short = case_match(
+      condition,
+      "AMHR2_Control_culture" ~ "c_AMHR2_ctrl",
+      "AMHR2_KO_culture" ~ "c_AMHR2_KO",
+      "AMHR2_KO_noTGFbeta" ~ "AMHR2_KO_noTGFb",
+      "AMHR2_Overexpression" ~ "AMHR2_over",
+      "InVivo_AMHR2_KO" ~ "i_AMHR2_KO",
+      "InVivo_Control_sgRNA" ~ "i_ctrl_sgRNA"
+    ),
+    sample_type = condition_short,
+    condition = factor(condition),
+    condition_short = factor(condition_short)
+
+  ) %>% DataFrame
+
+# colData(se) %<>% data.frame %>%
+#   mutate(
+#     sample_type_grouped = sample_type,
+#     sample_type_grouped = ifelse(sample_type == 'ctc_cluster_heterotypic_dn', 
+#                                  'ctc_cluster_heterotypic', 
+#                                  sample_type_grouped),
+#     sample_type_grouped_3l = ifelse(sample_type == 'ctc_cluster_wbc', 
+#                                  'ctc_cluster_heterotypic', 
+#                                  sample_type_grouped),
+#     sample_type_grouped_2l = ifelse(sample_type_grouped == 'ctc_cluster_heterotypic', 
+#                                  'ctc_cluster', 
+#                                  sample_type_grouped)
+#   ) %>%
+#   DataFrame
+```
+
+
+Filtering out low-abundance features. Keeping those features with at least 10 counts in at least 50% of samples of the smallest group.
+```{r dw-subset-feature-abundance}
+use_rows <- filterByExpr(se, group=se$condition, min.count = 10, min.total.count = 15, min.prop = 0.5)
+se <- se[use_rows,]
+```
+
+TMM normalization
+```{r dw-tmm}
+norm_method <- "TMM"
+exprs_mat_for_norm <- assay(se, 'counts')
+norm_factors <- calcNormFactors(exprs_mat_for_norm, method = norm_method)
+lib_size <- colSums(exprs_mat_for_norm)/10^6
+se$size_factor <- (norm_factors * lib_size)
+se <- logNormCounts(se, size.factors =se$size_factor)
+se <- logNormCounts(se, size.factors =se$size_factor, log = FALSE)
+```
+
+CPM calculation
+```{r dw-cpm}
+assay(se, 'cpm') <- edgeR::cpm(assay(se, 'normcounts'))
+assay(se, 'logcpm') <- edgeR::cpm(assay(se, 'normcounts'), log = TRUE)
+```
+
+
+### Define of comparisons
+
+#### Process data
+```{r conf-comparisons}
+x <- colData(se) %>% data.frame
+
+# Define groups
+use_levels <- levels(se$condition_short)
+i <- use_levels[1]
+group_samples <- foreach(i = use_levels) %do% {
+  use_cols <- se$condition_short == i
+  colnames(se)[use_cols]
+}
+names(group_samples) <- use_levels
+
+# Define all pairwise comparisons
+group_combn <- combn(names(group_samples) , 2, simplify = FALSE)
+
+i <- group_combn[[1]]
+comp_list <- foreach(i = group_combn) %do%{
+  res <- list(
+    group_samples[[i[1]]],
+    group_samples[[i[2]]]
+  )
+  names(res) <- i
+  res
+}
+names(comp_list) <- lapply(group_combn, function(x) paste0(x[1], '-o-', x[2]))
+
+# Add additional comparison
+# InVivo_AMHR2_KO + AMHR2_KO_culture - over - InVivo_Control_sgRNA + AMHR2_Control_culture
+
+comp_list[['AMHR2_KO-o-ctrl']] <- list(
+  `AMHR2_KO` = x %>% 
+    filter(condition %in% c('InVivo_AMHR2_KO', 'AMHR2_KO_culture')) %>% 
+     pull(sample_alias),
+  `control` = x %>% 
+    filter(condition %in% c('InVivo_Control_sgRNA', 'AMHR2_Control_culture')) %>% 
+     pull(sample_alias)
+)
+
+# Keep only the following comparisons
+#   InVivo_AMHR2_KO–over–InVivo_Control_sgRNA 
+#   AMHR2_Control_culture–over–AMHR2_KO_culture : invert the terms
+#   AMHR2_KO_noTGFbeta–over–AMHR2_Control_culture 
+#   AMHR2_KO_noTGFbeta–over–AMHR2_KO_culture
+#   AMHR2_Overexpression–over–AMHR2_Control_culture
+#   AMHR2_Overexpression–over–AMHR2_KO_culture
+#   AMHR2_KO_noTGFbeta–over–AMHR2_Overexpression : invert the terms
+keep_comp <- c(
+  `InVivo_AMHR2_KO--over--InVivo_Control_sgRNA` = 'i_AMHR2_KO-o-i_ctrl_sgRNA',
+  `AMHR2_Control_culture--over--AMHR2_KO_culture` =  'c_AMHR2_ctrl-o-c_AMHR2_KO',
+  `AMHR2_KO_noTGFbeta--over--AMHR2_Control_culture` =  'AMHR2_KO_noTGFb-o-c_AMHR2_ctrl',
+  `AMHR2_KO_noTGFbeta--over--AMHR2_KO_culture` =  'AMHR2_KO_noTGFb-o-c_AMHR2_KO',
+  `AMHR2_Overexpression--over--AMHR2_Control_culture` = 'AMHR2_over-o-c_AMHR2_ctrl', 
+  `AMHR2_Overexpression--over--AMHR2_KO_culture` =  'AMHR2_over-o-c_AMHR2_KO',
+  `AMHR2_KO_noTGFbeta--over--AMHR2_Overexpression` =  'AMHR2_KO_noTGFb-o-AMHR2_over',
+  `InVivo_AMHR2_KO + AMHR2_KO_culture--over--InVivo_Control_sgRNA + AMHR2_Control_culture` = 'AMHR2_KO-o-ctrl'
+)
+comp_list <- comp_list[keep_comp]
+
+# Invert the terms were required
+
+#   AMHR2_Control_culture–over–AMHR2_KO_culture : invert the terms
+#   AMHR2_KO_noTGFbeta–over–AMHR2_Overexpression : invert the terms
+
+i_comp <- c('c_AMHR2_ctrl-o-c_AMHR2_KO', 'AMHR2_KO_noTGFb-o-AMHR2_over')
+
+i <- i_comp[1]
+for(i in i_comp) {
+  comp_list[[i]] <- rev(comp_list[[i]])
+  rev_name <- strsplit(i, split = '-o-') %>% unlist() %>% rev %>% paste(., collapse = '-o-')
+  names(comp_list)[names(comp_list) == i] <- rev_name
+  i_desc <- names(keep_comp)[keep_comp == i]
+  rev_description <- strsplit(i_desc, split = '..over..') %>% unlist() %>% rev %>% paste(., collapse = '--over--')
+  names(keep_comp)[keep_comp == i] <- rev_description
+}
+
+
+# Generate DF with name description
+comp_list_description <- data.frame(
+  comparison = names(comp_list),
+  comparison_long = names(keep_comp)
+)
+
+```
+
+#### Table of comparisons
+
+We filter comparisons with n < 3 samples in each group
+```{r table-comparisons}
+i = names(comp_list)[1]
+comp_df <- foreach(i = names(comp_list), .combine = rbind) %do% {
+  icomp <- comp_list[[i]]
+  data.frame(
+    comparison = i,
+    `Sample Group (n)` =  length(icomp[[1]]),
+    `Reference Group (n)` = length(icomp[[2]]),
+    check.names = FALSE
+  )
+}
+
+# filter comparisons were we have at least 3 samples in each group
+comp_df %<>% 
+  mutate(Evaluated = `Sample Group (n)` >= 3 & `Reference Group (n)` >= 3)
+kepp_comp <- comp_df %>% filter(Evaluated) %>% pull(comparison)
+comp_list <- comp_list[kepp_comp]
+
+# Add long names
+comp_df <- comp_df %>% left_join(comp_list_description) %>% 
+  mutate(comparison = comparison_long) %>%
+  dplyr::select(-comparison_long)
+
+comp_df %>%
+  datatable(., 
+            rownames = FALSE, 
+            filter = 'top', 
+            caption = 'List of comparisons for differential expression. Comparisons with n < 3 samples in each group won\'t be evaluated',
+            extensions = 'Buttons', 
+            options = list(
+              dom = 'Blfrtip',
+              buttons = c('csv', 'excel')
+            ))
+
+```
+
+
+## Data generation
+
+### Run differential expression analysis
+Get Ensembl gene info
+```{r de-ensembl, eval = FALSE}
+ensembl <-  biomaRt::useEnsembl(biomart="genes", dataset="mmusculus_gene_ensembl",
+                                mirror = 'www')
+
+gene_desc <- biomaRt::getBM(attributes=c('external_gene_name','description'),
+                              filters = 'external_gene_name',
+                              values = rowData(se)$gene_name, mart =ensembl) %>%
+    dplyr::rename('gene_name' = 'external_gene_name') %>%
+    unique
+
+
+gene_desc <- gene_desc[!duplicated(gene_desc$gene_name),]
+saveRDS(gene_desc, file = file.path(dirname(params$se_path), 'ensembl_gene_desc.rds'))
+```
+
+```{r de-ensembl-load, eval = FALSE}
+gene_desc <- readRDS(file = file.path(dirname(params$se_path), 'ensembl_gene_desc.rds'))
+```
+
+Run differential expression analysis using EdgeR QLF
+```{r edgeR-QLF-run, eval = FALSE}
+use_comp <-  comp_list[[1]]
+dge_list <- foreach(use_comp = comp_list) %do%{
+  se_cols <- se$sample_alias %in% unlist(use_comp)
+  use_se <- se[,se_cols]
+  use_se$group <- ifelse(
+    use_se$sample_alias %in% use_comp[[1]],
+    names(use_comp)[1],
+    names(use_comp)[2]
+  )
+  
+  if(is.null(use_comp$batch)) {
+    dge <- edgeR_dge(
+      use_se,
+      # Design configuration for differential expression
+      group_var =  'group',
+      group_sample = names(use_comp)[1],
+      group_ref = names(use_comp)[2],
+      design_formula = "~ group",
+      coef = 'last',
+      # Conversion from SingleCellExperiment/Summarized Experiment to DGEList
+      assay_to_DGEList = 'counts',
+      assay_to_row_filter = "counts",
+      # Feature filtering parameters
+      use_filterByExpr = TRUE,
+      min_counts = params$min_counts,
+      min_present_prop = params$min_present_prop,
+      # EdgeR workflow configuration
+      run_calcNormFactors = 'TMM',
+      estimateDisp_robust = TRUE,
+      estimateDisp_trend.method = "locfit",
+      glm_approach = "QLF",
+      # Output configuration
+      adjust_method = 'BH'
+      )
+    } else {
+      design_formula = paste0("~ ", use_comp$batch," + group")
+      dge <- edgeR_dge(
+        use_se,
+        # Design configuration for differential expression
+        group_var =  'group',
+        group_sample = names(use_comp)[1],
+        group_ref = names(use_comp)[2],
+        batch_vars = use_comp$batch,
+        design_formula = design_formula,
+        coef = 'last',
+        # Conversion from SingleCellExperiment/Summarized Experiment to DGEList
+        assay_to_DGEList = 'counts',
+        assay_to_row_filter = "counts",
+        # Feature filtering parameters
+        use_filterByExpr = TRUE,
+        min_counts = params$min_counts,
+        min_present_prop = params$min_present_prop,
+        # EdgeR workflow configuration
+        run_calcNormFactors = 'TMM',
+        estimateDisp_robust = TRUE,
+        estimateDisp_trend.method = "locfit",
+        glm_approach = "QLF",
+        # Output configuration
+        adjust_method = 'BH'
+        )
+    }
+  
+  # Add gene description
+  use_res <- dge$results %>%  left_join(., gene_desc, relationship = "many-to-many")
+
+  dge$results <- use_res %>% 
+    filter(!duplicated(feature)) %>% 
+    mutate(rownames = feature) %>% 
+    column_to_rownames('rownames')
+  
+   return(dge)
+}
+
+names(dge_list) <- names(comp_list)
+
+# Save objects
+saveRDS(dge_list, file = file.path(params$output_dir, 'dge-edgeR_QLF.rds'))
+```
+
+### Run functional enrichment
+```{r gse-run, eval = FALSE}
+dge_list <- readRDS(file.path(params$output_dir, 'dge-edgeR_QLF.rds'))
+dge <-  dge_list[[2]]
+
+gse_list <- foreach(dge = dge_list) %do%{
+  gse_res <- gse_omnibus(
+    feature_names = dge$results$gene_name,
+    p = dge$results$FDR,
+    fc = dge$results$logFC,
+    fc_thrs = 0.5,
+    gmt_files = gmt_files_symbols,
+    
+    annot_db = 'org.Mm.eg.db',
+    organism = 'mmusculus',
+    kegg_organism = 'mmu',
+    reactome_organism = 'mouse',
+    
+    run_enricher = FALSE,
+    run_enrichGO = FALSE,
+    run_enrichKEGG = FALSE,
+    run_enrichReactome = FALSE,
+    
+    run_GSEA = TRUE,
+    run_gseGO = FALSE,
+    run_gseKEGG = FALSE,
+    run_gseReactome = FALSE,
+    
+    go_ontologies = c('BP', 'MF'),
+    go_simplify_p = 0.05,
+    args_gse = list(minGSSize = 10, maxGSSize = 250, 
+                    pvalueCutoff = 1, 
+                    BPPARAM = BiocParallel::MulticoreParam(1))
+    )
+  
+   return(gse_res)
+
+}
+names(gse_list) <- names(dge_list)
+
+# Save objects
+saveRDS(gse_list, file = file.path(params$output_dir,'gse_omnibus-edgeR_QLF.rds'))
+```
+
+
+### Load data
+```{r dge-gse-load}
+dge_list <- readRDS(file = file.path(params$output_dir, 'dge-edgeR_QLF.rds'))
+gse_list <- readRDS(file = file.path(params$output_dir, 'gse_omnibus-edgeR_QLF.rds'))
+```
+
+
+### Knitr:template
+```{r knitr-template-rnaseq-deg-edger, eval = TRUE}
+selected_labels_volcano <- c('Amhr2')
+# knit template: https://workflowr.github.io/workflowr/articles/wflow-07-common-code.html
+src <- knit_expand(
+  file = here::here("analysis/templates/rnaseq-deg-edger.Rmd")
+  )
+```
+`r knit(text = src)`
+
+
+
+## GSEA plots for selected signatures
+
+Define signatures
+```{r user-defined-gene_sets}
+manual_gene_sets <- list(
+  # Signature 1
+  `Mammary epithelium proliferation` = c(
+    'Aurka',
+    'Aurkb',
+    'Brca1',
+    'Brca2',
+    'Ccdn1',
+    'Cdkn2a',
+    'Esr1',
+    'Gata3',
+    'Hoxa5',
+    'Mki67',
+    'Plk1',
+    'Wnt5A',
+    'Agap2',
+    'Areg',
+    'Bax',
+    'Deaf1',
+    'Epha2',
+    'Etv4',
+    'Id2',
+    'Kdm5b',
+    'Robo1',
+    'Mapk1',
+    'Med1',
+    'Pygo2',
+    'Tfap2c'
+  ),
+  # Signature 2
+  `EMT regulators and targets` = c(
+    'Epcam',
+    'Cdh1',
+    'Cdh2',
+    'Cldn1',
+    'Cldn3',
+    'Cldn4',
+    'Cldn7',
+    'Vim',
+    'Acta2',
+    'Snai2',
+    'Twist1',
+    'Zeb1',
+    'Zeb2',
+    'Grhl2',
+    'Esrp1',
+    'Esrp2',
+    'Marveld2',
+    'Rab25',
+    'Myo5C',
+    'Pkp1',
+    'Pkp3',
+    'Jup',
+    'Dsp',
+    'Ppl',
+    'Dsg3'
+  ),
+  # Signature 3
+  `SMAD target genes and interactors` = c(
+    'Wnt4',
+    'Cited2',
+    'Tob1',
+    'Acvr1',
+    'Hipk2',
+    'Ppm1a',
+    'Crebbp',
+    'Zfyve9',
+    'Col5a2',
+    'Tgif1',
+    'Ankrd1',
+    'Smad4',
+    'Smurf1',
+    'Magi2',
+    'Zmiz1',
+    'Trim33',
+    'Skil',
+    'Ipo7',
+    'Mef2a',
+    'Smad9',
+    'Usp9x',
+    'Rnf111',
+    'Tcf12',
+    'Hmga2',
+    'Foxa2'
+  ),
+  # Signature 4
+  `STAT1 target genes and interactors` = c(
+    'Ciita',
+    'Socs1',
+    'Cxcl10',
+    'Irf1',
+    'Irf7',
+    'Irf9',
+    'Stat1',
+    'Stat2',
+    'Stat3',
+    'Stat5a',
+    'Stat5b',
+    'Sting1',
+    'Jak1',
+    'Jak2',
+    'Tap1',
+    'Tap2',
+    'Usp18',
+    'Cyp1b1',
+    'Mx1',
+    'Ido1',
+    'Bcl6',
+    'Gbp5',
+    'Egr1',
+    'Fos',
+    'Lyn'
+  )
+)
+
+
+i <- names(manual_gene_sets)[1]
+manual_term2gene <- foreach(i = names(manual_gene_sets), .combine = rbind) %do% {
+  cbind(
+    term = rep(i, length(manual_gene_sets[[i]])), 
+    gene = manual_gene_sets[[i]]
+    )
+}
+```
+
+Run functional enrichment
+```{r user-defined-gene_sets-gse-run, eval = FALSE}
+library(clusterProfiler)
+dge <-  dge_list[[2]]
+
+gse_manual_list <- foreach(dge = dge_list) %do%{
+  feature_fc_list <- dge$results$logFC %>% 
+    set_names(make.names(dge$results$gene_name, unique = TRUE)) %>% 
+    sort(decreasing = TRUE)
+  res <- GSEA(feature_fc_list, 
+              TERM2GENE=manual_term2gene,
+              minGSSize = 0,
+              maxGSSize = Inf,
+              pvalueCutoff = 1, verbose = FALSE)
+  res
+}
+
+names(gse_manual_list) <- names(dge_list)
+
+# Save objects
+saveRDS(gse_manual_list, file = file.path(params$output_dir,'gsea-edgeR_QLF-signatures.rds'))
+```
+
+```{r user-defined-gene_sets-gse-load}
+gse_manual_list <- readRDS(file = file.path(params$output_dir,'gsea-edgeR_QLF-signatures.rds'))
+comp_names <- comp_list_description$comparison_long %>% 
+  set_names(comp_list_description$comparison)
+names(gse_manual_list) <- comp_names[names(gse_manual_list)]
+
+```
+
+```{r gseaplot2-custom-function}
+gseaScores <- getFromNamespace("gseaScores", "DOSE")
+gsInfo <- getFromNamespace("gsInfo", "enrichplot")
+gseaplot2_custom <- function (
+    x, 
+    geneSetID, 
+    title = "", 
+    color = "green", 
+    base_size = 11, 
+    rel_heights = c(1.5, 0.5, 1), subplots = 1:3, pvalue_table = FALSE, 
+    ES_geom = "line",
+    axis.linewidth = (1/2.141959)/4,
+    pres.linewidth = 1,
+    p2.fill = 'transparent',
+    p2.linerange.linewidth = 0.5,
+    legend.position = c(0.8, 0.8),
+    p.pos.ylab = 'Ranked List Metric',
+    p2.labels = FALSE, # Only works when there are two geneSetID
+    reverse.rank = FALSE,
+    p2.add.intervals.colors = FALSE,
+    p2.segment.color.var = 'Description', # Either Description or geneList (log2FC)
+    geneList.limit = NULL,
+    fontface = "italic" #c("plain", "bold", "italic", "bold.italic")
+    )
+{
+    ##
+    ## Enrichmment score plot
+    ##
+    ES_geom <- match.arg(ES_geom, c("line", "dot"))
+    geneList <- position <- NULL
+    if (length(geneSetID) == 1) {
+        gsdata <- gsInfo(x, geneSetID)
+    } else {
+        gsdata <- do.call(rbind, lapply(geneSetID, gsInfo, object = x))
+    }
+    
+    # Reverse rank
+    if(reverse.rank) {
+      gsdata$x <- rev(gsdata$x)
+    }
+    
+    # Cap the geneList values
+    if(!is.null(geneList.limit)) {
+      gsdata$geneListCapped <- gsdata$geneList
+      gsdata$geneListCapped[gsdata$geneListCapped > geneList.limit] <- geneList.limit
+      gsdata$geneListCapped[gsdata$geneListCapped < -geneList.limit] <- -geneList.limit
+      p2.segment.color.var <- 'geneListCapped'
+    }
+    
+    p <- ggplot(gsdata, aes_(x = ~x)) + 
+      xlab(NULL) + 
+      theme_classic(base_size) + 
+      theme(
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.y = element_blank(), 
+        panel.grid.minor.y = element_blank()
+        # panel.border = element_rect(fill =NULL,color = "black", linewidth = one_pt/4)
+      ) + 
+      scale_x_continuous(expand = c(0, 0))
+    
+    if (ES_geom == "line") {
+        es_layer <- geom_line(aes_(y = ~runningScore, color = ~Description), 
+            linewidth = 1)
+    } else {
+        es_layer <- geom_point(aes_(y = ~runningScore, color = ~Description), 
+            linewidth = 1, data = subset(gsdata, position == 1))
+    }
+    p.res <- p + 
+      es_layer + 
+      geom_hline(yintercept = 0, linetype = "dashed", color = "grey") +
+      theme(
+        legend.position = legend.position,
+        legend.title = element_blank(), 
+        legend.background = element_rect(fill = "transparent")
+        ) + 
+      ylab("Running Enrichment Score") + 
+      theme(
+        axis.text.x = element_blank(), 
+        axis.ticks.x = element_blank(), 
+        axis.line.x = element_blank(), 
+        axis.line.y = element_blank(), 
+        # axis.line.y = element_line(linewidth = axis.linewidth, color = 'black'),
+        panel.border = element_rect(fill ="transparent",color = "black", linewidth = axis.linewidth)
+        )
+    ##
+    ## Plot gene position in rank
+    ##
+    i <- 0
+    for (term in unique(gsdata$Description)) {
+        idx <- which(gsdata$ymin != 0 & gsdata$Description == 
+            term)
+        gsdata[idx, "ymin"] <- i
+        gsdata[idx, "ymax"] <- i + 1
+        i <- i + 1
+    }
+    
+    p2 <- ggplot(gsdata, aes_(x = ~x)) + 
+      annotate("rect", xmin=0, xmax=100+max(gsdata$x), ymin=0 , ymax=2, alpha=0.8, color=p2.fill, fill=p2.fill) +
+      # geom_linerange(aes_(ymin = ~ymin, ymax = ~ymax, color = ~Description), linewidth = p2.linerange.linewidth) + 
+      geom_linerange(aes_string(ymin = 'ymin', ymax = 'ymax', color = p2.segment.color.var), linewidth = p2.linerange.linewidth) + 
+      xlab(NULL) + 
+      ylab(NULL) + 
+      theme_classic(base_size) + 
+      theme(
+        legend.position = "none", 
+        plot.margin = margin(t = -0.1, b = 0, unit = "cm"), 
+        axis.ticks = element_blank(), 
+        axis.text = element_blank(), 
+        axis.line.x = element_blank(),
+        axis.line.y = element_blank(),
+        panel.border = element_rect(fill ="transparent",color = "black", linewidth = axis.linewidth)#,
+        # panel.background = element_rect(fill = p2.fill)
+        ) + 
+      scale_x_continuous(expand = c(0, 0)) + 
+      scale_y_continuous(expand = c(0, 0))
+    
+    if(p2.labels == TRUE & length(geneSetID) == 2) {
+      gsdata_labels <- gsdata %>% filter(ymax > 0)
+      max_y <- max(gsdata_labels$ymax)
+      
+      description_labels <- unique(gsdata_labels$Description) 
+      description_cut_point <- ceiling(length(description_labels) / 2)
+      description_bottom <- description_labels[1:description_cut_point]
+      description_top <- description_labels[(description_cut_point+1):length(description_labels)]
+      
+      gsdata_labels_bottom <- gsdata_labels %>% filter(Description %in% description_bottom)
+      gsdata_labels_top <- gsdata_labels %>% filter(Description %in% description_top)
+      max_y <- max(gsdata_labels$ymax)
+      p2 <- p2 + 
+        geom_text_repel(data = gsdata_labels_top,
+                        aes(y = max_y, label = gene),
+                        force_pull   = 0, # do not pull toward data points
+                        nudge_y      = max_y * 0.15,
+                        direction    = "x",
+                        ylim = c(2.5, 4),
+                        angle        = 90,
+                        hjust        = 0,
+                        max.time = 3,
+                        max.overlaps = Inf,
+                        min.segment.length = 0,
+                        segment.size = 0.2,
+                        segment.square = TRUE,
+                        segment.inflect = FALSE,
+                        segment.curvature = 1,
+                        segment.angle = -1,
+                        box.padding = 0.075,
+                        fontface = "italic"
+        ) +
+        geom_text_repel(data = gsdata_labels_bottom,
+                        aes(y = 0, label = gene),
+                        force_pull   = 0, 
+                        nudge_y      = -(max_y * 0.15),
+                        direction    = "x",
+                        ylim = c(-2, -0.5),
+                        angle        = 90,
+                        hjust        = 1,
+                        max.time = 3,
+                        max.overlaps = Inf,
+                        min.segment.length = 0,
+                        segment.size = 0.2,
+                        segment.square = TRUE,
+                        segment.inflect = FALSE,
+                        segment.curvature = 1,
+                        segment.angle = -1,
+                        box.padding = 0.075,
+                        fontface = "italic"
+        ) +
+        coord_cartesian(expand = T, clip = "off") +
+        ylim(-1, 3)
+        
+      
+    } else if (p2.labels == TRUE & length(geneSetID) == 1) {
+      gsdata_labels <- gsdata %>% filter(ymax > 0)
+      max_y <- max(gsdata_labels$ymax)
+      
+      description_labels <- unique(gsdata_labels$Description) 
+      description_cut_point <- ceiling(length(description_labels) / 2)
+      description_top <- description_labels[(description_cut_point+1):length(description_labels)]
+      
+      gsdata_labels_top <- gsdata_labels %>% filter(Description %in% description_top)
+      max_y <- max(gsdata_labels$ymax)
+      p2 <- p2 + 
+        geom_text_repel(data = gsdata_labels_top,
+                        aes(y = max_y, label = gene),
+                        force_pull   = 0, # do not pull toward data points
+                        nudge_y      = max_y * 0.05,
+                        direction    = "x",
+                        ylim = c(1.4, 2),
+                        angle        = 90,
+                        hjust        = 0,
+                        max.time = 3,
+                        max.overlaps = Inf,
+                        min.segment.length = 0,
+                        segment.size = 0.2,
+                        segment.square = TRUE,
+                        segment.inflect = FALSE,
+                        segment.curvature = 1,
+                        segment.angle = -1,
+                        box.padding = 0.075,
+                        fontface = "italic"
+        )
+    } else {
+      p2 <- p2 + theme(panel.background = element_rect(fill = p2.fill))
+    }
+    if (length(geneSetID) == 1 & p2.add.intervals.colors) {
+        v <- seq(1, sum(gsdata$position), length.out = 9)
+        inv <- findInterval(rev(cumsum(gsdata$position)), v)
+        if (min(inv) == 0) 
+            inv <- inv + 1
+        col <- c(rev(brewer.pal(5, "Blues")), brewer.pal(5, "Reds"))
+        ymin <- min(p2$data$ymin)
+        yy <- max(p2$data$ymax - p2$data$ymin) * 0.3
+        xmin <- which(!duplicated(inv))
+        xmax <- xmin + as.numeric(table(inv)[as.character(unique(inv))])
+        d <- data.frame(ymin = ymin, ymax = yy, xmin = xmin, 
+            xmax = xmax, col = col[unique(inv)])
+        p2 <- p2 + geom_rect(aes_(xmin = ~xmin, xmax = ~xmax, 
+            ymin = ~ymin, ymax = ~ymax, fill = ~I(col)), data = d, 
+            alpha = 0.9, inherit.aes = FALSE)
+    }
+    
+    ##
+    ## Rank plot
+    ##
+    df2 <- p$data
+    df2$y <- p$data$geneList[df2$x]
+    p.pos <- p + 
+      geom_segment(data = df2, aes_(x = ~x, xend = ~x, y = ~y, yend = 0), color = "grey")
+    p.pos <- p.pos + 
+      ylab(p.pos.ylab) + 
+      xlab("Rank in Ordered Dataset") + 
+      theme(
+        plot.margin = margin(t = -0.1, r = 0.2, b = 0.2, l = 0.2, unit = "cm"),
+        axis.line.x = element_blank(), 
+        axis.line.y = element_blank(), 
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.y = element_blank(), 
+        panel.grid.minor.y = element_blank(),
+        # axis.line.y = element_line(linewidth = axis.linewidth, color = 'black'),
+        panel.border = element_rect(fill ="transparent",color = "black", linewidth = axis.linewidth)
+        )
+    
+    ##
+    ## Combine plots
+    ##
+    if (!is.null(title) && !is.na(title) && title != "") 
+        p.res <- p.res + ggtitle(title)
+    if (length(color) == length(geneSetID)) {
+        p.res <- p.res + scale_color_manual(values = color)
+        if (length(color) == 1) {
+            p.res <- p.res + theme(legend.position = "none")
+            p2 <- p2 + scale_color_manual(values = "black")
+        }
+        else if (p2.segment.color.var == 'Description') {
+            p2 <- p2 + scale_color_manual(values = color)
+        }
+    }
+    if (p2.segment.color.var %in% c('geneList','geneListCapped') ) {
+      p2 <- p2 + scale_color_gradient2(low = "#377eb8", mid = "white", high = "#e41a1c", midpoint = 0)
+    }
+    if (pvalue_table) {
+        pd <- x[geneSetID, c("Description", "pvalue", "p.adjust")]
+        rownames(pd) <- pd$Description
+        pd <- pd[, -1]
+        for (i in seq_len(ncol(pd))) {
+            pd[, i] <- format(pd[, i], digits = 4)
+        }
+        tp <- tableGrob2(pd, p.res)
+        p.res <- p.res + theme(legend.position = "none") + annotation_custom(tp, 
+            xmin = quantile(p.res$data$x, 0.5), xmax = quantile(p.res$data$x, 
+                0.95), ymin = quantile(p.res$data$runningScore, 
+                0.75), ymax = quantile(p.res$data$runningScore, 
+                0.9))
+    }
+    plotlist <- list(p.res, p2, p.pos)[subplots]
+    n <- length(plotlist)
+    plotlist[[n]] <- plotlist[[n]] + 
+      theme(
+        # axis.line.x = element_line(), 
+        axis.ticks.x = element_line(),
+        axis.text.x = element_text()
+        )
+    if (length(subplots) == 1) 
+        return(plotlist[[1]] + theme(plot.margin = margin(t = 0.2, 
+            r = 0.2, b = 0.2, l = 0.2, unit = "cm")))
+    if (length(rel_heights) > length(subplots)) 
+        rel_heights <- rel_heights[subplots]
+    aplot::gglist(gglist = plotlist, ncol = 1, heights = rel_heights)
+}
+```
+
+
+The figures below shows the GSEA plots with labels with a reverse rank compared to traditional ranking. In this case, the rank is based on increasing order of fold-change.
+
+In these plots, the segments (second panel) are colored by fold change (color range capped to -5 to 5)
+```{r gseaplot2-custom-labels-individual-plot, fig.width=7.2, fig.asp = 1.1}
+i <- names(gse_manual_list)[1]
+for(i in names(dge_list)) {
+  cat("### Comparison", i, "\n\n")
+  
+  gse_manual_list[[i]]@result %>% 
+    mutate(
+      NES = round(NES, 2),
+      pvalue = format.pval(pvalue, digits = 2),
+      p.adjust = format.pval(p.adjust, digits = 2)
+    ) %>% 
+    dplyr::select(Description, setSize, NES, pvalue, p.adjust) %>% 
+    kbl(caption = 'GSEA results',
+        row.names = F) %>%
+    kable_paper(bootstrap_options = c("striped", "hover", "condensed"), 
+                full_width = F) %>%
+    column_spec(1, bold = TRUE) %>% 
+    print
+  
+  cat("\n\n")
+  
+  n_gsets <- seq_along(gse_manual_list[[i]]$Description)
+  for(j in n_gsets) {
+    es_color <- ifelse(gse_manual_list[[i]]$NES[j] > 0, "#e41a1c", "#377eb8")
+    cat("####", gse_manual_list[[i]]$Description[j], "\n\n")
+    res <- gseaplot2_custom(
+      gse_manual_list[[i]], 
+      geneSetID = j, 
+      # pvalue_table = TRUE,
+      title = i,
+      base_size = 8,
+      rel_heights = c(1, 1.5, 0),
+      color =es_color,
+      p2.fill = 'grey90',
+      p2.linerange.linewidth = 0.80,
+      legend.position = 'top',
+      p.pos.ylab = 'Log2 Fold Change',
+      p2.labels = TRUE,
+      reverse.rank = FALSE,
+      p2.segment.color.var = 'geneList',
+      geneList.limit = 5
+    )
+    print(res)
+    cat("\n\n")
+  }
+}
+
+
+```

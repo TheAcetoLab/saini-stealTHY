@@ -303,7 +303,7 @@ gse_list <- readRDS(file.path(params$output_dir, 'gse_omnibus-edgeR_QLF.rds'))
 
 ## Differential expression analysis
 
-### Figure 3D top left: Differential expressed genes in dCas9-Thy1 over Thy1 transduction in sorted CD3-positive TILs
+### Supplementary Figure 2H top left: Differential expressed genes in dCas9-Thy1 over Thy1 transduction in sorted CD3-positive TILs
 
 Showing selected genes and genes with a FDR < 0.05 and a absolute log2 fold-change > 1. To calculate the fold-change by model, log normalized counts were aggregated at model and condition using their average (function aggregateAcrossCells). Then the aggregated expression in dCas9-Thy1 was divided by the aggregated expression in Thy1.
 ```{r dge-heatmap-fc-dc9thy1--over--thy1, fig.width = 1, fig.asp = 2}
@@ -462,7 +462,7 @@ cat("\n\n")
 
 ## Functional Enrichment
 
-### Figure 3D bottom left: Representative gene-sets enriched in dCas9-Thy1 over Thy1 transduction
+### Supplementary Figure 2H bottom left: Representative gene-sets enriched in dCas9-Thy1 over Thy1 transduction
 ```{r gsea-curated-dot-plot-dc9thy1--over--thy1, fig.width=2.37, fig.asp = 1}
 i <- "dCas9_Thy1--over--Thy1"
 x <- gse_list[[i]]$GSEA[["msigdb.m2.cp.m5.bp.custom.signatures"]]@result
@@ -531,9 +531,4 @@ cat("\n\n")
 ```{r gsea-curated-dot-plot-legend-dc9thy1--over--thy1, fig.width=2.37, fig.asp = 1.5}
 plot_grid(res_legend, ncol = 1, nrow = 1)
 cat("\n\n")
-```
-
-## Stop knitr
-```{r}
-knitr::knit_exit()
 ```

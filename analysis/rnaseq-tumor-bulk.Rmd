@@ -301,7 +301,7 @@ gse_list <- readRDS(file.path(params$output_dir, 'gse_omnibus-edgeR_QLF.rds'))
 
 ## Differential expression analysis
 
-### Figure 3C top: Differential expressed genes in dCas9-Thy1 over Thy1 transduction
+### Supplementary Figure 2G top: Differential expressed genes in dCas9-Thy1 over Thy1 transduction
 
 Showing selected genes and genes with a FDR < 0.05 and a absolute log2 fold-change > 1. To calculate the fold-change by model, log normalized counts were aggregated at model and condition using their average (function aggregateAcrossCells). Then the aggregated expression in dCas9-Thy1 was divided by the aggregated expression in Thy1.
 ```{r dge-heatmap-fc-dc9thy1--over--thy1, fig.width = 1, fig.asp = 2}
@@ -460,7 +460,7 @@ cat("\n\n")
 
 ## Functional Enrichment
 
-### Figure 3C bottom: Representative gene-sets enriched in dCas9-Thy1 over Thy1 transduction
+### Supplementary Figure 2G bottom: Representative gene-sets enriched in dCas9-Thy1 over Thy1 transduction
 ```{r gsea-curated-dot-plot-dc9thy1--over--thy1, fig.width=2.37, fig.asp = 1}
 i <- "dCas9_Thy1--over--Thy1"
 use_sets <- c("GO:0019882","GO:0002250","GO:0050870","GO:0001819","GO:0001906",
@@ -637,7 +637,7 @@ clustering_heatmaps <- foreach(comp = names(clustering_groups)) %do% {
 names(clustering_heatmaps) <- names(clustering_groups)
 ```
 
-### Figure 4G: Sample distances in MVT1 models
+### Figure 3H: Sample distances in MVT1 models
 
 Samples obtained from syngeneic hosts, following transplantation of mammary carcinoma cells transduced with integrating dCas9-Thy1 (LV Cas9) or transduced with HK and transfected with Apo-Cas9, then MACS-sorted as TrCD8a-positive and TrCD8a-negative cells
 
@@ -647,7 +647,7 @@ cat("\n\n")
 ```
 
 
-### Supplementary figure 4D left: Sample distances in Py2T model
+### Supplementary figure 3E left: Sample distances in Py2T model
 
 Samples obtained from syngeneic hosts, following transplantation of mammary carcinoma cells transduced with integrating dCas9-Thy1 (LV Cas9) or transduced with HK and transfected with Apo-Cas9, then MACS-sorted as TrCD8a-positive and TrCD8a-negative cells
 
@@ -656,7 +656,7 @@ draw(clustering_heatmaps[['Py2T']],  heatmap_legend_side = "bottom")
 cat("\n\n")
 ```
 
-### Supplementary figure 4D right: Sample distances in 4T1 model
+### Supplementary figure 3E right: Sample distances in 4T1 model
 
 Samples obtained from syngeneic hosts, following transplantation of mammary carcinoma cells transduced with integrating dCas9-Thy1 (LV Cas9) or transduced with HK and transfected with Apo-Cas9, then MACS-sorted as TrCD8a-positive and TrCD8a-negative cells
 
@@ -749,7 +749,7 @@ ht_TrCD8a_neg <- Heatmap(
 
 
 
-### Figure 4D : qRT-PCR in TrCD8a+ and TrCD8a-
+### Figure 3D : qRT-PCR in TrCD8a+ and TrCD8a-
 ```{r qrt-pcr-heatmap-combined2, fig.width = 1.80, fig.asp = 0.80}
 ht_list <-  ht_TrCD8a_pos + ht_TrCD8a_neg
 draw(ht_list, heatmap_legend_side = "bottom", merge_legend = TRUE)
@@ -757,9 +757,4 @@ cat("\n\n")
 ```
 
 
-
-## Stop knitr
-```{r}
-knitr::knit_exit()
-```
 
