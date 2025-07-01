@@ -1,0 +1,617 @@
+---
+title: "Survival analysis in TCGA"
+subtitle: "CRISPR hits signatures"
+author: "Francesc Castro-Giner"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+params:
+  date: '`r format(Sys.Date(), "%B %d, %Y")`'
+  data_dir: './data/resources/UCSCXena/SummarizedExperiment'
+  output_dir: './output/clinical/tcga_survival_crispr_hits_signatures'
+  min_event_n: 3
+  min_surv_n: 20
+  max_time_years: 5
+---
+
+## Load libraries, additional functions and data
+
+Setup environment
+```{r setup, include=TRUE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(results='asis', echo=TRUE, message=FALSE, warning=FALSE, error=FALSE, fig.align = 'center', fig.width = 3.5, fig.asp = 0.618, dpi = 600, dev = c("png", "pdf"), engine.opts = list(bash = "-l"))
+
+options(stringsAsFactors = FALSE)
+
+use_seed <- 1100101
+
+set.seed(use_seed)
+
+dir.create(params$output_dir, recursive = TRUE, showWarnings = FALSE)
+```
+
+Load packages
+```{r load-libraries}
+library(tidyverse)
+library(knitr)
+# library(showtext)
+library(foreach)
+library(SummarizedExperiment)
+library(survival)
+library(gtsummary)
+library(ggsurvfit)
+library(survminer)
+library(meta)
+library(magrittr)
+# library(DT)
+# library(colorblindr)
+# library(ggdendro)
+# library(RColorBrewer)
+# library(circlize)
+# library(Hmisc)
+# library(ComplexHeatmap)
+# library(ineq)
+library(kableExtra)
+library(openxlsx)
+# library(magrittr)
+# library(ggrepel)
+# library(ggpubr)
+# library(ggbeeswarm)
+# library(ggridges)
+# library(openxlsx)
+# library(MAGeCKFlute)
+library(GSVA)
+```
+
+Load ggplot theme
+```{r ggplot-theme, include=TRUE}
+source("./configuration/rmarkdown/ggplot_theme.R")
+```
+
+Clean files generated in previous runs
+```{r clean-files}
+rmd_file <- current_input()
+if(!is.null(rmd_file)) {
+  figures_dir <- file.path('./docs/figure',rmd_file)
+  if(dir.exists(figures_dir)) {
+    unlink(file.path(figures_dir, "*"))
+  }
+}
+```
+
+
+## Generate signatures
+
+### Generate Signature for CRISPR Hits
+```{r crispr-ko-signatures}
+dge_signatures <- list(
+  down_crispr_hits = c('CCR10', `TRAIL-R2` = 'TNFRSF10B', 'CCL27', 'IGFBP1', 
+                     'ANGPT2', 'AMH', 'IL34'),
+  up_crispr_hits = c('IFNA8', 'TGFB2', 'IL13RA2', 'IFNAR1', 'IL24', 'IFNLR1',
+                     'PTEN', 'GDF9')
+)
+```
+
+
+
+
+
+## Run survival analysis
+```{r conf-survival-analysis}
+project_id <- list.files(
+  path = params$data_dir, 
+  pattern = 'TCGA-[A-Z]+.rds$'
+  ) %>%
+  gsub(".rds", "", .)
+
+tcga_selected <- c('BRCA', 'LUAD', 'COAD') %>% 
+  paste('TCGA', ., sep = '-')
+
+project_id <- intersect(project_id, tcga_selected)
+
+
+surv_endpoints <- list(
+  DSS = list(
+    time_var = 'DSS.time',
+    event_var = 'DSS'
+  ),
+  DFI = list(
+    time_var = 'DFI.time',
+    event_var = 'DFI'
+  )
+)
+
+```
+
+Load raw data, and create SummarizedExperiments with signatures for each project. 
+```{r se-signatures-create, eval = FALSE}
+i <- project_id[1]
+data_se <- foreach(i = project_id) %do% {
+  cat("### ", i, "\n\n")
+  se <- readRDS(file.path(params$data_dir, paste0(i, '.rds')))
+  
+  # Remove duplicated samples: https://ucsc-xena.gitbook.io/project/how-do-i/how-do-i-remove-duplicate-samples-from-a-km-plot
+  sample_annot <- colData(se) %>% data.frame %>% 
+    filter(sample_type == 'Primary Tumor')
+  
+  # Filter samples
+  se <- se[, rownames(sample_annot)]
+  
+  # Run GSVA
+  use_assay <- edgeR::cpm(assay(se, 'normcounts'), log = TRUE)
+  gsvapar <- gsvaParam(
+    use_assay,
+    dge_signatures,
+    kcdf = "Gaussian",
+    maxDiff = TRUE
+  )
+  gsva_res <- gsva(gsvapar, 
+       verbose = FALSE)
+
+  # Generate SummarizedExperiment object using GSVA matrix
+  se <- SummarizedExperiment(
+    assays = list(gsva = gsva_res), 
+    colData = colData(se)
+    )
+  
+  se
+}
+names(data_se) <- project_id
+
+# Remove NULL elements
+data_se <- compact(data_se)
+data_se <- data_se[!sapply(data_se, is.null)]
+
+saveRDS(data_se, file = file.path(params$output_dir, 'data_se_signatures.rds'))
+```
+
+For each SummarizedExperiments, we set up the follow-up limit and configure survival variable. Remove studies with less than `r params$min_event_n` events and `r params$min_surv_n` patients with survival data
+
+```{r se-signatures-add-surv, eval = FALSE}
+data_se_signatures <- readRDS(file.path(params$output_dir, 'data_se_signatures.rds'))
+
+data_se <- foreach(surv_i = surv_endpoints) %do% {
+  res <- foreach(se = data_se_signatures) %do% {
+    # Set survival variables and follow up limit
+    sample_annot <- colData(se) %>% data.frame()
+    sample_annot$status <- sample_annot[[surv_i$event_var]]
+    sample_annot$time <- sample_annot[[surv_i$time_var]]/365.25
+    
+    sample_annot <- sample_annot %>% 
+      mutate(
+        status = ifelse(time >= params$max_time_years, 0, status),
+        time = ifelse(time >= params$max_time_years, params$max_time_years, time)
+      )
+    
+    colData(se) <- DataFrame(sample_annot)
+    
+    # Number of events
+    n_surv_data <- sum(!is.na(se$status))
+    n_events <- sum(se$status, na.rm = TRUE)
+    
+    if(ncol(se) > 0 & n_events >= params$min_event_n & n_surv_data >= params$min_surv_n) {
+      se
+    } else {
+      NULL
+    }
+  }
+  names(res) <- names(data_se_signatures)
+  res
+}
+names(data_se) <- names(surv_endpoints)
+
+# Remove NULL elements
+data_se <- compact(data_se)
+data_se <- data_se[!sapply(data_se, is.null)]
+
+
+saveRDS(data_se, file = file.path(params$output_dir, 'data_se_surv.rds'))
+
+```
+
+Generate data using optimal cutoff point. Cutoff determined using the maximally selected rank statistics from the 'maxstat' R package. This is an outcome-oriented methods providing a value of a cutpoint that correspond to the most significant relation with outcome (here, survival).
+```{r run-survival-maxstat-analysis, eval = FALSE}
+i <- names(data_se)[12]
+surv_maxstat <- foreach(surv_i = names(data_se), .combine = rbind) %do% {
+  res <- foreach(i = names(data_se[[surv_i]]), .combine = rbind) %do% {
+    se <- data_se[[surv_i]][[i]]
+    gene_exp <- assay(se, 'gsva') %>% t()
+    
+    colnames(gene_exp) <-rownames(se)
+    
+    sample_annot <- colData(se) %>% data.frame()
+    # sample_annot$status <- sample_annot[[params$event_var]]
+    # sample_annot$time <- sample_annot[[params$time_var]]/365.25
+    
+    # Set follow up limit
+    # sample_annot <- sample_annot %>% 
+    #   mutate(
+    #     status = ifelse(time >= params$max_time_years, 0, status),
+    #     time = ifelse(time >= params$max_time_years, params$max_time_years, time)
+    #   )
+    # # Keep only genes with expression in at least 20% of samples
+    # gene_exp_prop <- colSums(gene_exp > 0) / nrow(gene_exp)
+    # gene_exp <- gene_exp[,gene_exp_prop >= 0.2]
+    # 
+    
+    res_cut <- surv_cutpoint(cbind(sample_annot, gene_exp),
+                             time = "time", event = "status",
+                             variables = colnames(gene_exp))
+    res_cat <- surv_categorize(res_cut, labels = c('Low', 'High'))
+    sample_annot <- cbind(sample_annot, res_cat)
+    
+    g <- colnames(gene_exp)[1]
+    foreach(g = colnames(gene_exp), .combine = rbind) %do% {
+      use_formula <- as.formula(paste0("Surv(time, status) ~ ", g))
+      cox.res <- coxph(use_formula, data = sample_annot) %>%
+        tbl_regression(exp = TRUE)
+      data.frame(
+        surv_var = surv_i,
+        project_id = i,
+        gene_name = g,
+        HR = cox.res$table_body$estimate[3],
+        p.value = cox.res$table_body$p.value[3],
+        std.error = cox.res$table_body$std.error[3],
+        conf.low = cox.res$table_body$conf.low[3],
+        conf.high = cox.res$table_body$conf.high[3],
+        n.low = sum(sample_annot[[g]] == "Low"),
+        n.high = sum(sample_annot[[g]] == "High")
+      )
+    }
+  }
+  res
+}
+saveRDS(surv_maxstat, file = file.path(params$output_dir, 'surv_maxstat.rds'))
+
+survfit_km_maxstat <- foreach(surv_i = names(data_se)) %do% {
+  res <- foreach(i = names(data_se[[surv_i]])) %do% {
+    se <- data_se[[surv_i]][[i]]
+    gene_exp <- assay(se, 'gsva') %>% t()
+    
+    sample_annot <- colData(se) %>% data.frame()
+    # sample_annot$status <- sample_annot[[params$event_var]]
+    # sample_annot$time <- sample_annot[[params$time_var]]/365.25
+    
+    # Set follow up limit
+    # sample_annot <- sample_annot %>% 
+    #   mutate(
+    #     status = ifelse(time >= params$max_time_years, 0, status),
+    #     time = ifelse(time >= params$max_time_years, params$max_time_years, time)
+    #   )
+    # # Keep only genes with expression in at least 10% of samples
+    # gene_exp_prop <- colSums(gene_exp > 0) / nrow(gene_exp)
+    # gene_exp <- gene_exp[,gene_exp_prop >= 0.2]
+    
+    res_cut <- surv_cutpoint(cbind(sample_annot, gene_exp),
+                             time = "time", event = "status",
+                             variables = colnames(gene_exp))
+    res_cat <- surv_categorize(res_cut, labels = c('Low', 'High'))
+    sample_annot <- cbind(sample_annot, res_cat)
+    
+    g <- colnames(gene_exp)[1]
+    res_by_genes <- foreach(g = colnames(gene_exp)) %do% {
+      use_formula <- as.formula(paste0("Surv(time, status) ~ ", g))
+      # KM plot
+      survfit2(use_formula, data = sample_annot) %>% 
+        ggsurvfit() +
+        add_risktable() +
+        labs(
+          x = "Time (years)",
+          title = i
+        ) +
+        theme_project + 
+        theme(legend.position="bottom")
+      
+    }
+    names(res_by_genes) <- colnames(gene_exp)
+    res_by_genes
+  }
+  names(res) <- names(data_se[[surv_i]])
+  res
+}
+
+names(survfit_km_maxstat) <- names(data_se)
+saveRDS(survfit_km_maxstat, file = file.path(params$output_dir, 'survfit_km_maxstat.rds'))
+```
+
+Load survival data
+```{r load-survival-data}
+data_se <- readRDS(file.path(params$output_dir, 'data_se_surv.rds'))
+surv_maxstat <- readRDS(file.path(params$output_dir, 'surv_maxstat.rds'))
+survfit_km_maxstat <- readRDS(file.path(params$output_dir, 'survfit_km_maxstat.rds'))
+survfit_km_maxstat_list <- survfit_km_maxstat
+```
+
+Run metanalysis for survival analysis
+<!-- https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/ -->
+```{r run-survival-quant-meta-analysis}
+## Survival with maxtat
+meta_surv_maxstat <- foreach(sv = names(surv_endpoints)) %do% {
+  res <- foreach(g = unique(surv_maxstat$gene_name)) %do% {
+    use_surv <- surv_maxstat %>% filter(gene_name == g & surv_var == sv)
+    metagen(
+      HR = log(use_surv$HR), 
+      lower = log(use_surv$conf.low), 
+      upper = log(use_surv$conf.high),
+      sm = "HR", common=F, random=T,
+      studlab = use_surv$project_id,
+      method.tau = "DL", ## method to calculate Tau
+      method.random.ci = "classic" ## method to calculate estimator's CI
+    )
+  }
+  names(res) <- unique(surv_maxstat$gene_name)
+  res
+}
+names(meta_surv_maxstat) <- names(surv_endpoints)
+
+meta_surv_maxstat_summary <- foreach(sv = names(surv_endpoints), .combine = rbind) %do% {
+  foreach(g = unique(surv_maxstat$gene_name), .combine = rbind) %do% {
+    x <- summary(meta_surv_maxstat[[sv]][[g]])
+    data.frame(
+      surv_var = sv,
+      project_id = 'Summary',
+      gene_name = g,
+      HR = exp(x$random$TE),
+      p.value = x$random$p,
+      std.error = x$random$seTE,
+      conf.low = exp(x$random$lower),
+      conf.high = exp(x$random$upper)#,
+      # w.random = round(100*x$w.random / sum(x$w.random), 1)
+    )
+  }
+}
+
+meta_surv_maxstat_weight <- foreach(sv = names(surv_endpoints), .combine = rbind) %do% {
+  foreach(g = unique(surv_maxstat$gene_name), .combine = rbind) %do% {
+    x <- summary(meta_surv_maxstat[[sv]][[g]])
+    data.frame(
+      surv_var = sv,
+      project_id = x$studlab,
+      gene_name = g,
+      w.random = round(100*x$w.random / sum(x$w.random), 1)
+    )
+  }
+}
+
+use_meta_surv <- meta_surv_maxstat
+```
+
+
+```{r signature-maxstat-coxph-conf}
+use_surv <- surv_maxstat
+use_meta_surv <- meta_surv_maxstat
+```
+ 
+## Table of results
+<!-- Write results to xlsx file -->
+```{r signature-maxstat-coxph-write-xlsx}
+# File name summary
+rmd_file <- current_input()
+if(is.null(rmd_file))
+  rmd_file <- 'tmp'
+file_xlsx <- file.path('./docs/file',rmd_file, 'crispr_hits_signature_surv_maxstat.xlsx')
+
+dir.create(dirname(file_xlsx), recursive = TRUE, showWarnings = FALSE)
+
+# Generate workbook
+wb <- createWorkbook()
+for(i in unique(use_surv$surv_var)) {
+  addWorksheet(wb, i)
+  res <- use_surv %>% 
+    filter(surv_var == i) %>% 
+    dplyr::rename(signature = gene_name) %>%
+    select(surv_var, everything())
+  
+  res_meta <- foreach(g = unique(res$signature), .combine = rbind) %do% {
+    use_meta_sum <- summary(use_meta_surv[[i]][[g]])
+    data.frame(
+      project_id = 'Meta',
+      signature = g,
+      HR = exp(use_meta_sum$random$TE),
+      p.value = use_meta_sum$random$p,
+      std.error = use_meta_sum$random$seTE,
+      conf.low = exp(use_meta_sum$random$lower),
+      conf.high = exp(use_meta_sum$random$upper),
+      surv_var = i
+    )
+  }
+  res <- bind_rows(res, res_meta)
+  writeData(wb, i, res)
+}
+saveWorkbook(wb, file_xlsx, TRUE)
+
+dge_file_xlsx <- file_xlsx
+```
+
+You can download the results of the survival analysis using the following link: 
+
+- [**Survival analysis using optimal cut-off**](`r gsub("docs/", "" , file_xlsx)`)
+
+## Figure 6F: Forest plot by study
+
+Forest plot showing HR and 95%CI for each study. The size of the circle point is determined by the weight of the effect size in the meta-analysis. The diamond shape at the bottom of the plot represents the average effect calculated using meta-analysis.
+
+
+```{r signature-maxstat-coxph-ggplot-forestplot-conf}
+chunk_data <- use_surv
+
+meta_weight <- foreach(i = names(use_meta_surv), .combine = rbind) %do% {
+  foreach(j = names(use_meta_surv[[i]]), .combine = rbind) %do% {
+    use_meta_sum <- summary(use_meta_surv[[i]][[j]])
+    data.frame(
+      surv_var = i,
+      gene_name = j,
+      project_id = use_meta_sum$studlab,
+      w.fixed = use_meta_sum$w.fixed,
+      w.pct = 100* use_meta_sum$w.fixed / sum(use_meta_sum$w.fixed)
+    )
+  }
+}
+
+
+# use_meta_sum <- summary(use_meta)
+chunk_data %<>% left_join(meta_weight, by = c('surv_var', 'gene_name', 'project_id'))
+
+cox_meta_add <- foreach(i = names(use_meta_surv), .combine = rbind) %do% {
+  foreach(g = names(use_meta_surv[[i]]), .combine = rbind) %do% {
+    use_meta_sum <- summary(use_meta_surv[[i]][[g]])
+    cox_meta <- data.frame(
+      project_id = 'Meta',
+      gene_name = g,
+      HR = exp(use_meta_sum$random$TE),
+      p.value = use_meta_sum$random$p,
+      std.error = use_meta_sum$random$seTE,
+      conf.low = exp(use_meta_sum$random$lower),
+      conf.high = exp(use_meta_sum$random$upper),
+      surv_var = i,
+      w.fixed = NA,
+      w.pct = 2*max(chunk_data %>% filter(gene_name == g) %>% pull(w.pct))
+    )
+    cox_empty <- data.frame(
+      project_id = '',
+      gene_name = g,
+      HR = NA,
+      p.value = 1,
+      std.error = 0,
+      conf.low = 1,
+      conf.high = 1,
+      surv_var = i,
+      w.fixed = NA,
+      w.pct = 0
+    )
+    rbind(cox_meta, cox_empty)
+  }
+}
+
+chunk_data %<>%
+  bind_rows(cox_meta_add) %>%
+  mutate(
+    project_id = factor(project_id, levels= c('Meta', '', rev(tcga_selected))),
+    project_type = ifelse(project_id == 'Meta', 'Meta', 'Project'),
+    FDR = p.adjust(p.value, method = 'BH'),
+    logP = -log10(p.value),
+    logP = ifelse(logP > 10, 10 , logP),
+    logFDR = -log10(FDR),
+    logFDR = ifelse(logFDR > 10, 10 , logFDR)
+  )
+
+chunk_data %<>%
+  bind_rows(cox_meta_add) %>%
+  mutate(
+    # project_id = factor(project_id, levels= c('Meta', '', gsub("TCGA-", "", rev(tcga_selected)))),
+    project_id = factor(project_id, levels= c('Meta', '', rev(tcga_selected))),
+    project_type = ifelse(project_id == 'Meta', 'Meta', 'Project'),
+    FDR = p.adjust(p.value, method = 'BH'),
+    logP = -log10(p.value),
+    logP = ifelse(logP > 10, 10 , logP),
+    logFDR = -log10(FDR),
+    logFDR = ifelse(logFDR > 10, 10 , logFDR)
+  )
+
+```
+
+
+```{r signature-maxstat-coxph-ggplot-forestplot-dss-dfi-vertical, fig.width = 2.8, fig.asp = 0.6}
+fc_palette <- c(Up = "#e41a1c", Down = "#377eb8")
+shape_scale <- c(DSS = 16, DFI = 15, PFI = 0)
+use_postition_dodge <- 0.8
+use_lwd <- (1/2.141959)/4
+
+chunk_data %>%
+  filter(surv_var %in% c('DSS', 'DFI')) %>% 
+  filter(!project_id %in% c('')) %>% 
+  mutate(
+    gene_name = ifelse(gene_name == 'down_crispr_hits', 'Down', 'Up')
+  ) %>% 
+  filter(std.error <= 10) %>%
+  ggplot(aes(HR, project_id,
+             size = w.pct,
+             color = gene_name,
+             shape = surv_var
+             )
+         ) +
+  geom_point(position = position_dodge(use_postition_dodge)) +
+  geom_linerange(aes(xmin=conf.low, xmax=conf.high), 
+                 linewidth = use_lwd,
+                 show.legend = FALSE,
+                 position = position_dodge(use_postition_dodge)
+                 ) +
+  geom_vline(xintercept = 1, linetype = 'dotted', linewidth = use_lwd) +
+  # facet_grid(rows = vars(gene_name)) +
+  scale_shape_manual(values = shape_scale) +
+  scale_color_manual(values = fc_palette) +
+  scale_size_continuous(range = c(0.6, 2)
+                        # breaks = c(0.1, 0.5, 1, 2, 5, 10),
+  ) +
+  scale_x_continuous(trans = 'log2',
+                     breaks = c(0.1, 0.2, 0.5, 1, 2, 3, 5, 10),
+                     labels = as.character(c(0.1, 0.2, 0.5, 1, 2, 3, 5, 10))
+  ) +
+  theme(
+    axis.line.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.line.x = element_line(linewidth = use_lwd),
+    axis.ticks.x = element_line(linewidth = use_lwd)
+  ) +
+  labs(
+    x = 'HR',
+    y = '',
+    shape = '',
+    size = 'Weight (%)',
+    caption = 'Estimates with a standard error > 10 were removed from the plot',
+    color = ''
+    ) #+
+  # guides(
+  #   shape = 'none'
+  # )
+```
+
+
+## Figure 6E: Kaplan-Meier plots  - Optimal cut-off
+```{r signature-km-conf}
+use_survfit_km <- survfit_km_maxstat_list
+```
+
+
+```{r signature-km, fig.width = 3.2, fig.asp = 1.2}
+use_lwd <- (1/2.141959)/4
+surv_var_i <- names(use_survfit_km)[1]
+gene_i <- names(use_survfit_km[[1]][[1]])[1]
+p_i <- names(use_survfit_km[[1]])[1]
+for(surv_var_i in names(use_survfit_km)) {
+  cat("####", surv_var_i,"\n\n")
+  for(gene_i in names(use_survfit_km[[surv_var_i]][[1]])) {
+    cat("#####", surv_var_i,"-", gene_i, "\n\n")
+    for(p_i in names(use_survfit_km[[surv_var_i]])) {
+      top_color <- ifelse(gene_i == 'up_crispr_hits', 
+                            '#e41a1c', 
+                            '#377eb8')
+      use_palette <- c(Low = 'grey60', High = top_color)
+      
+      hr_p <- chunk_data %>% 
+        filter(surv_var == surv_var_i) %>% 
+        filter(project_id ==  p_i) %>% 
+        filter(gene_name == gene_i)
+      cox_res <- paste0('HR(95%CI)=', round(hr_p$HR, 2), 
+                        '(', round(hr_p$conf.low,2),'-',round(hr_p$conf.high,2),')',
+                        ';P=',format.pval(hr_p$p.value,2))
+      
+      res <- use_survfit_km[[surv_var_i]][[p_i]][[gene_i]] +
+        labs(
+          title = paste(surv_var_i, p_i, gene_i),
+          caption = cox_res
+        ) +
+        scale_color_manual(values = use_palette) +
+        theme(
+          axis.line = element_line(linewidth = use_lwd),
+          axis.ticks = element_line(linewidth = use_lwd)
+        )
+      print(res)
+      cat("\n\n")
+    } 
+  }
+}
+
+# c(Up = "#e41a1c", Down = "#377eb8")
+```
+

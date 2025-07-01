@@ -1,0 +1,559 @@
+---
+title: "Analysis of association of AMHR2 KO with Immune Infiltrate"
+author: "Francesc Castro-Giner"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+params:
+  date: '`r format(Sys.Date(), "%B %d, %Y")`'
+  data_dir: ./data/resources/UCSCXena/SummarizedExperiment
+  output_dir: ./output/clinical/tcga_immune_infiltrate_amhr2_ko_signatures
+  infiltration_estimation: ./data/resources/TIMER2.0/infiltration_estimation_for_tcga.csv.gz
+---
+
+## Load libraries, additional functions
+
+Setup environment
+```{r setup, include=TRUE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(results='asis', echo=TRUE, message=FALSE, warning=FALSE, error=FALSE, fig.align = 'center', fig.width = 3.5, fig.asp = 0.618, dpi = 600, dev = c("png", "pdf"), engine.opts = list(bash = "-l"))
+
+options(stringsAsFactors = FALSE)
+
+use_seed <- 1100101
+
+set.seed(use_seed)
+
+dir.create(params$output_dir, recursive = TRUE, showWarnings = FALSE)
+```
+
+Load packages
+```{r load-libraries}
+library(tidyverse)
+library(knitr)
+# library(showtext)
+library(foreach)
+library(SummarizedExperiment)
+# library(survival)
+# library(gtsummary)
+# library(ggsurvfit)
+# library(survminer)
+# library(meta)
+library(magrittr)
+# library(DT)
+# library(colorblindr)
+# library(ggdendro)
+# library(RColorBrewer)
+# library(circlize)
+# library(Hmisc)
+# library(ComplexHeatmap)
+# library(ineq)
+library(kableExtra)
+library(openxlsx)
+# library(magrittr)
+# library(ggrepel)
+# library(ggpubr)
+# library(ggbeeswarm)
+# library(ggridges)
+# library(openxlsx)
+# library(MAGeCKFlute)
+library(GSVA)
+library(tldr)
+library(ggcorrplot)
+```
+
+Load ggplot theme
+```{r ggplot-theme, include=TRUE}
+source("./configuration/rmarkdown/ggplot_theme.R")
+source("./configuration/rmarkdown/color_palettes.R")
+```
+
+Clean files generated in previous runs
+```{r clean-files}
+rmd_file <- current_input()
+if(!is.null(rmd_file)) {
+  figures_dir <- file.path('./docs/figure',rmd_file)
+  if(dir.exists(figures_dir)) {
+    unlink(file.path(figures_dir, "*"))
+  }
+}
+```
+
+
+
+
+## Data wrangling
+
+### Generate AMHR2 KO signatures
+Load data
+```{r amhr2-ko-signatures-load_data, eval = TRUE}
+# Load DGE results
+dge_list <- readRDS('./output/rnaseq/amhr2_ko/dge-edgeR_QLF.rds')
+
+# Select comparisons
+use_comp <- c("i_AMHR2_KO-o-i_ctrl_sgRNA", "c_AMHR2_KO-o-c_AMHR2_ctrl", "AMHR2_KO-o-ctrl")
+dge_list <- dge_list[use_comp]
+```
+
+Extract top-100 genes for each comparison and direction (up, down) based on FDR and FC
+```{r amhr2-ko-signatures, eval = FALSE}
+i <- dge_list[[1]]
+dge_up_fdr <- foreach(i = dge_list) %do% {
+  i$results %>% 
+    filter(FDR < 0.001) %>%
+    filter(logFC > 1) %>% 
+    arrange(FDR) %>% 
+    head(100) %>% 
+    pull(gene_name)
+}
+names(dge_up_fdr) <- names(dge_list) %>% gsub(".o.*", "", .) %>% paste0("up_fdr_", .)
+
+i <- dge_list[[1]]
+dge_down_fdr <- foreach(i = dge_list) %do% {
+  i$results %>% 
+    filter(FDR < 0.001) %>%
+    filter(logFC < -1) %>% 
+    arrange(FDR) %>% 
+    head(100) %>% 
+    pull(gene_name)
+}
+names(dge_down_fdr) <- names(dge_list) %>% gsub(".o.*", "", .) %>% paste0("down_fdr_", .)
+
+
+i <- dge_list[[1]]
+dge_up_fc <- foreach(i = dge_list) %do% {
+  i$results %>% 
+    filter(FDR < 0.001) %>%
+    filter(logFC > 1) %>% 
+    arrange(desc(logFC)) %>% 
+    head(100) %>% 
+    pull(gene_name)
+}
+names(dge_up_fc) <- names(dge_list) %>% gsub(".o.*", "", .) %>% paste0("up_fc_", .)
+
+i <- dge_list[[1]]
+dge_down_fc <- foreach(i = dge_list) %do% {
+  i$results %>% 
+    filter(FDR < 0.001) %>%
+    filter(logFC < -1) %>% 
+    arrange(logFC) %>% 
+    head(100) %>% 
+    pull(gene_name)
+}
+names(dge_down_fc) <- names(dge_list) %>% gsub(".o.*", "", .) %>% paste0("down_fc_", .)
+
+dge_signatures_mm <- c(dge_up_fdr, dge_down_fdr, dge_up_fc, dge_down_fc)
+```
+
+Convert to genes to from mouse to human orthologs
+```{r amhr2-ko-signatures-orthologs, eval = FALSE}
+library(biomaRt)
+use_mart <- useMart("ensembl", dataset = "mmusculus_gene_ensembl")
+
+attributes<-  c("external_gene_name",
+                "hsapiens_homolog_ensembl_gene", 
+                "hsapiens_homolog_associated_gene_name",
+                "hsapiens_homolog_orthology_type",
+                "hsapiens_homolog_perc_id_r1")
+
+orth_info <-  getBM(attributes, filters="with_hsapiens_homolog",
+                    values=TRUE, mart = use_mart, uniqueRows=TRUE)
+i <-  dge_signatures_mm[[1]]
+dge_signatures <- foreach(i = dge_signatures_mm) %do% {
+  orth_info %>% filter(external_gene_name %in% i) %>% pull(hsapiens_homolog_associated_gene_name)
+}
+names(dge_signatures) <- names(dge_signatures_mm)
+saveRDS(dge_signatures, file = file.path(params$output_dir, 'dge_signatures.rds'))
+```
+
+Load signatures
+```{r amhr2-ko-signatures-load, eval = TRUE}
+dge_signatures <- readRDS(file.path(params$output_dir, 'dge_signatures.rds'))
+```
+
+Change signature names to more readable format
+```{r amhr2-ko-signatures-names}
+new_signature_names <- c(
+  up_fc_i_AMHR2_KO = 'AMH loss signature (TME)',
+  up_fc_AMHR2_KO = 'AMH loss signature (CC)',
+  down_fc_i_AMHR2_KO = 'AMH active signature (TME)',
+  down_fc_AMHR2_KO = 'AMH active signature (CC)',
+  down_fc_c_AMHR2_KO = 'AMH fully active signature'
+)
+# 
+# dge_signatures <- dge_signatures[names(new_signature_names)]
+# names(dge_signatures) <- new_signature_names
+```
+
+### Generate data for the analysis
+Define genes and TCGA projects
+```{r conf-data-wrangling}
+## Defines genes and signatures
+selected_signatures <- dge_signatures
+
+## Define TCGA projects
+project_id <- list.files(
+  path = params$data_dir, 
+  pattern = 'TCGA-[A-Z]+.rds$'
+  ) %>%
+  gsub(".rds", "", .)
+
+use_projects <- c('BRCA', 'LUAD', 'COAD') %>% 
+  paste('TCGA', ., sep = '-')
+
+
+project_id <- intersect(project_id, use_projects)
+
+```
+
+Load Immune Infiltration from TIMER2.0
+```{r load-immune-infiltration}
+immune_infiltration_estimation <- read_csv(params$infiltration_estimation) %>% 
+  dplyr::rename(sampleID = cell_type)
+```
+
+
+For each study, we analyse:
+- the Spearman's correlation of individual genes and signatures with the cell type scores
+- the association between quantiles of gene expression and signature scores
+
+```{r process-data, eval = FALSE}
+i <- project_id[1]
+data_processed <- foreach(i = project_id) %do%{
+  se <- readRDS(file.path(params$data_dir, paste0(i, '.rds')))
+
+  # Select primary tumor samples and samples used in the Immune Infiltration file
+  sample_annot <- colData(se) %>% data.frame %>% 
+    filter(sample_type == 'Primary Tumor') %>% 
+    filter(sampleID %in% immune_infiltration_estimation$sampleID)
+  
+  se <- se[, rownames(sample_annot)]
+  colData(se) <- DataFrame(sample_annot)
+
+  # Calculate log2CPM
+  assay(se, 'cpm') <- edgeR::cpm(assay(se, 'normcounts'), log = TRUE)
+  gsvapar <- gsvaParam(
+    assay(se, 'cpm'),
+    selected_signatures,
+    kcdf = "Gaussian",
+    maxDiff = TRUE
+  )
+  gsva_res <- gsva(gsvapar, 
+       verbose = FALSE) %>% 
+    t()
+  
+  # Filter immune infiltrate data
+  use_imm_est <- immune_infiltration_estimation %>% 
+    filter(sampleID %in% colnames(se)) %>% 
+    column_to_rownames('sampleID')
+  
+  # Generate correlation matrix
+  use_mat <- cbind(
+    gsva_res[colnames(se),],
+    use_imm_est[colnames(se,),]
+  )
+  
+  corr <- round(cor(use_mat, method = 'spearman'), 2)
+  p.mat <- cor_pmat(use_mat, method = 'spearman')
+  
+  corr <- corr[names(selected_signatures), colnames(use_imm_est)]
+  p.mat <- p.mat[names(selected_signatures), colnames(use_imm_est)]
+  
+  # Generate correlation data.frame
+  corr_df <- corr %>% data.frame(check.names = FALSE) %>% 
+    rownames_to_column('gene') %>%
+    pivot_longer(-gene, names_to = 'cell_type', values_to = 'corr')
+  p.mat_df <- p.mat %>% data.frame(check.names = FALSE) %>% 
+    rownames_to_column('gene') %>%
+    pivot_longer(-gene, names_to = 'cell_type', values_to = 'p.val')
+  corr_df %<>% 
+    left_join(p.mat_df, by = c('gene', 'cell_type'))
+    
+  # Set quantiles
+  quantile_df <- apply(gsva_res, 2, function(x){cutp(x, p=c(0.33, 0.66), labels=c('T1', 'T2', 'T3'))}) %>% 
+    set_rownames(colnames(se)) %>% 
+    data.frame(check.names = FALSE) #%>%
+    # rownames_to_column('sampleID') %>% 
+    # pivot_longer(-sampleID, names_to = 'gene', values_to = 'quantile') %>% 
+    # # Add immune infiltration scores
+    # left_join(use_imm_est %>% rownames_to_column('sampleID'), by = 'sampleID') %>% 
+    # pivot_longer(-c(sampleID, gene, quantile), names_to = 'cell_type', values_to = 'score')
+
+  # Comparing scores between terciles
+  x <- quantile_df %>% 
+    rownames_to_column('sampleID') %>%
+    # pivot_longer(-sampleID, names_to = 'gene', values_to = 'quantile') %>%
+    # Add immune infiltration scores
+    left_join(use_imm_est %>% rownames_to_column('sampleID'), by = 'sampleID') #%>%
+    # pivot_longer(-c(sampleID, gene, quantile), names_to = 'cell_type', values_to = 'score') %>% 
+    # filter(quantile %in% c('T1', 'T3'))
+  
+  use_group_var <- c(names(selected_signatures))
+  use_cell_types <- colnames(use_imm_est)
+  g <- use_group_var[1]
+  ct <- use_cell_types[1]
+  
+  wilcox_results <- foreach(g = use_group_var, .combine = rbind) %do% {
+    foreach(ct = use_cell_types, .combine = rbind) %do% {
+      t1_rows <- x[,g] == 'T1'
+      t3_rows <- x[,g] == 'T3'
+      # Convert output of wilcox.test to a table
+      wilcox.test(x[t1_rows,ct], x[t3_rows,ct]) %>% 
+        broom::tidy() %>% 
+        mutate(
+          gene = g,
+          cell_type = ct
+        ) %>% 
+        dplyr::select(gene, cell_type, everything())
+    }
+  }
+  
+  ttest_results <- foreach(g = use_group_var, .combine = rbind) %do% {
+    foreach(ct = use_cell_types, .combine = rbind) %do% {
+      t1_rows <- x[,g] == 'T1'
+      t3_rows <- x[,g] == 'T3'
+      # Convert output of wilcox.test to a table
+      t.test(x[t1_rows,ct], x[t3_rows,ct]) %>% 
+        broom::tidy() %>% 
+        mutate(
+          gene = g,
+          cell_type = ct
+        ) %>% 
+        dplyr::select(gene, cell_type, everything())
+    }
+  }
+    
+  
+  res <- list(
+    corr = list(
+      mat = corr,
+      p.mat = p.mat,
+      df = corr_df
+    ),
+    quantile = list(
+      data = quantile_df,
+      wilcox = wilcox_results,
+      ttest = ttest_results
+    )
+  )
+}
+names(data_processed) <- project_id
+
+# Remove NULL elements
+data_processed <- compact(data_processed)
+saveRDS(data_processed, file = file.path(params$output_dir, 'data_processed.rds'))
+```
+
+
+Load data
+```{r load-data}
+data_processed <- readRDS(file.path(params$output_dir, 'data_processed.rds'))
+```
+
+
+
+## Gene signatures
+<!-- Write signatures to xlsx file -->
+```{r signature-write-xlsx}
+# File name summary
+rmd_file <- current_input()
+if(is.null(rmd_file))
+  rmd_file <- 'tmp'
+file_xlsx <- file.path('./docs/file',rmd_file, 'dge_signatures.xlsx')
+
+dir.create(dirname(file_xlsx), recursive = TRUE, showWarnings = FALSE)
+
+# Generate workbook
+wb <- createWorkbook()
+for(i in names(dge_signatures)) {
+  addWorksheet(wb, i)
+  res <- dge_signatures[[i]] %>% data.frame %>% 
+    set_names('Gene') %>%
+    filter(Gene != '')
+  writeData(wb, i, res)
+}
+saveWorkbook(wb, file_xlsx, TRUE)
+
+dge_file_xlsx <- file_xlsx
+```
+
+You can download the list of genes per signature using the following link: 
+
+- [**Differential gene expression signatures**](`r gsub("docs/", "" , file_xlsx)`)
+
+
+Below you will find a summary table with the number of genes for each signature.
+
+```{r signature-number-genes-table}
+lapply(dge_signatures, function(x) length(x[x!=''])) %>% 
+  data.frame() %>%
+  t() %>% 
+  data.frame %>% 
+  set_names('Number of genes') %>%
+  rownames_to_column('signature')  %>%
+  kbl(caption = 'Number of genes by signaure') %>%
+  kable_paper(bootstrap_options = c("striped", "hover", "condensed"), full_width = F)
+```
+
+
+## Figure 7G: Correlation of AMH signatures with immune cell fractions across TCGA cohorts (Heatmaps)
+
+Using CIBERSORT and showing correlation of gene expression and immune infiltration.
+
+```{r cibersort-correlation-combined, fig.width = 7.2, fig.asp = 2}
+i <- names(data_processed)[1]
+
+combined_corr <- foreach(i = names(data_processed), .combine = rbind) %do% {
+  data_processed[[i]]$corr$df %>% 
+    mutate(study  = gsub("TCGA-", "", i))
+}
+
+combined_corr <- combined_corr %>% 
+  filter(grepl('_CIBERSORT-ABS', cell_type)) %>% 
+  mutate(
+    cell_type = gsub('_CIBERSORT-ABS', '', cell_type)
+    )
+
+# Gene and signatures levels (order)
+gene_order <- c(
+  selected_signatures[[names(selected_signatures)[1]]], 
+  selected_signatures[[names(selected_signatures)[2]]],
+  names(selected_signatures)
+)
+gene_order <- intersect(gene_order, combined_corr$gene)
+# gene_order[!gene_order %in% combined_corr$gene]
+combined_corr$gene <- factor(combined_corr$gene, levels = gene_order)
+
+# Cell type order
+ct_order <- c(
+  'T cell gamma delta',
+  'T cell follicular helper',
+  'T cell CD4+ naive',
+  'T cell CD4+ memory activated',
+  'NK cell resting',
+  'Myeloid dendritic cell activated',
+  'Mast cell resting',
+  'Mast cell activated',
+  'B cell memory',
+  'T cell CD8+',
+  'T cell CD4+ memory resting',
+  'T cell regulatory (Tregs)',
+  'NK cell activated',
+  'Monocyte',
+  'Macrophage M0',
+  'Macrophage M1',
+  'Macrophage M2',
+  'Neutrophil',
+  'Eosinophil',
+  'B cell plasma',
+  'B cell naive',
+  'Myeloid dendritic cell resting'
+)
+combined_corr$cell_type <- factor(combined_corr$cell_type, levels = rev(ct_order))
+
+
+# Filter signatures
+combined_corr %<>% filter(gene %in% names(new_signature_names))
+combined_corr$gene <- new_signature_names[combined_corr$gene] %>% 
+  factor(., levels = new_signature_names)
+
+# Signature direction
+combined_corr$Direction <- ifelse(grepl("active", combined_corr$gene), "Active", "Loss")
+
+```
+
+
+```{r cibersort-correlation-heatmaps, fig.width = 7.2}
+sign_row_order <- c(
+  "AMH loss signature (TME)",
+  "AMH active signature (TME)",
+  "AMH loss signature (CC)",
+  "AMH active signature (CC)",
+  "AMH fully active signature"
+)
+
+ct_column_order <- c(
+  'immune score',
+  'microenvironment score',
+  'T cell CD4+ memory',
+  'T cell CD8+ central memory',
+  'NK cell',
+  'Neutrophil',
+  'Macrophage',
+  'Monocyte',
+  'Granulocyte-monocyte progenitor',
+  'Myeloid dendritic cell',
+  'Cancer associated fibroblast',
+  'stroma score',
+  'B cell',
+  'B cell memory',
+  'B cell naive',
+  'B cell plasma',
+  'Class-switched memory B cell',
+  'Common lymphoid progenitor',
+  'Common myeloid progenitor',
+  'Endothelial Cell',
+  'Eosinophil',
+  'Hematopoietic stem cell',
+  'Macrophage M1',
+  'Macrophage M2',
+  'Mast Cell',
+  'T cell CD4+ (non regulatory)',
+  'T cell CD4+ central memory',
+  'T cell CD4+ effector memory',
+  'T cell CD4+ naive',
+  'T cell CD4+ Th1',
+  'T cell CD4+ Th2',
+  'T cell CD8+',
+  'T cell CD8+ effector memory',
+  'T cell CD8+ naive',
+  'T cell gamma delta',
+  'T cell NK',
+  'T regulatory cells (T regs)',
+  'Plasmocytoid dendritic cell',
+  'Myeloid dendritic cell activated'
+)
+
+i <- names(data_processed)[1]
+for(i in names(data_processed)) {
+  cat('#### ', i, '\n')
+  corr <- data_processed[[i]]$corr$mat
+  p.mat <- data_processed[[i]]$corr$p.mat
+  use_cols <- grep('_CIBERSORT-ABS', colnames(corr), value = TRUE)
+  corr <- corr[, use_cols]
+  p.mat <- p.mat[, use_cols]
+  colnames(corr) <- gsub("_CIBERSORT-ABS", "", use_cols)
+  colnames(p.mat) <- gsub("_CIBERSORT-ABS", "", use_cols)
+  
+  # Filter signatures
+  corr <- corr[names(new_signature_names),]
+  rownames(corr) <- new_signature_names[rownames(corr)]
+  p.mat <- p.mat[names(new_signature_names),]
+  rownames(p.mat) <- new_signature_names[rownames(p.mat)]
+  
+  # Order rows and columns
+  col_order <- intersect(ct_column_order, colnames(corr))
+  row_order <- sign_row_order
+  corr <- corr[row_order, col_order]
+  p.mat <- p.mat[row_order, col_order]
+  
+  res_plot <- ggcorrplot(t(corr), 
+             method = "square", 
+             p.mat = t(p.mat),
+             # lab = TRUE, 
+             insig = "blank") +
+    labs(
+      subtitle = paste(i, 'Spearman correlation. Blank values represent P < 0.05'),
+    ) +
+    theme(
+      text = element_text(size=8),
+      axis.text.y =  element_text(size=8),
+      axis.text.x =  element_text(size=8),
+      legend.text =  element_text(size=8)
+    )
+  print(res_plot)
+  cat('\n\n')
+}
+```
+
+
