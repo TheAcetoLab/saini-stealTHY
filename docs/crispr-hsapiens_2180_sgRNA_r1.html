@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Francesc Castro-Giner" />
+
+<meta name="date" content="2025-07-01" />
+
+<title>Clonal dynamics in humanized NSG mice (huNSG)</title>
+
+<script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-6.5.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">StealTHY</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/TheAcetoLab/saini-stealTHY">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Clonal dynamics in humanized NSG mice
+(huNSG)</h1>
+<h3 class="subtitle">Human libray (n = 2180)</h3>
+<h4 class="author">Francesc Castro-Giner</h4>
+<h4 class="date">July 01, 2025</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+</a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2025-07-01
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 0
+</p>
+<p>
+<strong>Knit directory:</strong> <code>saini-stealTHY/</code> <span
+class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.1). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date
+</a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguptodate"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great! Since the R Markdown file has been committed to the Git
+repository, you know the exact version of the code that produced these
+results.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20240517code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20240517)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20240517code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20240517)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtree92e6eea881cb5a70d97da573d9cb44796ff9e3b2targetblank92e6eeaa">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/92e6eea881cb5a70d97da573d9cb44796ff9e3b2" target="_blank">92e6eea</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtree92e6eea881cb5a70d97da573d9cb44796ff9e3b2targetblank92e6eeaa"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/92e6eea881cb5a70d97da573d9cb44796ff9e3b2" target="_blank">92e6eea</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .DS_Store
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+    Ignored:    analysis/.DS_Store
+    Ignored:    code/.DS_Store
+    Ignored:    code/raw_data_processing/rnaseq/p27851_o32062/pipelines/
+    Ignored:    configuration/.DS_Store
+    Ignored:    data/.DS_Store
+    Ignored:    data/crispr/
+    Ignored:    data/resources/
+    Ignored:    data/rnaseq/
+    Ignored:    output/.DS_Store
+    Ignored:    output/clinical/
+    Ignored:    output/crispr/
+    Ignored:    output/rnaseq/
+
+Untracked files:
+    Untracked:  analysis/crispr-mm_2215_sgRNA-clonality_r1.Rmd
+    Untracked:  analysis/templates/
+    Untracked:  code/R-functions/subchunkify.R
+
+Unstaged changes:
+    Modified:   .gitignore
+    Modified:   analysis/crispr-hsapiens_2180_sgRNA.Rmd
+    Modified:   analysis/crispr-mm_2215_sgRNA-r2oC.Rmd
+    Modified:   code/R-functions/gse_report.r
+    Modified:   configuration/rmarkdown/ggplot_theme.R
+    Modified:   update_workflowr.R
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+These are the previous versions of the repository in which changes were
+made to the R Markdown
+(<code>analysis/crispr-hsapiens_2180_sgRNA_r1.Rmd</code>) and HTML
+(<code>docs/crispr-hsapiens_2180_sgRNA_r1.html</code>) files. If you’ve
+configured a remote Git repository (see <code>?wflow_git_remote</code>),
+click on the hyperlinks in the table below to view the files as they
+were in that past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/92e6eea881cb5a70d97da573d9cb44796ff9e3b2/analysis/crispr-hsapiens_2180_sgRNA_r1.Rmd" target="_blank">92e6eea</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-07-01
+</td>
+<td>
+update crispr analysis
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div id="load-libraries-additional-functions-and-data"
+class="section level2" number="1">
+<h2><span class="header-section-number">1</span> Load libraries,
+additional functions and data</h2>
+<p>Setup environment</p>
+<pre class="r"><code>knitr::opts_chunk$set(results=&#39;asis&#39;, echo=TRUE, message=FALSE, warning=FALSE, error=FALSE, fig.align = &#39;center&#39;, fig.width = 3.5, fig.asp = 0.618, dpi = 600, dev = c(&quot;png&quot;, &quot;pdf&quot;), fig.showtext = FALSE, engine.opts = list(bash = &quot;-l&quot;))
+
+options(stringsAsFactors = FALSE)
+
+use_seed &lt;- 1100101
+
+set.seed(use_seed)
+
+# dir.create(params$output_dir, recursive = TRUE, showWarnings = FALSE)</code></pre>
+<p>Load packages</p>
+<pre class="r"><code>library(tidyverse)
+library(knitr)
+library(foreach)
+library(magrittr)
+library(DT)
+library(kableExtra)
+library(diptest)
+library(SummarizedExperiment)
+
+library(ggridges)
+library(ggh4x)
+library(patchwork)
+library(colorblindr)
+library(ggbeeswarm)
+library(ggpubr)
+library(cowplot)
+library(grid)
+library(ggrepel)
+library(MAGeCKFlute)</code></pre>
+<p>Load ggplot theme</p>
+<pre class="r"><code>source(&quot;./configuration/rmarkdown/ggplot_theme.R&quot;)</code></pre>
+<p>Load ggplot theme</p>
+<pre class="r"><code>source(&quot;./configuration/rmarkdown/color_palettes.R&quot;)</code></pre>
+<p>Load custom functions</p>
+<pre class="r"><code>source(&#39;./code/R-functions/geom_split_violin.R&#39;)</code></pre>
+<p>Load Summarized Experiment object</p>
+<pre class="r"><code>se &lt;- readRDS(file.path(params$data_dir, &#39;se.rds&#39;))</code></pre>
+<p>Filter samples used for this analysis</p>
+<pre class="r"><code>use_cols &lt;- colData(se) %&gt;% 
+  data.frame %&gt;% 
+  filter(effect_type_short == &#39;noKO&#39;) %&gt;% 
+  filter(vector_short != &quot;Thy1_EF1alpha_dCas9&quot;) %&gt;% 
+  rownames
+
+se &lt;- se[,use_cols]</code></pre>
+<p>Data wrangling</p>
+<pre class="r"><code>chunk_colData &lt;- colData(se) %&gt;% data.frame %&gt;%
+  mutate(
+    immunogen_mmmodel = paste(immunogen, mm_model_type, sep = &#39;_&#39;),
+    immunogen_burden = ifelse(
+      immunogen == &#39;no_immunogen&#39; &amp; mm_model_type == &#39;Imm.competent&#39;,
+      &#39;HuTHY1&#39;, NA),
+    immunogen_burden = ifelse(
+      immunogen == &#39;dCas9-GFP&#39; &amp; mm_model_type == &#39;Imm.deficient&#39;,
+      &#39;GFP&#39;, immunogen_burden),
+    immunogen_burden = ifelse(
+      immunogen == &#39;dCas9-THY&#39; &amp; mm_model_type == &#39;Imm.competent&#39;,
+      &#39;Cas9-HuTHY1&#39;, immunogen_burden),
+    immunogen_burden = ifelse(
+      immunogen == &#39;dCas9-GFP&#39; &amp; mm_model_type == &#39;Imm.competent&#39;,
+      &#39;Cas9-GFP&#39;, immunogen_burden),
+    immunogen_burden = factor(
+      immunogen_burden,
+      levels = c(&#39;HuTHY1&#39;, &#39;GFP&#39;, &#39;Cas9-HuTHY1&#39;, &#39;Cas9-GFP&#39;)),
+    sample_type = case_match(
+        sample_type,
+        &quot;In vitro&quot; ~ &#39;Input&#39;,
+        &quot;whole_tumor&quot; ~ &#39;Primary tumor&#39;,
+        &quot;whole_lung&quot; ~ &#39;Lungs&#39;,
+        &quot;met_lymph&quot; ~ &#39;Lymph nodes&#39;,
+        &quot;met_liver&quot; ~ &#39;Liver&#39;
+      ),
+    sample_type = factor(
+      sample_type,
+      levels = c(&#39;Input&#39;, &#39;Primary tumor&#39;, &#39;Lungs&#39;, &#39;Liver&#39;, &#39;Lymph nodes&#39;)               
+    ),
+    
+    mouse_model_short = ifelse(mm_model_type == &#39;Imm.competent&#39;,
+                               &#39;huNSG&#39;, NA),
+    mouse_model_short = ifelse(mm_model_type == &#39;Imm.deficient&#39;,
+                               &#39;NSG&#39;, mouse_model_short),
+    mouse_model_short = ifelse(mm_model_type == &#39;In_vitro&#39;,
+                               &#39;In vitro&#39;, mouse_model_short)
+    # 
+    # vector_short = ifelse(vector_short == &#39;Puro_EF1alpha_dCas9&#39;, 
+    #                       &#39;dCas9+Puro&#39;, vector_short),
+    # vector_short = factor(vector_short, levels = c(&#39;Thy1&#39;, &#39;Puro&#39;, &#39;dCas9+Puro&#39;)),
+    # mouse_model_short = case_match(mouse_model_global,
+    #                                &#39;immunodeficient&#39; ~ &#39;NSG&#39;,
+    #                                &#39;immunocompetent&#39; ~ &#39;Syngeneic&#39;
+    #                                ),
+    # mouse_model_short = factor(mouse_model_short, levels = c(&#39;NSG&#39;, &#39;Syngeneic&#39;)),
+    # vector_mhost = paste0(vector_short, &#39;, &#39;, mouse_model_short),
+    # model_vector_mhost = paste0(donor,&#39;, &#39;, vector_short, &#39;, &#39;, mouse_model_short),
+    # 
+    # sample_type = case_match(sample_type, 
+    #                          &#39;whole_tumor&#39; ~ &#39;Primary tumor&#39;, 
+    #                          &#39;whole_lung&#39; ~ &#39;Lung mets&#39;),
+    # sample_type = factor(sample_type, levels = c(&#39;Primary tumor&#39;, &#39;Lung mets&#39;))
+  )
+
+colData(se) &lt;- chunk_colData %&gt;% DataFrame</code></pre>
+</div>
+<div id="configure-analysis" class="section level2" number="2">
+<h2><span class="header-section-number">2</span> Configure analysis</h2>
+<div id="mageck-analysis" class="section level3" number="2.1">
+<h3><span class="header-section-number">2.1</span> MAGeCK analysis</h3>
+<div id="list-of-comparisons" class="section level4" number="2.1.1">
+<h4><span class="header-section-number">2.1.1</span> List of
+comparisons</h4>
+<p>List of comparisons for differential abundance using MAGeCK</p>
+<pre class="r"><code>x &lt;- colData(se) %&gt;% data.frame
+
+mageck_comp_list &lt;- list(
+  `StealTHY huNSG` = list(
+    `Primary tumor` = x %&gt;% filter(immunogen == &#39;StealTHY&#39; &amp; mm_model_type == &#39;Imm.competent&#39; &amp; sample_type == &#39;Primary tumor&#39;) %&gt;% 
+      arrange(replicate) %&gt;% 
+      pull(sample_alias),
+    `Lung mets` = x %&gt;% filter(immunogen == &#39;StealTHY&#39; &amp; mm_model_type == &#39;Imm.competent&#39; &amp; sample_type == &#39;Lungs&#39;) %&gt;% 
+      filter(replicate %in% 1:7) %&gt;% 
+      arrange(replicate) %&gt;% 
+      pull(sample_alias),
+    paired = TRUE
+    ),
+  `StealTHY NSG` = list(
+    Tumor = x %&gt;% filter(immunogen == &#39;StealTHY&#39; &amp; mm_model_type == &#39;Imm.deficient&#39; &amp; sample_type == &#39;Primary tumor&#39;) %&gt;% 
+      arrange(replicate) %&gt;% 
+      pull(sample_alias),
+    Lung = x %&gt;% filter(immunogen == &#39;StealTHY&#39; &amp; mm_model_type == &#39;Imm.deficient&#39; &amp; sample_type == &#39;Lungs&#39;) %&gt;% 
+      arrange(replicate) %&gt;% 
+      pull(sample_alias),
+    paired = TRUE
+    )
+)
+
+
+mageck_comp_list_names &lt;- names(mageck_comp_list) 
+names(mageck_comp_list_names) &lt;- names(mageck_comp_list) %&gt;% gsub(&quot; &quot;, &quot;_&quot;,.) %&gt;% tolower</code></pre>
+</div>
+<div id="run-mageck" class="section level4" number="2.1.2">
+<h4><span class="header-section-number">2.1.2</span> Run MAGeCK</h4>
+<p>Generate MAGeCK test scripts. To generate the script files change
+<code>eval = FALSE</code> to <code>eval = TRUE</code> in the chunk
+options.</p>
+<p>The scripts must be run in the terminal, inside the path
+./output/crispr/hsa_2180_sgRNA/mageck_rra. The script will activate the
+mageck environment and run the test for each comparison. The results
+will be saved in the same directory.</p>
+<pre class="r"><code>out_dir &lt;- file.path(params$output_dir, params$mageck_dir)
+dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+
+# Generate count matrix
+count_mat &lt;- assay(se, &#39;counts&#39;) %&gt;% data.frame(check.names = FALSE) %&gt;% 
+  rownames_to_column(&#39;sgRNA&#39;) %&gt;% 
+  mutate(Gene = rowData(se)$Gene) %&gt;% 
+  dplyr::select(sgRNA, Gene, everything())
+write_tsv(count_mat, file = file.path(out_dir, &#39;counts.txt&#39;))
+
+# Generate list of control sgRNA IDs
+non_target_list &lt;- rownames(se) %&gt;% grep(&#39;Non_Target&#39;, ., value = T) %&gt;% data.frame
+write_tsv(non_target_list, file = file.path(out_dir, &#39;control_sgrna.txt&#39;), col_names = F)
+
+# Generate mageck commands
+res_cmd &lt;- data.frame(&#39;source activate mageckenv&#39;)
+i=names(mageck_comp_list)[1]
+res_cmd &lt;- foreach(i=names(mageck_comp_list), .combine = rbind) %do% {
+  if(mageck_comp_list[[i]]$paired) {
+    paste(&#39;mageck test -k counts.txt --control-sgrna control_sgrna.txt --norm-method control --paired -t&#39;, paste(mageck_comp_list[[i]][[2]], collapse = &#39;,&#39;),&#39;-c&#39;,  paste(mageck_comp_list[[i]][[1]], collapse = &#39;,&#39;), &#39;-n&#39;, tolower(gsub(&quot; &quot;, &quot;_&quot;, i)), &#39;\n&#39;)} else {
+    paste(&#39;mageck test -k counts.txt --control-sgrna control_sgrna.txt --norm-method control -t&#39;, paste(mageck_comp_list[[i]][[2]], collapse = &#39;,&#39;),&#39;-c&#39;,  paste(mageck_comp_list[[i]][[1]], collapse = &#39;,&#39;), &#39;-n&#39;, tolower(gsub(&quot; &quot;, &quot;_&quot;, i)), &#39;\n&#39;)
+  }
+} %&gt;% data.frame()
+
+res_cmd &lt;- rbind(&#39;conda activate mageckenv&#39;, res_cmd, &#39;conda deactivate&#39;)
+write_tsv(res_cmd, file.path(out_dir, &#39;run_mageck_test.sh&#39;), col_names = FALSE)</code></pre>
+</div>
+<div id="load-mageck-results" class="section level4" number="2.1.3">
+<h4><span class="header-section-number">2.1.3</span> Load MAGeCK
+results</h4>
+<pre class="r"><code>gene_summ_files &lt;- list.files(path = file.path(params$output_dir, params$mageck_dir), pattern = &#39;gene_summary.txt&#39;, full.names = TRUE)
+analysis_prefix &lt;- basename(gene_summ_files) %&gt;% gsub(&quot;.gene_summary.txt&quot;, &quot;&quot;, .)
+gene_summ &lt;- foreach(i = gene_summ_files) %do% read.delim(i, check.names = FALSE)
+names(gene_summ) &lt;- analysis_prefix
+
+sgrna_summ_files &lt;- list.files(path = file.path(params$output_dir, params$mageck_dir), pattern = &#39;sgrna_summary.txt&#39;, full.names = TRUE)
+analysis_prefix &lt;- basename(sgrna_summ_files) %&gt;% gsub(&quot;.sgrna_summary.txt&quot;, &quot;&quot;, .)
+sgrna_summ &lt;- foreach(i = sgrna_summ_files) %do% read.delim(i, check.names = FALSE)
+names(sgrna_summ) &lt;- analysis_prefix</code></pre>
+</div>
+</div>
+</div>
+<div id="muller-plots" class="section level2" number="3">
+<h2><span class="header-section-number">3</span> Muller plots</h2>
+<p>Define muller plots groups</p>
+<pre class="r"><code>x &lt;- colData(se) %&gt;% data.frame() 
+
+muller_groups_selected &lt;- list(
+  `HuTHY1` = x %&gt;% 
+    filter(immunogen_burden == &#39;HuTHY1&#39; &amp; replicate == &#39;4&#39;) %&gt;% 
+    pull(sample_alias),
+  `GFP` = x %&gt;% 
+    filter(immunogen_burden == &#39;GFP&#39; &amp; replicate == &#39;4&#39;) %&gt;% 
+    pull(sample_alias),
+  `Cas9-HuTHY1` = x %&gt;% 
+    filter(immunogen_burden == &#39;Cas9-HuTHY1&#39; &amp; replicate == &#39;1&#39;) %&gt;% 
+    pull(sample_alias),
+  `Cas9-GFP` = x %&gt;% 
+    filter(immunogen_burden == &#39;Cas9-GFP&#39; &amp; replicate == &#39;1&#39;) %&gt;% 
+    pull(sample_alias)
+)
+
+
+# Add loading control
+loading_control &lt;- &#39;Replacement_Sample&#39;
+muller_groups_selected &lt;- map(muller_groups_selected, function(x) c(loading_control, x))</code></pre>
+<p>Generate muller plots</p>
+<pre class="r"><code>cpm_threshold &lt;- 50000
+
+use_df &lt;- assay(se, &#39;cpm&#39;) %&gt;% data.frame(check.names = FALSE) %&gt;% 
+  rownames_to_column(&#39;guide&#39;) %&gt;% 
+  mutate(
+    gene = rowData(se)$Gene,
+    gene = ifelse(grepl(&#39;Non_Target&#39;, gene), &#39;Non_Target&#39;, gene)
+  ) %&gt;%
+  pivot_longer(-c(guide, gene), names_to = &#39;sample_alias&#39;, values_to = &#39;cpm&#39;) %&gt;% 
+  left_join(colData(se) %&gt;% data.frame %&gt;% dplyr::select(sample_alias, sample_type)) %&gt;% 
+  mutate(
+    sample_type = recode_factor(
+        sample_type,
+        `Primary tumor` = &#39;Primary\ntumor&#39;,
+        `Lymph nodes` = &#39;Lymph\nnodes&#39;
+      ),
+    sample_type = factor(
+      as.character(sample_type),
+      levels = c(&#39;Input&#39;, &#39;Primary\ntumor&#39;, &#39;Lungs&#39;, &#39;Lymph\nnodes&#39;, &#39;Liver&#39;)
+    )
+  )
+
+i &lt;- names(muller_groups_selected)[1]
+muller_plots &lt;- foreach(i = names(muller_groups_selected)) %do% {
+  j &lt;-  muller_groups_selected[[i]]
+  
+  x &lt;- use_df %&gt;% 
+    filter(sample_alias %in% j) %&gt;% 
+    mutate(
+      sample_alias = factor(sample_alias, j)
+    )
+  x_guides_keep &lt;- x %&gt;% group_by(sample_alias, sample_type, guide) %&gt;% summarise(cpm = max(cpm)) %&gt;% filter(cpm &gt; cpm_threshold) %&gt;% pull(guide)
+  
+  low_abundant_tag &lt;- paste(&#39;&lt;&#39;, cpm_threshold, &#39;cpm&#39;)
+  x %&lt;&gt;% 
+    mutate(
+      guide = ifelse(guide %in%  x_guides_keep, guide, low_abundant_tag)
+    ) %&gt;% 
+    group_by(sample_alias, sample_type, guide) %&gt;%
+    summarise(cpm = sum(cpm)) %&gt;% 
+    ungroup() %&gt;%
+    mutate(
+      guide = fct_reorder(guide, cpm),
+      guide = relevel(guide, ref = low_abundant_tag)
+    )
+  
+  use_cols &lt;- c(
+    &#39;grey80&#39;,
+    colorRampPalette(rev(palette_OkabeIto[1:7]))(nlevels(x$guide) - 1) %&gt;% set_names(levels(x$guide)[-1])
+  )
+  names(use_cols)[1] &lt;- low_abundant_tag
+  
+  x %&gt;% 
+    ggplot( aes(x = sample_type, y = cpm/10000, group = guide, fill = guide)) + 
+    geom_area(colour = alpha(&quot;white&quot;, 0.1), linewidth = 0.08, alpha = 0.8) +
+    scale_fill_manual(values = use_cols, guide = guide_legend(ncol = 3)) +
+    labs(
+      x = &#39;&#39;,
+      y = expression(&quot;CPM x 10&quot;^-4),
+      fill = &#39;&#39;,
+      title = i
+    ) +
+    theme(
+      # panel.background = element_rect(fill = &quot;grey90&quot;),
+      # plot.margin = margin(0.5, 1.5, 0.5, 0, &quot;cm&quot;),
+      plot.margin = margin(0, 0.5, 0, 0, &quot;cm&quot;),
+      axis.text =  element_text(size=6),
+      plot.title = element_text(size=6, hjust = 0.5)
+    ) +
+    guides(fill = &#39;none&#39;) +
+    scale_x_discrete(expand = c(0, 0), guide = guide_axis(angle = 45)) +
+    scale_y_continuous(expand = c(0, 0))
+}
+names(muller_plots) &lt;- names(muller_groups_selected)</code></pre>
+<div id="figure-5h-muller-plots-for-hunsgs" class="section level3"
+number="3.1">
+<h3><span class="header-section-number">3.1</span> Figure 5H: Muller
+plots for huNSGs</h3>
+<p>Muller plots showing the relative frequency (CPM) of unique sgRNAs in
+the indicated samples. Guides with CPM ≥ 5^{4} are colored. Individual
+guides with CPM &lt; 5^{4} are grouped in a grey area.</p>
+<pre class="r"><code>wrap_plots(muller_plots, nrow = 1)</code></pre>
+<p><img src="figure/crispr-hsapiens_2180_sgRNA_r1.Rmd/muller-plots-1.png" width="4530" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="sgrna-distribution-by-condition-primary-tumor"
+class="section level2" number="4">
+<h2><span class="header-section-number">4</span> sgRNA distribution by
+condition Primary tumor</h2>
+<pre class="r"><code>use_sample_type &lt;- &#39;Primary tumor&#39;
+use_colData &lt;- colData(se) %&gt;% data.frame %&gt;%
+  filter(sample_type == use_sample_type)</code></pre>
+<div
+id="figure-6b-sgrna-distribution-of-in-mice-transplanted-with-cells-subjected-to-stealthy-ko"
+class="section level3" number="4.1">
+<h3><span class="header-section-number">4.1</span> Figure 6B: sgRNA
+distribution of in mice transplanted with cells subjected to StealTHY
+KO</h3>
+<pre class="r"><code>sample_ord &lt;- rev(c(
+  &#39;C1Position_HumanPlate2&#39;,
+  &#39;C2Position_HumanPlate2&#39;,
+  &#39;E2Position_HumanPlate2&#39;,
+  &#39;E1Position_HumanPlate2&#39;,
+  &#39;G1Position_HumanPlate2&#39;,
+  
+  &#39;C4Position_HumanPlate2&#39;,
+  &#39;C3Position_HumanPlate2&#39;,
+  &#39;G3Position_HumanPlate2&#39;,
+  &#39;E3Position_HumanPlate2&#39;,
+  &#39;A4Position_HumanPlate2&#39;
+  ))
+
+use_assay &lt;- assay(se[,sample_ord], &#39;cpm&#39;) %&gt;% 
+  as.data.frame(check.names = F) %&gt;% 
+  rownames_to_column(&#39;guide&#39;) %&gt;% 
+  pivot_longer(-guide, names_to = &#39;sample_alias&#39;, values_to = &#39;cpm&#39;) %&gt;% 
+  left_join(use_colData) %&gt;% 
+  mutate(
+    sample_alias = factor(sample_alias, levels = sample_ord)
+    )
+
+
+use_assay %&gt;% 
+  ggplot(aes(x=cpm + 1, y = sample_alias, 
+             fill = mouse_model_short, 
+             height = after_stat(density))) +
+  geom_density_ridges(color = &#39;black&#39;,
+                      size = one_pt/4, 
+                      alpha = 0.8, 
+                      scale = 4,
+                      rel_min_height = 0.001 # set the `rel_min_height` argument to remove tails,
+                      ) +
+  scale_fill_manual(values = palette_hu_stealthy_ko) +
+  scale_x_log10(expand = expansion(mult = c(0, 0))) +
+  scale_y_discrete(expand = c(0.01, 0)) +
+  labs(y = &#39;&#39;) +
+  guides(fill = &#39;none&#39;, color = &#39;none&#39;) +
+  theme_ridges(font_size = 6, grid = F) +
+  theme(
+    strip.background = element_blank(),
+    axis.line.x = element_line(linewidth = one_pt/4, color = &#39;black&#39;),
+    axis.ticks.x = element_line(linewidth = one_pt/4, color = &#39;black&#39;),
+    axis.text.y = element_blank()
+  )</code></pre>
+<p><img src="figure/crispr-hsapiens_2180_sgRNA_r1.Rmd/test-dist-tumor-distribution-ridges_plot--ic-id-1.png" width="1074" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="differential-abundance-analysis" class="section level2"
+number="5">
+<h2><span class="header-section-number">5</span> Differential abundance
+analysis</h2>
+<pre class="r"><code>gene_info &lt;- readxl::read_xlsx(&#39;./data/resources/selected_gene_list/gene_list_for_figure_7d.xlsx&#39;)
+
+use_colors &lt;- c(
+  `Immune system cytokines and chemokines` = &#39;grey&#39;,
+  `Immune system cytokines\nand chemokines` = &#39;grey&#39;,
+  
+  `Interferone, TNF and danger/death-inducing signals` = &#39;black&#39;,
+  `Interferon, TNF\nand danger/death-inducing\nsignals` = &#39;black&#39;,
+  `Interferon, TNF and\ndanger/death-inducing\nsignals` = &#39;black&#39;,
+  `TGF-β family related` = &#39;red&#39;,
+  
+  `RTK signaling` = &#39;blue&#39;,
+  `Positive controls` = &#39;black&#39;
+)
+
+use_fill &lt;- c(
+  `Immune system cytokines and chemokines` = &#39;grey&#39;,
+  `Immune system cytokines\nand chemokines` = &#39;grey&#39;,
+  
+  `Interferone, TNF and danger/death-inducing signals` = &#39;black&#39;,
+  `Interferon, TNF\nand danger/death-inducing\nsignals` = &#39;black&#39;,
+  `Interferon, TNF and\ndanger/death-inducing\nsignals` = &#39;black&#39;,
+  `TGF-β family related` = &#39;red&#39;,
+  
+  `RTK signaling` = &#39;blue&#39;,
+  `Positive controls` = &#39;white&#39;
+)
+
+use_shape &lt;- c(
+  `Immune system cytokines and chemokines` = 16,
+  `Immune system cytokines\nand chemokines` = 16,
+  
+  `Interferone, TNF and danger/death-inducing signals` = 16,
+  `Interferon, TNF\nand danger/death-inducing\nsignals` = 16,
+  `Interferon, TNF and\ndanger/death-inducing\nsignals` = 16,
+  `TGF-β family related` = 16,
+  
+  `RTK signaling` = 16,
+  `Positive controls` = 1
+)
+
+# get gene order based on LFC in StealTHY_IC
+i &lt;- &#39;stealthy_hunsg&#39;
+gene_levels &lt;- gene_summ[[i]] %&gt;% 
+  ReadRRA(score = &#39;lfc&#39;) %&gt;% 
+  dplyr::rename(LFC = Score) %&gt;% 
+  left_join(gene_info, by = c(&#39;id&#39; = &#39;id&#39;)) %&gt;% 
+  filter(!is.na(gene_set)) %&gt;% 
+  mutate(gene_name = fct_reorder(gene_name, LFC)) %&gt;% 
+  pull(gene_name) %&gt;% 
+  levels</code></pre>
+<div
+id="figure-6c-volcano-plots-showing-genes-lungs-over-primary-tumor-in-stealthy-ko"
+class="section level3" number="5.1">
+<h3><span class="header-section-number">5.1</span> Figure 6C: Volcano
+plots showing genes Lungs over Primary Tumor in StealTHY KO</h3>
+<p>Colored points with FDR ≤ 0.10</p>
+<pre class="r"><code>lfc_colors &lt;- c(none = &quot;gray80&quot;, up = &quot;#e41a1c&quot;, down = &quot;#377eb8&quot;)
+i &lt;- &#39;stealthy_hunsg&#39;
+
+x &lt;- gene_summ[[i]] %&gt;% 
+  ReadRRA(score = &#39;lfc&#39;) %&gt;% 
+  dplyr::rename(LFC = Score) %&gt;% 
+  mutate(
+    direction = ifelse(FDR &lt;= 0.10 &amp; LFC &gt; 0, &#39;up&#39;, &#39;none&#39;),
+    direction = ifelse(FDR &lt;= 0.10 &amp; LFC &lt; 0, &#39;down&#39;, direction),
+    is.significant = FDR &lt;= 0.10,
+    id = ifelse(id == &#39;TNFRSF10B&#39;, &#39;TRAIL-R2&#39;, id)
+  )
+use_xlim &lt;- xlim(-max(abs(x$LFC), na.rm = TRUE), max(abs(x$LFC), na.rm = TRUE))
+
+genes_to_highlight &lt;- c(&#39;CCR10&#39;, &#39;TRAIL-R2&#39;, &#39;CCL27&#39;, &#39;IGFBP1&#39;, &#39;ANGPT2&#39;, &#39;AMH&#39;, &#39;IL34&#39;,
+                   &#39;IFNA8&#39;, &#39;TGFB2&#39;, &#39;IL13RA2&#39;, &#39;IFNAR1&#39;, &#39;IL24&#39;, &#39;IFNLR1&#39;, &#39;PTEN&#39;, &#39;GDF9&#39;)
+data_text &lt;- x %&gt;% 
+  filter(id %in% genes_to_highlight)
+
+ggplot(x, aes(LFC, -log10(FDR), color = direction)) +
+  geom_hline(yintercept = -log10(0.10), linetype = 3) +
+  geom_vline(xintercept = 0, linetype = 3) +
+  geom_point(shape = 16, alpha = 0.6, size = 0.8) +
+  scale_color_manual(values = lfc_colors) +
+  geom_text_repel(
+    data = data_text,
+    aes(label = id),
+    color = &#39;black&#39;,
+    size = 0.4*geom_text_size,
+    min.segment.length = 0,
+    segment.size  = 0.2,
+    box.padding = 0.1,
+    max.overlaps = Inf, 
+    fontface=&quot;italic&quot;
+  ) +
+  use_xlim +
+  labs(
+    x = expression(paste(&quot;lo&quot;, g[2],&quot;(Fold change)&quot;)), 
+    y = expression(paste(&quot;-lo&quot;, g[10],&quot;(FDR)&quot;))
+  ) +
+  guides(color = &#39;none&#39;, size = &#39;none&#39;) +
+  theme(
+      axis.text = element_text(size=6), 
+      axis.title = element_text(size = 6)
+  )</code></pre>
+<p><img src="figure/crispr-hsapiens_2180_sgRNA_r1.Rmd/volcano-plot-stealthy-ko-pt-over-lung-1.png" width="1200" style="display: block; margin: auto;" /></p>
+</div>
+<div
+id="figure-6d-distribution-of-the-fold-change-of-lungs-over-primary-tumor-in-hunsg-and-nsg-host"
+class="section level3" number="5.2">
+<h3><span class="header-section-number">5.2</span> Figure 6D:
+Distribution of the fold-change of Lungs over Primary Tumor in huNSG and
+NSG host</h3>
+<pre class="r"><code>i &lt;- names(gene_summ)[1]
+
+curate_gene_sets &lt;- c(
+  &#39;Immune system cytokines and chemokines&#39;,
+  &#39;TGF-β family related&#39;,
+  &#39;Positive controls&#39;
+) 
+
+levels_gene_sets &lt;- c(
+  &#39;Immune system cytokines\nand chemokines&#39;,
+  &#39;TGF-β family related&#39;,
+  &#39;Positive controls&#39;
+) 
+
+curated_gene_list &lt;- c(&#39;IL24&#39;, &#39;IL13RA2&#39;, &#39;IL33&#39;, &#39;IL17C&#39;, &#39;IL17R&#39;, &#39;CCL27&#39;, 
+                       &#39;GDF9&#39;, &#39;TGFB2&#39;, &#39;AMH&#39;, 
+                       &#39;PTEN&#39;, &#39;LKB1&#39;, &#39;MET&#39;, &#39;EGFR&#39;)
+
+curated_gene_info &lt;- gene_info %&gt;% 
+  filter(gene_set %in% curate_gene_sets) %&gt;% 
+  filter(gene_name %in% curated_gene_list) 
+
+
+plot_data &lt;- foreach(i=names(gene_summ), .combine = rbind) %do% {
+  xsg &lt;- sgrna_summ[[i]] %&gt;% 
+     select(Gene, sgrna, LFC, FDR) %&gt;% 
+     dplyr::rename(sgLFC = LFC, sgFDR = FDR)
+
+  gene_summ[[i]] %&gt;% 
+    ReadRRA(score = &#39;lfc&#39;) %&gt;% 
+    dplyr::rename(LFC = Score) %&gt;% 
+    mutate(
+      direction = ifelse(FDR &lt;= 0.10 &amp; LFC &gt; 0, &#39;up&#39;, &#39;none&#39;),
+      direction = ifelse(FDR &lt;= 0.10 &amp; LFC &lt; 0, &#39;down&#39;, direction),
+      is.significant = FDR &lt;= 0.10,
+      comparison = i
+    ) %&gt;% 
+    left_join(curated_gene_info, by = c(&#39;id&#39; = &#39;id&#39;)) %&gt;% 
+    filter(!is.na(gene_set)) %&gt;% 
+    mutate(
+      gene_name = factor(gene_name, levels = curated_gene_list),
+      gene_set = ifelse(
+        gene_set == &#39;Immune system cytokines and chemokines&#39;,
+        &#39;Immune system cytokines\nand chemokines&#39;,
+        gene_set
+      ),
+      gene_set = factor(gene_set, levels_gene_sets)
+      ) %&gt;% 
+    left_join(xsg, by = c(&#39;id&#39; = &#39;Gene&#39;), relationship = &quot;many-to-many&quot;)
+  
+}
+
+plot_data %&lt;&gt;% 
+  mutate(
+    mouse_model_short = case_match(comparison, 
+                            &#39;stealthy_hunsg&#39; ~ &#39;huNSG&#39;, 
+                            &#39;stealthy_nsg&#39; ~ &#39;NSG&#39;),
+    mouse_model_short = factor(mouse_model_short,
+                               levels = c(&#39;NSG&#39;, &#39;huNSG&#39;))
+  )
+
+xlim &lt;- c(-ceiling(max(abs(plot_data$LFC), na.rm = TRUE)), 
+          ceiling(max(abs(plot_data$LFC), na.rm = TRUE)))
+
+plot_data %&gt;% 
+  ggplot(aes(y = sgLFC, x = gene_name, fill = mouse_model_short)) +
+  geom_split_violin(
+    aes(y = sgLFC, x = gene_name, fill = mouse_model_short),
+    alpha = 0.8,
+    draw_quantiles = 0.5,
+    linewidth = one_pt/2,
+    scale = &#39;width&#39;
+    ) +
+  coord_flip() +
+  geom_hline(yintercept = 0, linetype = 3,linewidth = one_pt/2) +
+  scale_x_discrete(expand = expansion(add = c(1, 1))) +
+  scale_fill_manual(values = palette_hu_stealthy_ko) +
+  ylim(xlim) +
+  facet_grid(rows = vars(gene_set), scales = &#39;free_y&#39;, space = &#39;free_y&#39;)+
+  theme_facet +
+  theme(
+    # axis.line = element_line(linewidth = one_pt/2, color = &#39;black&#39;),
+      axis.ticks = element_line(linewidth = one_pt/2, color = &#39;black&#39;),
+      panel.border = element_rect(linewidth = one_pt/2, color = &#39;black&#39;),
+      axis.text = element_text(size=8), 
+      axis.title = element_text(size = 8),
+      legend.title = element_text(size=8),
+      legend.text = element_text(size=8),
+      strip.text = element_text(size = 4)
+  ) +
+  labs(
+    y = expression(paste(&quot;lo&quot;, g[2],&quot;(Fold change)&quot;)),
+    x = NULL
+  )+
+  guides(color = &#39;none&#39;, fill = &#39;none&#39;, size = &#39;none&#39;)</code></pre>
+<p><img src="figure/crispr-hsapiens_2180_sgRNA_r1.Rmd/split-violinplot-selected-genes-ic-vs-id-curated-1.png" width="2133" style="display: block; margin: auto;" /></p>
+</div>
+<div
+id="supplementary-figure-6d-fold-change-of-lungs-over-primary-tumor-in-hunsg-and-nsg-host"
+class="section level3" number="5.3">
+<h3><span class="header-section-number">5.3</span> Supplementary Figure
+6D: Fold-change of Lungs over Primary Tumor in huNSG and NSG host</h3>
+<pre class="r"><code>i &lt;- names(gene_summ)[1]
+plot_data &lt;- foreach(i=names(gene_summ), .combine = rbind) %do% {
+  gene_summ[[i]] %&gt;% 
+    ReadRRA(score = &#39;lfc&#39;) %&gt;% 
+    dplyr::rename(LFC = Score) %&gt;% 
+    mutate(
+      direction = ifelse(FDR &lt;= 0.10 &amp; LFC &gt; 0, &#39;up&#39;, &#39;none&#39;),
+      direction = ifelse(FDR &lt;= 0.10 &amp; LFC &lt; 0, &#39;down&#39;, direction),
+      is.significant = FDR &lt;= 0.10,
+      comparison = i
+    ) %&gt;% 
+    left_join(gene_info, by = c(&#39;id&#39; = &#39;id&#39;)) %&gt;% 
+    filter(!is.na(gene_set)) %&gt;% 
+    mutate(
+      gene_name = factor(gene_name, levels = gene_levels),
+      gene_set = ifelse(
+        gene_set == &#39;Immune system cytokines and chemokines&#39;,
+        &#39;Immune system cytokines\nand chemokines&#39;,
+        gene_set
+      ),
+      gene_set = ifelse(
+        gene_set == &#39;Interferone, TNF and danger/death-inducing signals&#39;,
+        &#39;Interferon, TNF and\ndanger/death-inducing\nsignals&#39;,
+        gene_set
+      ),
+      gene_set = factor(gene_set, names(use_colors))
+      )
+}
+
+plot_data %&lt;&gt;% 
+  mutate(
+    mouse_model_short = case_match(comparison, 
+                            &#39;stealthy_hunsg&#39; ~ &#39;huNSG&#39;, 
+                            &#39;stealthy_nsg&#39; ~ &#39;NSG&#39;),
+    mouse_model_short = factor(mouse_model_short,
+                               levels = c(&#39;huNSG&#39;, &#39;NSG&#39;))
+  )
+
+xlim &lt;- c(-ceiling(max(abs(plot_data$LFC), na.rm = TRUE)), 
+            ceiling(max(abs(plot_data$LFC), na.rm = TRUE)))
+
+plot_data %&gt;% 
+  ggplot(aes(LFC, gene_name, color = gene_set, size = -log10(FDR))) +
+    geom_point(aes(shape = gene_set)) +
+    geom_vline(xintercept = 0, linetype = 3) +
+    scale_y_discrete(expand = expansion(add = c(1, 1))) + # add fixed units around each facet to avoid lines over points
+    scale_x_continuous(expand = expansion(add = c(1, 1))) + # add fixed units around each facet to avoid lines over points
+    scale_color_manual(values = use_colors) +
+    scale_size(range = c(0.5, 2.5), limits = c(0, 4)) +
+    scale_shape_manual(values = use_shape) +
+    xlim(xlim) +
+    facet_grid(cols = vars(mouse_model_short), rows = vars(gene_set), scales = &#39;free_y&#39;, space = &#39;free_y&#39;) +
+    theme_facet +
+    theme(
+      # axis.line = element_line(linewidth = one_pt/2, color = &#39;black&#39;),
+      axis.ticks = element_line(linewidth = one_pt/2, color = &#39;black&#39;),
+      panel.border = element_rect(linewidth = one_pt/2, color = &#39;black&#39;),
+      axis.text = element_text(size=6), 
+      axis.title = element_text(size = 6),
+      legend.title = element_text(size=6),
+      legend.text = element_text(size=6),
+      strip.text = element_text(size = 4)
+    ) +
+    labs(
+      x = expression(paste(&quot;lo&quot;, g[2],&quot;(Fold change)&quot;)),
+      y = NULL,
+      size = expression(paste(&quot;-lo&quot;, g[10],&quot;(FDR)&quot;))
+    ) +
+    guides(color = &#39;none&#39;, shape = &#39;none&#39;)</code></pre>
+<p><img src="figure/crispr-hsapiens_2180_sgRNA_r1.Rmd/dotplot-selected-genes-allconditions-1.png" width="1782" style="display: block; margin: auto;" /></p>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<p>R version 4.4.3 (2025-02-28) Platform: aarch64-apple-darwin20 Running
+under: macOS Sequoia 15.5</p>
+<p>Matrix products: default BLAS:
+/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib
+LAPACK:
+/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRlapack.dylib;
+LAPACK version 3.12.0</p>
+<p>locale: [1]
+en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8</p>
+<p>time zone: Europe/Zurich tzcode source: internal</p>
+<p>attached base packages: [1] grid stats4 stats graphics grDevices
+utils datasets [8] methods base</p>
+<p>other attached packages: [1] MAGeCKFlute_2.9.0 ggrepel_0.9.6<br />
+[3] cowplot_1.1.3.9000 ggpubr_0.6.0<br />
+[5] ggbeeswarm_0.7.2 colorblindr_0.1.0<br />
+[7] colorspace_2.1-1 patchwork_1.3.0<br />
+[9] ggh4x_0.3.0 ggridges_0.5.6<br />
+[11] SummarizedExperiment_1.36.0 Biobase_2.66.0<br />
+[13] GenomicRanges_1.58.0 GenomeInfoDb_1.42.3<br />
+[15] IRanges_2.40.1 S4Vectors_0.44.0<br />
+[17] BiocGenerics_0.52.0 MatrixGenerics_1.18.1<br />
+[19] matrixStats_1.5.0 diptest_0.77-1<br />
+[21] kableExtra_1.4.0 DT_0.33<br />
+[23] magrittr_2.0.3 foreach_1.5.2<br />
+[25] knitr_1.50 lubridate_1.9.4<br />
+[27] forcats_1.0.0 stringr_1.5.1<br />
+[29] dplyr_1.1.4 purrr_1.0.4<br />
+[31] readr_2.1.5 tidyr_1.3.1<br />
+[33] tibble_3.2.1 ggplot2_3.5.2<br />
+[35] tidyverse_2.0.0 workflowr_1.7.1</p>
+<p>loaded via a namespace (and not attached): [1] splines_4.4.3
+later_1.4.2 ggplotify_0.1.2<br />
+[4] bitops_1.0-9 filelock_1.0.3 cellranger_1.1.0<br />
+[7] R.oo_1.27.1 graph_1.84.1 XML_3.99-0.18<br />
+[10] lifecycle_1.0.4 httr2_1.1.2 rstatix_0.7.2<br />
+[13] rprojroot_2.0.4 processx_3.8.6 lattice_0.22-7<br />
+[16] backports_1.5.0 sass_0.4.10 rmarkdown_2.29<br />
+[19] jquerylib_0.1.4 yaml_2.3.10 ggtangle_0.0.6<br />
+[22] httpuv_1.6.16 depmap_1.20.0 DBI_1.2.3<br />
+[25] RColorBrewer_1.1-3 abind_1.4-8 zlibbioc_1.52.0<br />
+[28] R.utils_2.13.0 RCurl_1.98-1.17 yulab.utils_0.2.0<br />
+[31] rappdirs_0.3.3 git2r_0.36.2 GenomeInfoDbData_1.2.13 [34]
+enrichplot_1.26.6 tidytree_0.4.6 svglite_2.2.1<br />
+[37] codetools_0.2-20 DelayedArray_0.32.0 DOSE_4.0.1<br />
+[40] xml2_1.3.8 tidyselect_1.2.1 aplot_0.2.5<br />
+[43] UCSC.utils_1.2.0 farver_2.1.2 BiocFileCache_2.14.0<br />
+[46] pathview_1.46.0 jsonlite_2.0.0 Formula_1.2-5<br />
+[49] iterators_1.0.14 systemfonts_1.2.3 tools_4.4.3<br />
+[52] treeio_1.30.0 Rcpp_1.0.14 glue_1.8.0<br />
+[55] gridExtra_2.3 SparseArray_1.6.2 xfun_0.52<br />
+[58] qvalue_2.38.0 withr_3.0.2 BiocManager_1.30.25<br />
+[61] fastmap_1.2.0 callr_3.7.6 digest_0.6.37<br />
+[64] gridGraphics_0.5-1 timechange_0.3.0 R6_2.6.1<br />
+[67] textshaping_1.0.1 GO.db_3.20.0 dichromat_2.0-0.1<br />
+[70] RSQLite_2.3.11 R.methodsS3_1.8.2 generics_0.1.4<br />
+[73] data.table_1.17.2 httr_1.4.7 htmlwidgets_1.6.4<br />
+[76] S4Arrays_1.6.0 whisker_0.4.1 pkgconfig_2.0.3<br />
+[79] gtable_0.3.6 blob_1.2.4 XVector_0.46.0<br />
+[82] clusterProfiler_4.14.6 htmltools_0.5.8.1 carData_3.0-5<br />
+[85] fgsea_1.32.4 scales_1.4.0 png_0.1-8<br />
+[88] ggfun_0.1.8 rstudioapi_0.17.1 tzdb_0.5.0<br />
+[91] reshape2_1.4.4 nlme_3.1-168 curl_6.2.2<br />
+[94] org.Hs.eg.db_3.20.0 cachem_1.1.0 BiocVersion_3.20.0<br />
+[97] parallel_4.4.3 vipor_0.4.7 AnnotationDbi_1.68.0<br />
+[100] pillar_1.10.2 vctrs_0.6.5 promises_1.3.2<br />
+[103] car_3.1-3 dbplyr_2.5.0 beeswarm_0.4.0<br />
+[106] Rgraphviz_2.50.0 evaluate_1.0.3 KEGGgraph_1.66.0<br />
+[109] cli_3.6.5 compiler_4.4.3 rlang_1.1.6<br />
+[112] crayon_1.5.3 ggsignif_0.6.4 labeling_0.4.3<br />
+[115] ps_1.9.1 getPass_0.2-4 plyr_1.8.9<br />
+[118] fs_1.6.6 stringi_1.8.7 viridisLite_0.4.2<br />
+[121] BiocParallel_1.40.2 Biostrings_2.74.1 lazyeval_0.2.2<br />
+[124] GOSemSim_2.32.0 Matrix_1.7-3 ExperimentHub_2.14.0<br />
+[127] hms_1.1.3 bit64_4.6.0-1 KEGGREST_1.46.0<br />
+[130] AnnotationHub_3.14.0 igraph_2.1.4 broom_1.0.8<br />
+[133] memoise_2.0.1 bslib_0.9.0 ggtree_3.14.0<br />
+[136] fastmatch_1.1-6 bit_4.6.0 readxl_1.4.5<br />
+[139] gson_0.1.0 ape_5.8-1</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3,h4,h5",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
