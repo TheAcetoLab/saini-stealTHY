@@ -171,7 +171,11 @@ comp_list_modality <- list(
   `Syngeneic Thy1 vs. Puro` = list(
     `Puro` = group_list_modality$`Syngeneic Puro`,
     `Thy1` = group_list_modality$`Syngeneic Thy1`
-  )
+  )#,
+  # `NSG Thy1 vs. Puro` = list(
+  #   `Puro` = group_list_modality$`NSG Puro`,
+  #   `Thy1` = group_list_modality$`NSG Thy1`
+  # )
 )
 
 group_df_modality <- foreach(i = names(group_list_modality), .combine = rbind) %do% {
