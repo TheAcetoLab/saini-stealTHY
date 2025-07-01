@@ -11,7 +11,7 @@
 
 <meta name="author" content="Francesc Castro-Giner" />
 
-<meta name="date" content="2025-05-13" />
+<meta name="date" content="2025-07-01" />
 
 <title>Clonal dynamics using mock CRISPR screen</title>
 
@@ -396,7 +396,7 @@ div.tocify {
 screen</h1>
 <h3 class="subtitle">Mouse libray (n = 2215)</h3>
 <h4 class="author">Francesc Castro-Giner</h4>
-<h4 class="date">May 13, 2025</h4>
+<h4 class="date">July 01, 2025</h4>
 
 </div>
 
@@ -425,7 +425,7 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-05-13
+<strong>Last updated:</strong> 2025-07-01
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -556,15 +556,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtreef2497227bea4d0c618e871f06ff31d6181a6e3d2targetblankf249722a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtreeb6bc77088b14bf2712a35dc41be83f6032057e27targetblankb6bc770a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/f2497227bea4d0c618e871f06ff31d6181a6e3d2" target="_blank">f249722</a>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/b6bc77088b14bf2712a35dc41be83f6032057e27" target="_blank">b6bc770</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtreef2497227bea4d0c618e871f06ff31d6181a6e3d2targetblankf249722a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtreeb6bc77088b14bf2712a35dc41be83f6032057e27targetblankb6bc770a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -574,7 +574,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/f2497227bea4d0c618e871f06ff31d6181a6e3d2" target="_blank">f249722</a>.
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/b6bc77088b14bf2712a35dc41be83f6032057e27" target="_blank">b6bc770</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -592,16 +592,31 @@ Ignored files:
     Ignored:    .DS_Store
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
+    Ignored:    analysis/.DS_Store
+    Ignored:    code/.DS_Store
     Ignored:    code/raw_data_processing/rnaseq/p27851_o32062/pipelines/
     Ignored:    configuration/.DS_Store
+    Ignored:    data/.DS_Store
     Ignored:    data/crispr/
     Ignored:    data/resources/
     Ignored:    data/rnaseq/
+    Ignored:    output/.DS_Store
+    Ignored:    output/clinical/
     Ignored:    output/crispr/
     Ignored:    output/rnaseq/
 
+Untracked files:
+    Untracked:  analysis/crispr-hsapiens_2180_sgRNA_r1.Rmd
+    Untracked:  analysis/crispr-mm_2215_sgRNA-clonality_r1.Rmd
+    Untracked:  analysis/templates/
+    Untracked:  code/R-functions/subchunkify.R
+
 Unstaged changes:
     Modified:   .gitignore
+    Modified:   analysis/crispr-hsapiens_2180_sgRNA.Rmd
+    Modified:   analysis/crispr-mm_2215_sgRNA-r2oC.Rmd
+    Modified:   code/R-functions/gse_report.r
+    Modified:   configuration/rmarkdown/ggplot_theme.R
     Modified:   update_workflowr.R
 
 </code></pre>
@@ -648,6 +663,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/b6bc77088b14bf2712a35dc41be83f6032057e27/analysis/crispr-mm_2215_sgRNA-clonality.Rmd" target="_blank">b6bc770</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-07-01
+</td>
+<td>
+update crispr analysis
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/TheAcetoLab/saini-stealTHY/f982e709689944cbcd3283f0040d2811c625c7d4/docs/crispr-mm_2215_sgRNA-clonality.html" target="_blank">f982e70</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-05-13
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -1050,7 +1099,11 @@ comp_list_modality &lt;- list(
   `Syngeneic Thy1 vs. Puro` = list(
     `Puro` = group_list_modality$`Syngeneic Puro`,
     `Thy1` = group_list_modality$`Syngeneic Thy1`
-  )
+  )#,
+  # `NSG Thy1 vs. Puro` = list(
+  #   `Puro` = group_list_modality$`NSG Puro`,
+  #   `Thy1` = group_list_modality$`NSG Thy1`
+  # )
 )
 
 group_df_modality &lt;- foreach(i = names(group_list_modality), .combine = rbind) %do% {
@@ -2119,6 +2172,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/f982e709689944cbcd3283f0040d2811c625c7d4/docs/figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-30x-1.png" target="_blank">f982e70</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-05-13
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/0e8d1db849f537c8abb88e943b7f6fd049d838fc/docs/figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-30x-1.png" target="_blank">0e8d1db</a>
 </td>
 <td>
@@ -2205,6 +2269,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/f982e709689944cbcd3283f0040d2811c625c7d4/docs/figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-30x-padj-panel-1.png" target="_blank">f982e70</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-05-13
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/0e8d1db849f537c8abb88e943b7f6fd049d838fc/docs/figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-30x-padj-panel-1.png" target="_blank">0e8d1db</a>
@@ -2295,6 +2370,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/f982e709689944cbcd3283f0040d2811c625c7d4/docs/figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-30x-padj-group-1.png" target="_blank">f982e70</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-05-13
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/0e8d1db849f537c8abb88e943b7f6fd049d838fc/docs/figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-30x-padj-group-1.png" target="_blank">0e8d1db</a>
 </td>
 <td>
@@ -2381,6 +2467,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/f982e709689944cbcd3283f0040d2811c625c7d4/docs/figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-100x-1.png" target="_blank">f982e70</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-05-13
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/0e8d1db849f537c8abb88e943b7f6fd049d838fc/docs/figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-100x-1.png" target="_blank">0e8d1db</a>
@@ -2471,6 +2568,17 @@ Date
 <tbody>
 <tr>
 <td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/f982e709689944cbcd3283f0040d2811c625c7d4/docs/figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-100x-padj-panel-1.png" target="_blank">f982e70</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-05-13
+</td>
+</tr>
+<tr>
+<td>
 <a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/0e8d1db849f537c8abb88e943b7f6fd049d838fc/docs/figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-100x-padj-panel-1.png" target="_blank">0e8d1db</a>
 </td>
 <td>
@@ -2557,6 +2665,17 @@ Date
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/f982e709689944cbcd3283f0040d2811c625c7d4/docs/figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-100x-padj-group-1.png" target="_blank">f982e70</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-05-13
+</td>
+</tr>
 <tr>
 <td>
 <a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/0e8d1db849f537c8abb88e943b7f6fd049d838fc/docs/figure/crispr-mm_2215_sgRNA-clonality.Rmd/complexity-dynamics-100x-padj-group-1.png" target="_blank">0e8d1db</a>
@@ -4064,7 +4183,7 @@ use_sample_groups &lt;- matrix(data_array, ncol =4, byrow = TRUE,
   unique</code></pre>
 <p>standardGeneric for “unique” defined from package “BiocGenerics”</p>
 <p>function (x, incomparables = FALSE, …) standardGeneric(“unique”)
-&lt;bytecode: 0x10c7054a8&gt; &lt;environment: 0x10c70cb20&gt; Methods
+&lt;bytecode: 0x10dc4b3e8&gt; &lt;environment: 0x10dc53ca8&gt; Methods
 may be defined for arguments: x Use showMethods(unique) for currently
 available ones.</p>
 <pre class="r"><code># use_sample_groups$sample_alias[!use_sample_groups$sample_alias %in% colnames(se)]
@@ -4516,7 +4635,7 @@ use_sample_groups &lt;- matrix(data_array, ncol =4, byrow = TRUE,
   unique</code></pre>
 <p>standardGeneric for “unique” defined from package “BiocGenerics”</p>
 <p>function (x, incomparables = FALSE, …) standardGeneric(“unique”)
-&lt;bytecode: 0x10c7054a8&gt; &lt;environment: 0x10c70cb20&gt; Methods
+&lt;bytecode: 0x10dc4b3e8&gt; &lt;environment: 0x10dc53ca8&gt; Methods
 may be defined for arguments: x Use showMethods(unique) for currently
 available ones.</p>
 <pre class="r"><code># use_sample_groups$sample_alias[!use_sample_groups$sample_alias %in% colnames(se)]
@@ -5195,7 +5314,7 @@ Session information
 <div id="workflowr-sessioninfo" class="collapse">
 <pre class="r"><code>sessionInfo()</code></pre>
 <p>R version 4.4.3 (2025-02-28) Platform: aarch64-apple-darwin20 Running
-under: macOS Sequoia 15.4.1</p>
+under: macOS Sequoia 15.5</p>
 <p>Matrix products: default BLAS:
 /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib
 LAPACK:
@@ -5226,7 +5345,7 @@ datasets methods<br />
 [33] tidyverse_2.0.0 workflowr_1.7.1</p>
 <p>loaded via a namespace (and not attached): [1] rlang_1.1.6
 git2r_0.36.2 compiler_4.4.3<br />
-[4] getPass_0.2-4 systemfonts_1.2.2 callr_3.7.6<br />
+[4] getPass_0.2-4 systemfonts_1.2.3 callr_3.7.6<br />
 [7] vctrs_0.6.5 pkgconfig_2.0.3 crayon_1.5.3<br />
 [10] fastmap_1.2.0 backports_1.5.0 XVector_0.46.0<br />
 [13] labeling_0.4.3 promises_1.3.2 rmarkdown_2.29<br />
@@ -5237,20 +5356,21 @@ git2r_0.36.2 compiler_4.4.3<br />
 [28] stringi_1.8.7 RColorBrewer_1.1-3 car_3.1-3<br />
 [31] jquerylib_0.1.4 Rcpp_1.0.14 iterators_1.0.14<br />
 [34] httpuv_1.6.16 Matrix_1.7-3 timechange_0.3.0<br />
-[37] tidyselect_1.2.1 rstudioapi_0.17.1 abind_1.4-8<br />
-[40] yaml_2.3.10 codetools_0.2-20 processx_3.8.6<br />
-[43] lattice_0.22-7 withr_3.0.2 evaluate_1.0.3<br />
-[46] xml2_1.3.8 pillar_1.10.2 carData_3.0-5<br />
-[49] whisker_0.4.1 generics_0.1.3 rprojroot_2.0.4<br />
-[52] hms_1.1.3 scales_1.4.0 glue_1.8.0<br />
-[55] tools_4.4.3 ggsignif_0.6.4 fs_1.6.6<br />
-[58] grid_4.4.3 crosstalk_1.2.1 GenomeInfoDbData_1.2.13 [61]
-beeswarm_0.4.0 vipor_0.4.7 Formula_1.2-5<br />
-[64] cli_3.6.5 S4Arrays_1.6.0 viridisLite_0.4.2<br />
-[67] svglite_2.1.3 gtable_0.3.6 rstatix_0.7.2<br />
-[70] sass_0.4.10 digest_0.6.37 SparseArray_1.6.2<br />
-[73] htmlwidgets_1.6.4 farver_2.1.2 htmltools_0.5.8.1<br />
-[76] lifecycle_1.0.4 httr_1.4.7</p>
+[37] tidyselect_1.2.1 rstudioapi_0.17.1 dichromat_2.0-0.1<br />
+[40] abind_1.4-8 yaml_2.3.10 codetools_0.2-20<br />
+[43] processx_3.8.6 lattice_0.22-7 withr_3.0.2<br />
+[46] evaluate_1.0.3 xml2_1.3.8 pillar_1.10.2<br />
+[49] carData_3.0-5 whisker_0.4.1 generics_0.1.4<br />
+[52] rprojroot_2.0.4 hms_1.1.3 scales_1.4.0<br />
+[55] glue_1.8.0 tools_4.4.3 ggsignif_0.6.4<br />
+[58] fs_1.6.6 grid_4.4.3 crosstalk_1.2.1<br />
+[61] GenomeInfoDbData_1.2.13 beeswarm_0.4.0 vipor_0.4.7<br />
+[64] Formula_1.2-5 cli_3.6.5 textshaping_1.0.1<br />
+[67] S4Arrays_1.6.0 viridisLite_0.4.2 svglite_2.2.1<br />
+[70] gtable_0.3.6 rstatix_0.7.2 sass_0.4.10<br />
+[73] digest_0.6.37 SparseArray_1.6.2 htmlwidgets_1.6.4<br />
+[76] farver_2.1.2 htmltools_0.5.8.1 lifecycle_1.0.4<br />
+[79] httr_1.4.7</p>
 </div>
 </div>
 </div>
