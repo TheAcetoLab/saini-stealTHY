@@ -1,0 +1,3176 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Francesc Castro-Giner" />
+
+<meta name="date" content="2025-07-01" />
+
+<title>Analysis of AMHR2 KO RNA-seq data</title>
+
+<script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/htmltools-fill-0.5.8.1/fill.css" rel="stylesheet" />
+<script src="site_libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<link href="site_libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="site_libs/datatables-binding-0.33/datatables.js"></script>
+<link href="site_libs/dt-core-1.13.6/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="site_libs/dt-core-1.13.6/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="site_libs/dt-core-1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="site_libs/jszip-1.13.6/jszip.min.js"></script>
+<link href="site_libs/dt-ext-buttons-1.13.6/css/buttons.dataTables.min.css" rel="stylesheet" />
+<script src="site_libs/dt-ext-buttons-1.13.6/js/dataTables.buttons.min.js"></script>
+<script src="site_libs/dt-ext-buttons-1.13.6/js/buttons.html5.min.js"></script>
+<script src="site_libs/dt-ext-buttons-1.13.6/js/buttons.colVis.min.js"></script>
+<script src="site_libs/dt-ext-buttons-1.13.6/js/buttons.print.min.js"></script>
+<link href="site_libs/nouislider-7.0.10/jquery.nouislider.min.css" rel="stylesheet" />
+<script src="site_libs/nouislider-7.0.10/jquery.nouislider.min.js"></script>
+<link href="site_libs/selectize-0.12.0/selectize.bootstrap3.css" rel="stylesheet" />
+<script src="site_libs/selectize-0.12.0/selectize.min.js"></script>
+<link href="site_libs/crosstalk-1.2.1/css/crosstalk.min.css" rel="stylesheet" />
+<script src="site_libs/crosstalk-1.2.1/js/crosstalk.min.js"></script>
+<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.5.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">StealTHY</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/TheAcetoLab/saini-stealTHY">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Analysis of AMHR2 KO RNA-seq data</h1>
+<h4 class="author">Francesc Castro-Giner</h4>
+<h4 class="date">July 01, 2025</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+</a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2025-07-01
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 0
+</p>
+<p>
+<strong>Knit directory:</strong> <code>saini-stealTHY/</code> <span
+class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.1). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date
+</a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguptodate"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great! Since the R Markdown file has been committed to the Git
+repository, you know the exact version of the code that produced these
+results.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20240517code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20240517)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20240517code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20240517)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtreebc402e6695932824d0587de6c03eb192be28dfcatargetblankbc402e6a">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/bc402e6695932824d0587de6c03eb192be28dfca" target="_blank">bc402e6</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtreebc402e6695932824d0587de6c03eb192be28dfcatargetblankbc402e6a"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/bc402e6695932824d0587de6c03eb192be28dfca" target="_blank">bc402e6</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .DS_Store
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+    Ignored:    analysis/.DS_Store
+    Ignored:    code/.DS_Store
+    Ignored:    code/raw_data_processing/rnaseq/p27851_o32062/pipelines/
+    Ignored:    configuration/.DS_Store
+    Ignored:    data/.DS_Store
+    Ignored:    data/crispr/
+    Ignored:    data/resources/
+    Ignored:    data/rnaseq/
+    Ignored:    output/.DS_Store
+    Ignored:    output/clinical/
+    Ignored:    output/crispr/
+    Ignored:    output/rnaseq/
+
+Untracked files:
+    Untracked:  analysis/crispr-hsapiens_2180_sgRNA_r1.Rmd
+    Untracked:  analysis/crispr-mm_2215_sgRNA-CMT167-LLC1-CT26.Rmd
+    Untracked:  analysis/crispr-mm_2215_sgRNA-clonality_r1.Rmd
+    Untracked:  analysis/crispr-mm_2215_sgRNA-r2oD_r1.Rmd
+    Untracked:  analysis/crispr-muller-mm_2215_sgRNA.Rmd
+    Untracked:  analysis/templates/
+    Untracked:  code/R-functions/subchunkify.R
+
+Unstaged changes:
+    Modified:   .gitignore
+    Modified:   analysis/crispr-hsapiens_2180_sgRNA.Rmd
+    Modified:   analysis/crispr-mm_2215_sgRNA-StealTHY.Rmd
+    Modified:   analysis/crispr-mm_2215_sgRNA-clonality.Rmd
+    Modified:   analysis/crispr-mm_2215_sgRNA-r2oC.Rmd
+    Modified:   code/R-functions/gse_report.r
+    Modified:   configuration/rmarkdown/ggplot_theme.R
+    Modified:   update_workflowr.R
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+These are the previous versions of the repository in which changes were
+made to the R Markdown (<code>analysis/rnaseq-amhr2_ko-deg.Rmd</code>)
+and HTML (<code>docs/rnaseq-amhr2_ko-deg.html</code>) files. If you’ve
+configured a remote Git repository (see <code>?wflow_git_remote</code>),
+click on the hyperlinks in the table below to view the files as they
+were in that past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/bc402e6695932824d0587de6c03eb192be28dfca/analysis/rnaseq-amhr2_ko-deg.Rmd" target="_blank">bc402e6</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-07-01
+</td>
+<td>
+uodate rnaseq analysis
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div id="load-libraries-additional-functions-and-data"
+class="section level2" number="1">
+<h2><span class="header-section-number">1</span> Load libraries,
+additional functions and data</h2>
+<p>Setup environment</p>
+<pre class="r"><code>knitr::opts_chunk$set(results=&#39;asis&#39;, echo=TRUE, message=FALSE, warning=FALSE, error=FALSE, fig.align = &#39;center&#39;, fig.width = 3.5, fig.asp = 0.618, dpi = 600, dev = c(&quot;png&quot;, &quot;pdf&quot;), engine.opts = list(bash = &quot;-l&quot;))
+
+options(stringsAsFactors = FALSE)
+
+use_seed &lt;- 1100101
+set.seed(use_seed)
+
+dir.create(params$output_dir, recursive = TRUE, showWarnings = FALSE)</code></pre>
+<p>Load packages</p>
+<pre class="r"><code>library(tidyverse)
+library(showtext)
+library(foreach)
+library(DT)
+library(knitr)
+library(kableExtra)
+library(cowplot)
+library(colorblindr)
+library(RColorBrewer)
+library(ggbeeswarm)
+library(ggrepel)
+library(magrittr)
+library(openxlsx)
+
+library(SummarizedExperiment)
+library(edgeR)
+library(DESeq2)
+library(scuttle)
+library(scran)
+library(pheatmap)
+library(PCAtools)
+library(org.Mm.eg.db)
+library(ComplexHeatmap)
+library(circlize)</code></pre>
+<p>Load ggplot theme</p>
+<pre class="r"><code>source(&quot;./configuration/rmarkdown/ggplot_theme.R&quot;)</code></pre>
+<p>Set color palettes</p>
+<p>Load custom functions</p>
+<pre class="r"><code>source(&#39;./code/R-functions/dge_wrappers.r&#39;)
+source(&#39;./code/R-functions/dge_report.r&#39;)
+source(&#39;./code/R-functions/gse_omnibus.r&#39;)
+source(&#39;./code/R-functions/gse_report.r&#39;)
+source(&#39;./code/R-functions/subchunkify.R&#39;)</code></pre>
+<p>Load MSigDB gene sets</p>
+<pre class="r"><code>gmt_files_symbols &lt;- list(
+  msigdb.h = paste0(params$msigdb_dir, &#39;/&#39;, params$msigdb_vs, &#39;/mh.all.&#39;, params$msigdb_vs, &#39;.symbols.gmt&#39;)
+)</code></pre>
+<p>Clean files generated in previous runs</p>
+<pre class="r"><code>rmd_file &lt;- current_input()
+if(!is.null(rmd_file)) {
+  figures_dir &lt;- file.path(&#39;./docs/figure&#39;,rmd_file)
+  if(dir.exists(figures_dir)) {
+    unlink(file.path(figures_dir, &quot;*&quot;))
+  }
+}</code></pre>
+</div>
+<div id="configure-analyses" class="section level2" number="2">
+<h2><span class="header-section-number">2</span> Configure analyses</h2>
+<div id="data-wrangling" class="section level3" number="2.1">
+<h3><span class="header-section-number">2.1</span> Data wrangling</h3>
+<p>Load SE onjecct</p>
+<pre class="r"><code>se &lt;- readRDS(params$se_path)</code></pre>
+<p>Modify sample annotation</p>
+<pre class="r"><code>se$sample_alias %&gt;% 
+  gsub(&#39;_rep.&#39;, &#39;&#39;, .) %&gt;% 
+  unique</code></pre>
+<p>[1] “AMHR2_Control_culture” “AMHR2_KO_culture”
+“AMHR2_KO_noTGFbeta”<br />
+[4] “AMHR2_Overexpression” “InVivo_AMHR2_KO” “InVivo_Control_sgRNA”</p>
+<pre class="r"><code>colData(se) %&lt;&gt;% 
+  data.frame %&gt;% 
+  mutate(
+    condition = sample_alias %&gt;% gsub(&#39;_rep.&#39;, &#39;&#39;, .),
+    condition_short = case_match(
+      condition,
+      &quot;AMHR2_Control_culture&quot; ~ &quot;c_AMHR2_ctrl&quot;,
+      &quot;AMHR2_KO_culture&quot; ~ &quot;c_AMHR2_KO&quot;,
+      &quot;AMHR2_KO_noTGFbeta&quot; ~ &quot;AMHR2_KO_noTGFb&quot;,
+      &quot;AMHR2_Overexpression&quot; ~ &quot;AMHR2_over&quot;,
+      &quot;InVivo_AMHR2_KO&quot; ~ &quot;i_AMHR2_KO&quot;,
+      &quot;InVivo_Control_sgRNA&quot; ~ &quot;i_ctrl_sgRNA&quot;
+    ),
+    sample_type = condition_short,
+    condition = factor(condition),
+    condition_short = factor(condition_short)
+
+  ) %&gt;% DataFrame
+
+# colData(se) %&lt;&gt;% data.frame %&gt;%
+#   mutate(
+#     sample_type_grouped = sample_type,
+#     sample_type_grouped = ifelse(sample_type == &#39;ctc_cluster_heterotypic_dn&#39;, 
+#                                  &#39;ctc_cluster_heterotypic&#39;, 
+#                                  sample_type_grouped),
+#     sample_type_grouped_3l = ifelse(sample_type == &#39;ctc_cluster_wbc&#39;, 
+#                                  &#39;ctc_cluster_heterotypic&#39;, 
+#                                  sample_type_grouped),
+#     sample_type_grouped_2l = ifelse(sample_type_grouped == &#39;ctc_cluster_heterotypic&#39;, 
+#                                  &#39;ctc_cluster&#39;, 
+#                                  sample_type_grouped)
+#   ) %&gt;%
+#   DataFrame</code></pre>
+<p>Filtering out low-abundance features. Keeping those features with at
+least 10 counts in at least 50% of samples of the smallest group.</p>
+<pre class="r"><code>use_rows &lt;- filterByExpr(se, group=se$condition, min.count = 10, min.total.count = 15, min.prop = 0.5)
+se &lt;- se[use_rows,]</code></pre>
+<p>TMM normalization</p>
+<pre class="r"><code>norm_method &lt;- &quot;TMM&quot;
+exprs_mat_for_norm &lt;- assay(se, &#39;counts&#39;)
+norm_factors &lt;- calcNormFactors(exprs_mat_for_norm, method = norm_method)
+lib_size &lt;- colSums(exprs_mat_for_norm)/10^6
+se$size_factor &lt;- (norm_factors * lib_size)
+se &lt;- logNormCounts(se, size.factors =se$size_factor)
+se &lt;- logNormCounts(se, size.factors =se$size_factor, log = FALSE)</code></pre>
+<p>CPM calculation</p>
+<pre class="r"><code>assay(se, &#39;cpm&#39;) &lt;- edgeR::cpm(assay(se, &#39;normcounts&#39;))
+assay(se, &#39;logcpm&#39;) &lt;- edgeR::cpm(assay(se, &#39;normcounts&#39;), log = TRUE)</code></pre>
+</div>
+<div id="define-of-comparisons" class="section level3" number="2.2">
+<h3><span class="header-section-number">2.2</span> Define of
+comparisons</h3>
+<div id="process-data" class="section level4" number="2.2.1">
+<h4><span class="header-section-number">2.2.1</span> Process data</h4>
+<pre class="r"><code>x &lt;- colData(se) %&gt;% data.frame
+
+# Define groups
+use_levels &lt;- levels(se$condition_short)
+i &lt;- use_levels[1]
+group_samples &lt;- foreach(i = use_levels) %do% {
+  use_cols &lt;- se$condition_short == i
+  colnames(se)[use_cols]
+}
+names(group_samples) &lt;- use_levels
+
+# Define all pairwise comparisons
+group_combn &lt;- combn(names(group_samples) , 2, simplify = FALSE)
+
+i &lt;- group_combn[[1]]
+comp_list &lt;- foreach(i = group_combn) %do%{
+  res &lt;- list(
+    group_samples[[i[1]]],
+    group_samples[[i[2]]]
+  )
+  names(res) &lt;- i
+  res
+}
+names(comp_list) &lt;- lapply(group_combn, function(x) paste0(x[1], &#39;-o-&#39;, x[2]))
+
+# Add additional comparison
+# InVivo_AMHR2_KO + AMHR2_KO_culture - over - InVivo_Control_sgRNA + AMHR2_Control_culture
+
+comp_list[[&#39;AMHR2_KO-o-ctrl&#39;]] &lt;- list(
+  `AMHR2_KO` = x %&gt;% 
+    filter(condition %in% c(&#39;InVivo_AMHR2_KO&#39;, &#39;AMHR2_KO_culture&#39;)) %&gt;% 
+     pull(sample_alias),
+  `control` = x %&gt;% 
+    filter(condition %in% c(&#39;InVivo_Control_sgRNA&#39;, &#39;AMHR2_Control_culture&#39;)) %&gt;% 
+     pull(sample_alias)
+)
+
+# Keep only the following comparisons
+#   InVivo_AMHR2_KO–over–InVivo_Control_sgRNA 
+#   AMHR2_Control_culture–over–AMHR2_KO_culture : invert the terms
+#   AMHR2_KO_noTGFbeta–over–AMHR2_Control_culture 
+#   AMHR2_KO_noTGFbeta–over–AMHR2_KO_culture
+#   AMHR2_Overexpression–over–AMHR2_Control_culture
+#   AMHR2_Overexpression–over–AMHR2_KO_culture
+#   AMHR2_KO_noTGFbeta–over–AMHR2_Overexpression : invert the terms
+keep_comp &lt;- c(
+  `InVivo_AMHR2_KO--over--InVivo_Control_sgRNA` = &#39;i_AMHR2_KO-o-i_ctrl_sgRNA&#39;,
+  `AMHR2_Control_culture--over--AMHR2_KO_culture` =  &#39;c_AMHR2_ctrl-o-c_AMHR2_KO&#39;,
+  `AMHR2_KO_noTGFbeta--over--AMHR2_Control_culture` =  &#39;AMHR2_KO_noTGFb-o-c_AMHR2_ctrl&#39;,
+  `AMHR2_KO_noTGFbeta--over--AMHR2_KO_culture` =  &#39;AMHR2_KO_noTGFb-o-c_AMHR2_KO&#39;,
+  `AMHR2_Overexpression--over--AMHR2_Control_culture` = &#39;AMHR2_over-o-c_AMHR2_ctrl&#39;, 
+  `AMHR2_Overexpression--over--AMHR2_KO_culture` =  &#39;AMHR2_over-o-c_AMHR2_KO&#39;,
+  `AMHR2_KO_noTGFbeta--over--AMHR2_Overexpression` =  &#39;AMHR2_KO_noTGFb-o-AMHR2_over&#39;,
+  `InVivo_AMHR2_KO + AMHR2_KO_culture--over--InVivo_Control_sgRNA + AMHR2_Control_culture` = &#39;AMHR2_KO-o-ctrl&#39;
+)
+comp_list &lt;- comp_list[keep_comp]
+
+# Invert the terms were required
+
+#   AMHR2_Control_culture–over–AMHR2_KO_culture : invert the terms
+#   AMHR2_KO_noTGFbeta–over–AMHR2_Overexpression : invert the terms
+
+i_comp &lt;- c(&#39;c_AMHR2_ctrl-o-c_AMHR2_KO&#39;, &#39;AMHR2_KO_noTGFb-o-AMHR2_over&#39;)
+
+i &lt;- i_comp[1]
+for(i in i_comp) {
+  comp_list[[i]] &lt;- rev(comp_list[[i]])
+  rev_name &lt;- strsplit(i, split = &#39;-o-&#39;) %&gt;% unlist() %&gt;% rev %&gt;% paste(., collapse = &#39;-o-&#39;)
+  names(comp_list)[names(comp_list) == i] &lt;- rev_name
+  i_desc &lt;- names(keep_comp)[keep_comp == i]
+  rev_description &lt;- strsplit(i_desc, split = &#39;..over..&#39;) %&gt;% unlist() %&gt;% rev %&gt;% paste(., collapse = &#39;--over--&#39;)
+  names(keep_comp)[keep_comp == i] &lt;- rev_description
+}
+
+
+# Generate DF with name description
+comp_list_description &lt;- data.frame(
+  comparison = names(comp_list),
+  comparison_long = names(keep_comp)
+)</code></pre>
+</div>
+<div id="table-of-comparisons" class="section level4" number="2.2.2">
+<h4><span class="header-section-number">2.2.2</span> Table of
+comparisons</h4>
+<p>We filter comparisons with n &lt; 3 samples in each group</p>
+<pre class="r"><code>i = names(comp_list)[1]
+comp_df &lt;- foreach(i = names(comp_list), .combine = rbind) %do% {
+  icomp &lt;- comp_list[[i]]
+  data.frame(
+    comparison = i,
+    `Sample Group (n)` =  length(icomp[[1]]),
+    `Reference Group (n)` = length(icomp[[2]]),
+    check.names = FALSE
+  )
+}
+
+# filter comparisons were we have at least 3 samples in each group
+comp_df %&lt;&gt;% 
+  mutate(Evaluated = `Sample Group (n)` &gt;= 3 &amp; `Reference Group (n)` &gt;= 3)
+kepp_comp &lt;- comp_df %&gt;% filter(Evaluated) %&gt;% pull(comparison)
+comp_list &lt;- comp_list[kepp_comp]
+
+# Add long names
+comp_df &lt;- comp_df %&gt;% left_join(comp_list_description) %&gt;% 
+  mutate(comparison = comparison_long) %&gt;%
+  dplyr::select(-comparison_long)
+
+comp_df %&gt;%
+  datatable(., 
+            rownames = FALSE, 
+            filter = &#39;top&#39;, 
+            caption = &#39;List of comparisons for differential expression. Comparisons with n &lt; 3 samples in each group won\&#39;t be evaluated&#39;,
+            extensions = &#39;Buttons&#39;, 
+            options = list(
+              dom = &#39;Blfrtip&#39;,
+              buttons = c(&#39;csv&#39;, &#39;excel&#39;)
+            ))</code></pre>
+<div class="datatables html-widget html-fill-item" id="htmlwidget-0e41329c1963262c826a" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-0e41329c1963262c826a">{"x":{"filter":"top","vertical":false,"filterHTML":"<tr>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"integer\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"3\" data-max=\"6\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"integer\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"display: none;position: absolute;width: 200px;opacity: 1\">\n      <div data-min=\"3\" data-max=\"6\"><\/div>\n      <span style=\"float: left;\"><\/span>\n      <span style=\"float: right;\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"logical\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\" disabled=\"\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n    <div style=\"width: 100%; display: none;\">\n      <select multiple=\"multiple\" style=\"width: 100%;\" data-options=\"[&quot;true&quot;,&quot;false&quot;]\"><\/select>\n    <\/div>\n  <\/td>\n<\/tr>","extensions":["Buttons"],"caption":"<caption>List of comparisons for differential expression. Comparisons with n &lt; 3 samples in each group won't be evaluated<\/caption>","data":[["InVivo_AMHR2_KO--over--InVivo_Control_sgRNA","AMHR2_KO_culture--over--AMHR2_Control_culture","AMHR2_KO_noTGFbeta--over--AMHR2_Control_culture","AMHR2_KO_noTGFbeta--over--AMHR2_KO_culture","AMHR2_Overexpression--over--AMHR2_Control_culture","AMHR2_Overexpression--over--AMHR2_KO_culture","AMHR2_Overexpression--over--AMHR2_KO_noTGFbeta","InVivo_AMHR2_KO + AMHR2_KO_culture--over--InVivo_Control_sgRNA + AMHR2_Control_culture"],[3,3,3,3,3,3,3,6],[3,3,3,3,3,3,3,6],[true,true,true,true,true,true,true,true]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>comparison<\/th>\n      <th>Sample Group (n)<\/th>\n      <th>Reference Group (n)<\/th>\n      <th>Evaluated<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"Blfrtip","buttons":["csv","excel"],"columnDefs":[{"className":"dt-right","targets":[1,2]},{"name":"comparison","targets":0},{"name":"Sample Group (n)","targets":1},{"name":"Reference Group (n)","targets":2},{"name":"Evaluated","targets":3}],"order":[],"autoWidth":false,"orderClasses":false,"orderCellsTop":true}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+</div>
+<div id="data-generation" class="section level2" number="3">
+<h2><span class="header-section-number">3</span> Data generation</h2>
+<div id="run-differential-expression-analysis" class="section level3"
+number="3.1">
+<h3><span class="header-section-number">3.1</span> Run differential
+expression analysis</h3>
+<p>Get Ensembl gene info</p>
+<pre class="r"><code>ensembl &lt;-  biomaRt::useEnsembl(biomart=&quot;genes&quot;, dataset=&quot;mmusculus_gene_ensembl&quot;,
+                                mirror = &#39;www&#39;)
+
+gene_desc &lt;- biomaRt::getBM(attributes=c(&#39;external_gene_name&#39;,&#39;description&#39;),
+                              filters = &#39;external_gene_name&#39;,
+                              values = rowData(se)$gene_name, mart =ensembl) %&gt;%
+    dplyr::rename(&#39;gene_name&#39; = &#39;external_gene_name&#39;) %&gt;%
+    unique
+
+
+gene_desc &lt;- gene_desc[!duplicated(gene_desc$gene_name),]
+saveRDS(gene_desc, file = file.path(dirname(params$se_path), &#39;ensembl_gene_desc.rds&#39;))</code></pre>
+<pre class="r"><code>gene_desc &lt;- readRDS(file = file.path(dirname(params$se_path), &#39;ensembl_gene_desc.rds&#39;))</code></pre>
+<p>Run differential expression analysis using EdgeR QLF</p>
+<pre class="r"><code>use_comp &lt;-  comp_list[[1]]
+dge_list &lt;- foreach(use_comp = comp_list) %do%{
+  se_cols &lt;- se$sample_alias %in% unlist(use_comp)
+  use_se &lt;- se[,se_cols]
+  use_se$group &lt;- ifelse(
+    use_se$sample_alias %in% use_comp[[1]],
+    names(use_comp)[1],
+    names(use_comp)[2]
+  )
+  
+  if(is.null(use_comp$batch)) {
+    dge &lt;- edgeR_dge(
+      use_se,
+      # Design configuration for differential expression
+      group_var =  &#39;group&#39;,
+      group_sample = names(use_comp)[1],
+      group_ref = names(use_comp)[2],
+      design_formula = &quot;~ group&quot;,
+      coef = &#39;last&#39;,
+      # Conversion from SingleCellExperiment/Summarized Experiment to DGEList
+      assay_to_DGEList = &#39;counts&#39;,
+      assay_to_row_filter = &quot;counts&quot;,
+      # Feature filtering parameters
+      use_filterByExpr = TRUE,
+      min_counts = params$min_counts,
+      min_present_prop = params$min_present_prop,
+      # EdgeR workflow configuration
+      run_calcNormFactors = &#39;TMM&#39;,
+      estimateDisp_robust = TRUE,
+      estimateDisp_trend.method = &quot;locfit&quot;,
+      glm_approach = &quot;QLF&quot;,
+      # Output configuration
+      adjust_method = &#39;BH&#39;
+      )
+    } else {
+      design_formula = paste0(&quot;~ &quot;, use_comp$batch,&quot; + group&quot;)
+      dge &lt;- edgeR_dge(
+        use_se,
+        # Design configuration for differential expression
+        group_var =  &#39;group&#39;,
+        group_sample = names(use_comp)[1],
+        group_ref = names(use_comp)[2],
+        batch_vars = use_comp$batch,
+        design_formula = design_formula,
+        coef = &#39;last&#39;,
+        # Conversion from SingleCellExperiment/Summarized Experiment to DGEList
+        assay_to_DGEList = &#39;counts&#39;,
+        assay_to_row_filter = &quot;counts&quot;,
+        # Feature filtering parameters
+        use_filterByExpr = TRUE,
+        min_counts = params$min_counts,
+        min_present_prop = params$min_present_prop,
+        # EdgeR workflow configuration
+        run_calcNormFactors = &#39;TMM&#39;,
+        estimateDisp_robust = TRUE,
+        estimateDisp_trend.method = &quot;locfit&quot;,
+        glm_approach = &quot;QLF&quot;,
+        # Output configuration
+        adjust_method = &#39;BH&#39;
+        )
+    }
+  
+  # Add gene description
+  use_res &lt;- dge$results %&gt;%  left_join(., gene_desc, relationship = &quot;many-to-many&quot;)
+
+  dge$results &lt;- use_res %&gt;% 
+    filter(!duplicated(feature)) %&gt;% 
+    mutate(rownames = feature) %&gt;% 
+    column_to_rownames(&#39;rownames&#39;)
+  
+   return(dge)
+}
+
+names(dge_list) &lt;- names(comp_list)
+
+# Save objects
+saveRDS(dge_list, file = file.path(params$output_dir, &#39;dge-edgeR_QLF.rds&#39;))</code></pre>
+</div>
+<div id="run-functional-enrichment" class="section level3" number="3.2">
+<h3><span class="header-section-number">3.2</span> Run functional
+enrichment</h3>
+<pre class="r"><code>dge_list &lt;- readRDS(file.path(params$output_dir, &#39;dge-edgeR_QLF.rds&#39;))
+dge &lt;-  dge_list[[2]]
+
+gse_list &lt;- foreach(dge = dge_list) %do%{
+  gse_res &lt;- gse_omnibus(
+    feature_names = dge$results$gene_name,
+    p = dge$results$FDR,
+    fc = dge$results$logFC,
+    fc_thrs = 0.5,
+    gmt_files = gmt_files_symbols,
+    
+    annot_db = &#39;org.Mm.eg.db&#39;,
+    organism = &#39;mmusculus&#39;,
+    kegg_organism = &#39;mmu&#39;,
+    reactome_organism = &#39;mouse&#39;,
+    
+    run_enricher = FALSE,
+    run_enrichGO = FALSE,
+    run_enrichKEGG = FALSE,
+    run_enrichReactome = FALSE,
+    
+    run_GSEA = TRUE,
+    run_gseGO = FALSE,
+    run_gseKEGG = FALSE,
+    run_gseReactome = FALSE,
+    
+    go_ontologies = c(&#39;BP&#39;, &#39;MF&#39;),
+    go_simplify_p = 0.05,
+    args_gse = list(minGSSize = 10, maxGSSize = 250, 
+                    pvalueCutoff = 1, 
+                    BPPARAM = BiocParallel::MulticoreParam(1))
+    )
+  
+   return(gse_res)
+
+}
+names(gse_list) &lt;- names(dge_list)
+
+# Save objects
+saveRDS(gse_list, file = file.path(params$output_dir,&#39;gse_omnibus-edgeR_QLF.rds&#39;))</code></pre>
+</div>
+<div id="load-data" class="section level3" number="3.3">
+<h3><span class="header-section-number">3.3</span> Load data</h3>
+<pre class="r"><code>dge_list &lt;- readRDS(file = file.path(params$output_dir, &#39;dge-edgeR_QLF.rds&#39;))
+gse_list &lt;- readRDS(file = file.path(params$output_dir, &#39;gse_omnibus-edgeR_QLF.rds&#39;))</code></pre>
+</div>
+<div id="knitrtemplate" class="section level3" number="3.4">
+<h3><span class="header-section-number">3.4</span> Knitr:template</h3>
+<pre class="r"><code>selected_labels_volcano &lt;- c(&#39;Amhr2&#39;)
+# knit template: https://workflowr.github.io/workflowr/articles/wflow-07-common-code.html
+src &lt;- knit_expand(
+  file = here::here(&quot;analysis/templates/rnaseq-deg-edger.Rmd&quot;)
+  )</code></pre>
+<!-- To be compatible with workflowr, we need to specify the absolute directory under which the plots are generated, otherwise they will be saved into figure/<basename>.Rmd/<chunk-name>.<extension. and not visible in the html document: https://github.com/workflowr/workflowr/issues/111 -->
+</div>
+</div>
+<div id="download-results" class="section level2" number="4">
+<h2><span class="header-section-number">4</span> Download results</h2>
+<!-- Write DGE results to xlsx file -->
+<pre class="r"><code># File name summary
+rmd_file &lt;- current_input()
+if(is.null(rmd_file))
+  rmd_file &lt;- &#39;tmp&#39;
+file_xlsx &lt;- file.path(&#39;./docs/file&#39;,rmd_file, &#39;dge.xlsx&#39;)
+
+dir.create(dirname(file_xlsx), recursive = TRUE, showWarnings = FALSE)
+
+# Generate workbook
+wb &lt;- createWorkbook()
+for(i in names(dge_list)) {
+  addWorksheet(wb, i)
+  res &lt;- dge_list[[i]]$results %&gt;% 
+    dplyr::select(feature, gene_name, mean, detected, logFC, PValue, FDR)
+  writeData(wb, i, res)
+}
+saveWorkbook(wb, file_xlsx, TRUE)
+
+dge_file_xlsx &lt;- file_xlsx</code></pre>
+<!-- Write GSE results to xlsx file -->
+<pre class="r"><code>gse_collections &lt;- list(
+  GSEA = names(gmt_files_symbols),
+  gseGO = c(&quot;BP&quot;, &quot;MF&quot;)
+)
+
+# File name summary
+rmd_file &lt;- current_input()
+if(is.null(rmd_file))
+  rmd_file &lt;- &#39;tmp&#39;
+
+file_xlsx_list &lt;- list()
+for(sr in names(gse_collections)) {
+  file_xlsx_list[[sr]] &lt;- list()
+  for(gc in gse_collections[[sr]]) {
+    # Generate file
+    file_xlsx &lt;- file.path(&#39;./docs/file&#39;, 
+                           rmd_file, 
+                           paste0(&#39;gse_&#39;, tolower(sr), &#39;_&#39;, tolower(gc), &#39;.xlsx&#39;)
+                           )
+    file_xlsx_list[[sr]][[gc]] &lt;- file_xlsx
+    dir.create(dirname(file_xlsx), recursive = TRUE, showWarnings = FALSE)
+    
+    # Generate workbook
+    wb &lt;- createWorkbook()
+    for(i in names(gse_list)) {
+      addWorksheet(wb, i)
+      if(!is.null(gse_list[[i]][[sr]][[gc]])) {
+        res &lt;- gse_list[[i]][[sr]][[gc]]@result
+        writeData(wb, i, res)
+      }
+    }
+    saveWorkbook(wb, file_xlsx, TRUE)
+  }
+}</code></pre>
+<!-- Change dge_list names after writing to xlsx -->
+<pre class="r"><code>comp_names &lt;- comp_list_description$comparison_long %&gt;% 
+  set_names(comp_list_description$comparison)
+names(comp_list) &lt;- comp_names[names(comp_list)]
+names(dge_list) &lt;- comp_names[names(dge_list)]
+names(gse_list) &lt;- comp_names[names(gse_list)]</code></pre>
+<p>The tables of results can be downloaded using the following
+links:</p>
+<ul>
+<li><p><a
+href="./file/rnaseq-amhr2_ko-deg.Rmd/dge.xlsx"><strong>Differential gene
+expression</strong></a>
+<!-- Write links to download GSE results --></p></li>
+<li><p><a
+href="./file/rnaseq-amhr2_ko-deg.Rmd/gse_gsea_msigdb.h.xlsx"><strong>Gene
+set enrichment analysis: msigdb.h</strong></a></p></li>
+<li><p><a
+href="./file/rnaseq-amhr2_ko-deg.Rmd/gse_gsego_bp.xlsx"><strong>Gene set
+enrichment analysis: GO:BP</strong></a></p></li>
+<li><p><a
+href="./file/rnaseq-amhr2_ko-deg.Rmd/gse_gsego_mf.xlsx"><strong>Gene set
+enrichment analysis: GO:MF</strong></a></p></li>
+</ul>
+</div>
+<div id="functional-enrichment-analysis" class="section level2"
+number="5">
+<h2><span class="header-section-number">5</span> Functional enrichment
+analysis</h2>
+<pre class="r"><code>gse_collections &lt;- list(
+  GSEA = names(gmt_files_symbols)
+)</code></pre>
+<div id="download-results-1" class="section level3" number="5.1">
+<h3><span class="header-section-number">5.1</span> Download results</h3>
+<!-- Write links to download GSE results -->
+<ul>
+<li><p><a
+href="./file/rnaseq-amhr2_ko-deg.Rmd/gse_gsea_msigdb.h.xlsx"><strong>Gene
+set enrichment analysis: msigdb.h</strong></a></p></li>
+<li><p><a
+href="./file/rnaseq-amhr2_ko-deg.Rmd/gse_gsego_bp.xlsx"><strong>Gene set
+enrichment analysis: GO:BP</strong></a></p></li>
+<li><p><a
+href="./file/rnaseq-amhr2_ko-deg.Rmd/gse_gsego_mf.xlsx"><strong>Gene set
+enrichment analysis: GO:MF</strong></a></p></li>
+</ul>
+</div>
+<div id="summary-of-results" class="section level3" number="5.2">
+<h3><span class="header-section-number">5.2</span> Summary of
+results</h3>
+<pre class="r"><code>res &lt;- foreach(i = names(gse_list), .combine = rbind) %do% {
+  foreach(sr = names(gse_collections), .combine = rbind) %do% {
+    foreach(gc = gse_collections[[sr]], .combine = rbind) %do% {
+      if(sr == &#39;GSEA&#39;) {
+        x &lt;- gse_list[[i]][[sr]][[gc]]@result %&gt;%
+          filter(p.adjust &lt;= 0.05)
+        if(gc == &#39;msigdb.c2.cp&#39;) {
+          x %&lt;&gt;%
+            filter(grepl(&#39;REACTOME|KEGG|WP&#39;, ID))
+        }
+      }
+      if(sr == &#39;gseGO&#39;) {
+        x &lt;- gse_list[[i]][[sr]][[gc]]@result %&gt;%
+          filter(p.adjust &lt;= 0.05)
+      }
+      c(
+        Comparison = i,
+        `Collection` = gc,
+        `Total` = nrow(x),
+        `Supressed` = x %&gt;% filter(NES &lt; 0) %&gt;% nrow,
+        `Activated` = x %&gt;% filter(NES &gt; 0) %&gt;% nrow
+      )
+    }
+  }
+}
+res &lt;- res %&gt;% data.frame(check.names = F)</code></pre>
+<div id="table" class="section level4" number="5.2.1">
+<h4><span class="header-section-number">5.2.1</span> Table</h4>
+<pre class="r"><code>res %&gt;%
+  data.frame(check.names = F) %&gt;%
+  kbl(caption = &#39;Number of gene sets at FDR &lt; 0.05&#39;,
+              row.names = F) %&gt;%
+  kable_paper(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;),
+              full_width = F) %&gt;%
+  column_spec(1, bold = TRUE)</code></pre>
+<table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+Number of gene sets at FDR
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Comparison
+</th>
+<th style="text-align:left;">
+Collection
+</th>
+<th style="text-align:left;">
+Total
+</th>
+<th style="text-align:left;">
+Supressed
+</th>
+<th style="text-align:left;">
+Activated
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+InVivo_AMHR2_KO–over–InVivo_Control_sgRNA
+</td>
+<td style="text-align:left;">
+msigdb.h
+</td>
+<td style="text-align:left;">
+18
+</td>
+<td style="text-align:left;">
+5
+</td>
+<td style="text-align:left;">
+13
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+AMHR2_KO_culture–over–AMHR2_Control_culture
+</td>
+<td style="text-align:left;">
+msigdb.h
+</td>
+<td style="text-align:left;">
+8
+</td>
+<td style="text-align:left;">
+5
+</td>
+<td style="text-align:left;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+AMHR2_KO_noTGFbeta–over–AMHR2_Control_culture
+</td>
+<td style="text-align:left;">
+msigdb.h
+</td>
+<td style="text-align:left;">
+0
+</td>
+<td style="text-align:left;">
+0
+</td>
+<td style="text-align:left;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+AMHR2_KO_noTGFbeta–over–AMHR2_KO_culture
+</td>
+<td style="text-align:left;">
+msigdb.h
+</td>
+<td style="text-align:left;">
+9
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+AMHR2_Overexpression–over–AMHR2_Control_culture
+</td>
+<td style="text-align:left;">
+msigdb.h
+</td>
+<td style="text-align:left;">
+10
+</td>
+<td style="text-align:left;">
+4
+</td>
+<td style="text-align:left;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+AMHR2_Overexpression–over–AMHR2_KO_culture
+</td>
+<td style="text-align:left;">
+msigdb.h
+</td>
+<td style="text-align:left;">
+9
+</td>
+<td style="text-align:left;">
+3
+</td>
+<td style="text-align:left;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+AMHR2_Overexpression–over–AMHR2_KO_noTGFbeta
+</td>
+<td style="text-align:left;">
+msigdb.h
+</td>
+<td style="text-align:left;">
+8
+</td>
+<td style="text-align:left;">
+5
+</td>
+<td style="text-align:left;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+InVivo_AMHR2_KO + AMHR2_KO_culture–over–InVivo_Control_sgRNA +
+AMHR2_Control_culture
+</td>
+<td style="text-align:left;">
+msigdb.h
+</td>
+<td style="text-align:left;">
+20
+</td>
+<td style="text-align:left;">
+8
+</td>
+<td style="text-align:left;">
+12
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="barplot" class="section level4" number="5.2.2">
+<h4><span class="header-section-number">5.2.2</span> Barplot</h4>
+<pre class="r"><code>res %&gt;%
+  pivot_longer(cols = c(&#39;Total&#39;, &#39;Supressed&#39;, &#39;Activated&#39;), names_to = &#39;Direction&#39;, values_to = &#39;Count&#39;) %&gt;%
+  mutate(
+    comb_names = paste(Comparison, Collection),
+    Count = as.numeric(Count),
+    Comparison = gsub(&quot;-over-&quot;, &quot; over\n&quot;, Comparison),
+    Comparison = gsub(&quot; corrected&quot;, &quot;\ncorrected&quot;, Comparison)
+    ) %&gt;%
+  ggplot(aes(Collection, Count, fill = Direction)) +
+  geom_col(position = &quot;dodge&quot;) +
+  coord_flip() +
+  facet_grid(rows = vars(Comparison)) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
+  scale_fill_manual(values = c(Supressed = &#39;#74add1&#39;,
+                               Activated = &#39;#f46d43&#39;,
+                               Total = &#39;grey80&#39;)
+                    ) +
+  labs(x = &#39;&#39;, fill = &#39;&#39;) +
+  theme_facet +
+  theme(
+    axis.line = element_blank(),
+    axis.ticks = element_line(linewidth = one_pt/4, color = &#39;black&#39;),
+    strip.text = element_text(size = 5)
+
+  )</code></pre>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gse-summary-fdr-barplot-1.png" width="2100" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="dotplots" class="section level3" number="5.3">
+<h3><span class="header-section-number">5.3</span> Dotplots</h3>
+<!-- # Subchunkify dotplots -->
+<!-- ## chunk options need to be set to echo=FALSE, results='asis' -->
+<!-- ## Cause results='asis',we must use raw HTML to print text and headings -->
+<h4>
+<span class="header-section-number"> 5.3.1 </span>Comparison
+InVivo_AMHR2_KO–over–InVivo_Control_sgRNA
+</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gse-dotplot-invivo_amhr2_ko--over--invivo_control_sgrna_GSEA_msigdb.h-1.png" width="2100" style="display: block; margin: auto;" /></p>
+<h4>
+<span class="header-section-number"> 5.3.2 </span>Comparison
+AMHR2_KO_culture–over–AMHR2_Control_culture
+</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gse-dotplot-amhr2_ko_culture--over--amhr2_control_culture_GSEA_msigdb.h-1.png" width="2100" style="display: block; margin: auto;" /></p>
+<h4>
+<span class="header-section-number"> 5.3.3 </span>Comparison
+AMHR2_KO_noTGFbeta–over–AMHR2_Control_culture
+</h4>
+<h4>
+<span class="header-section-number"> 5.3.4 </span>Comparison
+AMHR2_KO_noTGFbeta–over–AMHR2_KO_culture
+</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gse-dotplot-amhr2_ko_notgfbeta--over--amhr2_ko_culture_GSEA_msigdb.h-1.png" width="2100" style="display: block; margin: auto;" /></p>
+<h4>
+<span class="header-section-number"> 5.3.5 </span>Comparison
+AMHR2_Overexpression–over–AMHR2_Control_culture
+</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gse-dotplot-amhr2_overexpression--over--amhr2_control_culture_GSEA_msigdb.h-1.png" width="2100" style="display: block; margin: auto;" /></p>
+<h4>
+<span class="header-section-number"> 5.3.6 </span>Comparison
+AMHR2_Overexpression–over–AMHR2_KO_culture
+</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gse-dotplot-amhr2_overexpression--over--amhr2_ko_culture_GSEA_msigdb.h-1.png" width="2100" style="display: block; margin: auto;" /></p>
+<h4>
+<span class="header-section-number"> 5.3.7 </span>Comparison
+AMHR2_Overexpression–over–AMHR2_KO_noTGFbeta
+</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gse-dotplot-amhr2_overexpression--over--amhr2_ko_notgfbeta_GSEA_msigdb.h-1.png" width="2100" style="display: block; margin: auto;" /></p>
+<h4>
+<span class="header-section-number"> 5.3.8 </span>Comparison
+InVivo_AMHR2_KO + AMHR2_KO_culture–over–InVivo_Control_sgRNA +
+AMHR2_Control_culture
+</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gse-dotplot-invivo_amhr2_ko-+-amhr2_ko_culture--over--invivo_control_sgrna-+-amhr2_control_culture_GSEA_msigdb.h-1.png" width="2100" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="gsea-plots-for-selected-signatures" class="section level2"
+number="6">
+<h2><span class="header-section-number">6</span> GSEA plots for selected
+signatures</h2>
+<p>Define signatures</p>
+<pre class="r"><code>manual_gene_sets &lt;- list(
+  # Signature 1
+  `Mammary epithelium proliferation` = c(
+    &#39;Aurka&#39;,
+    &#39;Aurkb&#39;,
+    &#39;Brca1&#39;,
+    &#39;Brca2&#39;,
+    &#39;Ccdn1&#39;,
+    &#39;Cdkn2a&#39;,
+    &#39;Esr1&#39;,
+    &#39;Gata3&#39;,
+    &#39;Hoxa5&#39;,
+    &#39;Mki67&#39;,
+    &#39;Plk1&#39;,
+    &#39;Wnt5A&#39;,
+    &#39;Agap2&#39;,
+    &#39;Areg&#39;,
+    &#39;Bax&#39;,
+    &#39;Deaf1&#39;,
+    &#39;Epha2&#39;,
+    &#39;Etv4&#39;,
+    &#39;Id2&#39;,
+    &#39;Kdm5b&#39;,
+    &#39;Robo1&#39;,
+    &#39;Mapk1&#39;,
+    &#39;Med1&#39;,
+    &#39;Pygo2&#39;,
+    &#39;Tfap2c&#39;
+  ),
+  # Signature 2
+  `EMT regulators and targets` = c(
+    &#39;Epcam&#39;,
+    &#39;Cdh1&#39;,
+    &#39;Cdh2&#39;,
+    &#39;Cldn1&#39;,
+    &#39;Cldn3&#39;,
+    &#39;Cldn4&#39;,
+    &#39;Cldn7&#39;,
+    &#39;Vim&#39;,
+    &#39;Acta2&#39;,
+    &#39;Snai2&#39;,
+    &#39;Twist1&#39;,
+    &#39;Zeb1&#39;,
+    &#39;Zeb2&#39;,
+    &#39;Grhl2&#39;,
+    &#39;Esrp1&#39;,
+    &#39;Esrp2&#39;,
+    &#39;Marveld2&#39;,
+    &#39;Rab25&#39;,
+    &#39;Myo5C&#39;,
+    &#39;Pkp1&#39;,
+    &#39;Pkp3&#39;,
+    &#39;Jup&#39;,
+    &#39;Dsp&#39;,
+    &#39;Ppl&#39;,
+    &#39;Dsg3&#39;
+  ),
+  # Signature 3
+  `SMAD target genes and interactors` = c(
+    &#39;Wnt4&#39;,
+    &#39;Cited2&#39;,
+    &#39;Tob1&#39;,
+    &#39;Acvr1&#39;,
+    &#39;Hipk2&#39;,
+    &#39;Ppm1a&#39;,
+    &#39;Crebbp&#39;,
+    &#39;Zfyve9&#39;,
+    &#39;Col5a2&#39;,
+    &#39;Tgif1&#39;,
+    &#39;Ankrd1&#39;,
+    &#39;Smad4&#39;,
+    &#39;Smurf1&#39;,
+    &#39;Magi2&#39;,
+    &#39;Zmiz1&#39;,
+    &#39;Trim33&#39;,
+    &#39;Skil&#39;,
+    &#39;Ipo7&#39;,
+    &#39;Mef2a&#39;,
+    &#39;Smad9&#39;,
+    &#39;Usp9x&#39;,
+    &#39;Rnf111&#39;,
+    &#39;Tcf12&#39;,
+    &#39;Hmga2&#39;,
+    &#39;Foxa2&#39;
+  ),
+  # Signature 4
+  `STAT1 target genes and interactors` = c(
+    &#39;Ciita&#39;,
+    &#39;Socs1&#39;,
+    &#39;Cxcl10&#39;,
+    &#39;Irf1&#39;,
+    &#39;Irf7&#39;,
+    &#39;Irf9&#39;,
+    &#39;Stat1&#39;,
+    &#39;Stat2&#39;,
+    &#39;Stat3&#39;,
+    &#39;Stat5a&#39;,
+    &#39;Stat5b&#39;,
+    &#39;Sting1&#39;,
+    &#39;Jak1&#39;,
+    &#39;Jak2&#39;,
+    &#39;Tap1&#39;,
+    &#39;Tap2&#39;,
+    &#39;Usp18&#39;,
+    &#39;Cyp1b1&#39;,
+    &#39;Mx1&#39;,
+    &#39;Ido1&#39;,
+    &#39;Bcl6&#39;,
+    &#39;Gbp5&#39;,
+    &#39;Egr1&#39;,
+    &#39;Fos&#39;,
+    &#39;Lyn&#39;
+  )
+)
+
+
+i &lt;- names(manual_gene_sets)[1]
+manual_term2gene &lt;- foreach(i = names(manual_gene_sets), .combine = rbind) %do% {
+  cbind(
+    term = rep(i, length(manual_gene_sets[[i]])), 
+    gene = manual_gene_sets[[i]]
+    )
+}</code></pre>
+<p>Run functional enrichment</p>
+<pre class="r"><code>library(clusterProfiler)
+dge &lt;-  dge_list[[2]]
+
+gse_manual_list &lt;- foreach(dge = dge_list) %do%{
+  feature_fc_list &lt;- dge$results$logFC %&gt;% 
+    set_names(make.names(dge$results$gene_name, unique = TRUE)) %&gt;% 
+    sort(decreasing = TRUE)
+  res &lt;- GSEA(feature_fc_list, 
+              TERM2GENE=manual_term2gene,
+              minGSSize = 0,
+              maxGSSize = Inf,
+              pvalueCutoff = 1, verbose = FALSE)
+  res
+}
+
+names(gse_manual_list) &lt;- names(dge_list)
+
+# Save objects
+saveRDS(gse_manual_list, file = file.path(params$output_dir,&#39;gsea-edgeR_QLF-signatures.rds&#39;))</code></pre>
+<pre class="r"><code>gse_manual_list &lt;- readRDS(file = file.path(params$output_dir,&#39;gsea-edgeR_QLF-signatures.rds&#39;))
+comp_names &lt;- comp_list_description$comparison_long %&gt;% 
+  set_names(comp_list_description$comparison)
+names(gse_manual_list) &lt;- comp_names[names(gse_manual_list)]</code></pre>
+<pre class="r"><code>gseaScores &lt;- getFromNamespace(&quot;gseaScores&quot;, &quot;DOSE&quot;)
+gsInfo &lt;- getFromNamespace(&quot;gsInfo&quot;, &quot;enrichplot&quot;)
+gseaplot2_custom &lt;- function (
+    x, 
+    geneSetID, 
+    title = &quot;&quot;, 
+    color = &quot;green&quot;, 
+    base_size = 11, 
+    rel_heights = c(1.5, 0.5, 1), subplots = 1:3, pvalue_table = FALSE, 
+    ES_geom = &quot;line&quot;,
+    axis.linewidth = (1/2.141959)/4,
+    pres.linewidth = 1,
+    p2.fill = &#39;transparent&#39;,
+    p2.linerange.linewidth = 0.5,
+    legend.position = c(0.8, 0.8),
+    p.pos.ylab = &#39;Ranked List Metric&#39;,
+    p2.labels = FALSE, # Only works when there are two geneSetID
+    reverse.rank = FALSE,
+    p2.add.intervals.colors = FALSE,
+    p2.segment.color.var = &#39;Description&#39;, # Either Description or geneList (log2FC)
+    geneList.limit = NULL,
+    fontface = &quot;italic&quot; #c(&quot;plain&quot;, &quot;bold&quot;, &quot;italic&quot;, &quot;bold.italic&quot;)
+    )
+{
+    ##
+    ## Enrichmment score plot
+    ##
+    ES_geom &lt;- match.arg(ES_geom, c(&quot;line&quot;, &quot;dot&quot;))
+    geneList &lt;- position &lt;- NULL
+    if (length(geneSetID) == 1) {
+        gsdata &lt;- gsInfo(x, geneSetID)
+    } else {
+        gsdata &lt;- do.call(rbind, lapply(geneSetID, gsInfo, object = x))
+    }
+    
+    # Reverse rank
+    if(reverse.rank) {
+      gsdata$x &lt;- rev(gsdata$x)
+    }
+    
+    # Cap the geneList values
+    if(!is.null(geneList.limit)) {
+      gsdata$geneListCapped &lt;- gsdata$geneList
+      gsdata$geneListCapped[gsdata$geneListCapped &gt; geneList.limit] &lt;- geneList.limit
+      gsdata$geneListCapped[gsdata$geneListCapped &lt; -geneList.limit] &lt;- -geneList.limit
+      p2.segment.color.var &lt;- &#39;geneListCapped&#39;
+    }
+    
+    p &lt;- ggplot(gsdata, aes_(x = ~x)) + 
+      xlab(NULL) + 
+      theme_classic(base_size) + 
+      theme(
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.y = element_blank(), 
+        panel.grid.minor.y = element_blank()
+        # panel.border = element_rect(fill =NULL,color = &quot;black&quot;, linewidth = one_pt/4)
+      ) + 
+      scale_x_continuous(expand = c(0, 0))
+    
+    if (ES_geom == &quot;line&quot;) {
+        es_layer &lt;- geom_line(aes_(y = ~runningScore, color = ~Description), 
+            linewidth = 1)
+    } else {
+        es_layer &lt;- geom_point(aes_(y = ~runningScore, color = ~Description), 
+            linewidth = 1, data = subset(gsdata, position == 1))
+    }
+    p.res &lt;- p + 
+      es_layer + 
+      geom_hline(yintercept = 0, linetype = &quot;dashed&quot;, color = &quot;grey&quot;) +
+      theme(
+        legend.position = legend.position,
+        legend.title = element_blank(), 
+        legend.background = element_rect(fill = &quot;transparent&quot;)
+        ) + 
+      ylab(&quot;Running Enrichment Score&quot;) + 
+      theme(
+        axis.text.x = element_blank(), 
+        axis.ticks.x = element_blank(), 
+        axis.line.x = element_blank(), 
+        axis.line.y = element_blank(), 
+        # axis.line.y = element_line(linewidth = axis.linewidth, color = &#39;black&#39;),
+        panel.border = element_rect(fill =&quot;transparent&quot;,color = &quot;black&quot;, linewidth = axis.linewidth)
+        )
+    ##
+    ## Plot gene position in rank
+    ##
+    i &lt;- 0
+    for (term in unique(gsdata$Description)) {
+        idx &lt;- which(gsdata$ymin != 0 &amp; gsdata$Description == 
+            term)
+        gsdata[idx, &quot;ymin&quot;] &lt;- i
+        gsdata[idx, &quot;ymax&quot;] &lt;- i + 1
+        i &lt;- i + 1
+    }
+    
+    p2 &lt;- ggplot(gsdata, aes_(x = ~x)) + 
+      annotate(&quot;rect&quot;, xmin=0, xmax=100+max(gsdata$x), ymin=0 , ymax=2, alpha=0.8, color=p2.fill, fill=p2.fill) +
+      # geom_linerange(aes_(ymin = ~ymin, ymax = ~ymax, color = ~Description), linewidth = p2.linerange.linewidth) + 
+      geom_linerange(aes_string(ymin = &#39;ymin&#39;, ymax = &#39;ymax&#39;, color = p2.segment.color.var), linewidth = p2.linerange.linewidth) + 
+      xlab(NULL) + 
+      ylab(NULL) + 
+      theme_classic(base_size) + 
+      theme(
+        legend.position = &quot;none&quot;, 
+        plot.margin = margin(t = -0.1, b = 0, unit = &quot;cm&quot;), 
+        axis.ticks = element_blank(), 
+        axis.text = element_blank(), 
+        axis.line.x = element_blank(),
+        axis.line.y = element_blank(),
+        panel.border = element_rect(fill =&quot;transparent&quot;,color = &quot;black&quot;, linewidth = axis.linewidth)#,
+        # panel.background = element_rect(fill = p2.fill)
+        ) + 
+      scale_x_continuous(expand = c(0, 0)) + 
+      scale_y_continuous(expand = c(0, 0))
+    
+    if(p2.labels == TRUE &amp; length(geneSetID) == 2) {
+      gsdata_labels &lt;- gsdata %&gt;% filter(ymax &gt; 0)
+      max_y &lt;- max(gsdata_labels$ymax)
+      
+      description_labels &lt;- unique(gsdata_labels$Description) 
+      description_cut_point &lt;- ceiling(length(description_labels) / 2)
+      description_bottom &lt;- description_labels[1:description_cut_point]
+      description_top &lt;- description_labels[(description_cut_point+1):length(description_labels)]
+      
+      gsdata_labels_bottom &lt;- gsdata_labels %&gt;% filter(Description %in% description_bottom)
+      gsdata_labels_top &lt;- gsdata_labels %&gt;% filter(Description %in% description_top)
+      max_y &lt;- max(gsdata_labels$ymax)
+      p2 &lt;- p2 + 
+        geom_text_repel(data = gsdata_labels_top,
+                        aes(y = max_y, label = gene),
+                        force_pull   = 0, # do not pull toward data points
+                        nudge_y      = max_y * 0.15,
+                        direction    = &quot;x&quot;,
+                        ylim = c(2.5, 4),
+                        angle        = 90,
+                        hjust        = 0,
+                        max.time = 3,
+                        max.overlaps = Inf,
+                        min.segment.length = 0,
+                        segment.size = 0.2,
+                        segment.square = TRUE,
+                        segment.inflect = FALSE,
+                        segment.curvature = 1,
+                        segment.angle = -1,
+                        box.padding = 0.075,
+                        fontface = &quot;italic&quot;
+        ) +
+        geom_text_repel(data = gsdata_labels_bottom,
+                        aes(y = 0, label = gene),
+                        force_pull   = 0, 
+                        nudge_y      = -(max_y * 0.15),
+                        direction    = &quot;x&quot;,
+                        ylim = c(-2, -0.5),
+                        angle        = 90,
+                        hjust        = 1,
+                        max.time = 3,
+                        max.overlaps = Inf,
+                        min.segment.length = 0,
+                        segment.size = 0.2,
+                        segment.square = TRUE,
+                        segment.inflect = FALSE,
+                        segment.curvature = 1,
+                        segment.angle = -1,
+                        box.padding = 0.075,
+                        fontface = &quot;italic&quot;
+        ) +
+        coord_cartesian(expand = T, clip = &quot;off&quot;) +
+        ylim(-1, 3)
+        
+      
+    } else if (p2.labels == TRUE &amp; length(geneSetID) == 1) {
+      gsdata_labels &lt;- gsdata %&gt;% filter(ymax &gt; 0)
+      max_y &lt;- max(gsdata_labels$ymax)
+      
+      description_labels &lt;- unique(gsdata_labels$Description) 
+      description_cut_point &lt;- ceiling(length(description_labels) / 2)
+      description_top &lt;- description_labels[(description_cut_point+1):length(description_labels)]
+      
+      gsdata_labels_top &lt;- gsdata_labels %&gt;% filter(Description %in% description_top)
+      max_y &lt;- max(gsdata_labels$ymax)
+      p2 &lt;- p2 + 
+        geom_text_repel(data = gsdata_labels_top,
+                        aes(y = max_y, label = gene),
+                        force_pull   = 0, # do not pull toward data points
+                        nudge_y      = max_y * 0.05,
+                        direction    = &quot;x&quot;,
+                        ylim = c(1.4, 2),
+                        angle        = 90,
+                        hjust        = 0,
+                        max.time = 3,
+                        max.overlaps = Inf,
+                        min.segment.length = 0,
+                        segment.size = 0.2,
+                        segment.square = TRUE,
+                        segment.inflect = FALSE,
+                        segment.curvature = 1,
+                        segment.angle = -1,
+                        box.padding = 0.075,
+                        fontface = &quot;italic&quot;
+        )
+    } else {
+      p2 &lt;- p2 + theme(panel.background = element_rect(fill = p2.fill))
+    }
+    if (length(geneSetID) == 1 &amp; p2.add.intervals.colors) {
+        v &lt;- seq(1, sum(gsdata$position), length.out = 9)
+        inv &lt;- findInterval(rev(cumsum(gsdata$position)), v)
+        if (min(inv) == 0) 
+            inv &lt;- inv + 1
+        col &lt;- c(rev(brewer.pal(5, &quot;Blues&quot;)), brewer.pal(5, &quot;Reds&quot;))
+        ymin &lt;- min(p2$data$ymin)
+        yy &lt;- max(p2$data$ymax - p2$data$ymin) * 0.3
+        xmin &lt;- which(!duplicated(inv))
+        xmax &lt;- xmin + as.numeric(table(inv)[as.character(unique(inv))])
+        d &lt;- data.frame(ymin = ymin, ymax = yy, xmin = xmin, 
+            xmax = xmax, col = col[unique(inv)])
+        p2 &lt;- p2 + geom_rect(aes_(xmin = ~xmin, xmax = ~xmax, 
+            ymin = ~ymin, ymax = ~ymax, fill = ~I(col)), data = d, 
+            alpha = 0.9, inherit.aes = FALSE)
+    }
+    
+    ##
+    ## Rank plot
+    ##
+    df2 &lt;- p$data
+    df2$y &lt;- p$data$geneList[df2$x]
+    p.pos &lt;- p + 
+      geom_segment(data = df2, aes_(x = ~x, xend = ~x, y = ~y, yend = 0), color = &quot;grey&quot;)
+    p.pos &lt;- p.pos + 
+      ylab(p.pos.ylab) + 
+      xlab(&quot;Rank in Ordered Dataset&quot;) + 
+      theme(
+        plot.margin = margin(t = -0.1, r = 0.2, b = 0.2, l = 0.2, unit = &quot;cm&quot;),
+        axis.line.x = element_blank(), 
+        axis.line.y = element_blank(), 
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.y = element_blank(), 
+        panel.grid.minor.y = element_blank(),
+        # axis.line.y = element_line(linewidth = axis.linewidth, color = &#39;black&#39;),
+        panel.border = element_rect(fill =&quot;transparent&quot;,color = &quot;black&quot;, linewidth = axis.linewidth)
+        )
+    
+    ##
+    ## Combine plots
+    ##
+    if (!is.null(title) &amp;&amp; !is.na(title) &amp;&amp; title != &quot;&quot;) 
+        p.res &lt;- p.res + ggtitle(title)
+    if (length(color) == length(geneSetID)) {
+        p.res &lt;- p.res + scale_color_manual(values = color)
+        if (length(color) == 1) {
+            p.res &lt;- p.res + theme(legend.position = &quot;none&quot;)
+            p2 &lt;- p2 + scale_color_manual(values = &quot;black&quot;)
+        }
+        else if (p2.segment.color.var == &#39;Description&#39;) {
+            p2 &lt;- p2 + scale_color_manual(values = color)
+        }
+    }
+    if (p2.segment.color.var %in% c(&#39;geneList&#39;,&#39;geneListCapped&#39;) ) {
+      p2 &lt;- p2 + scale_color_gradient2(low = &quot;#377eb8&quot;, mid = &quot;white&quot;, high = &quot;#e41a1c&quot;, midpoint = 0)
+    }
+    if (pvalue_table) {
+        pd &lt;- x[geneSetID, c(&quot;Description&quot;, &quot;pvalue&quot;, &quot;p.adjust&quot;)]
+        rownames(pd) &lt;- pd$Description
+        pd &lt;- pd[, -1]
+        for (i in seq_len(ncol(pd))) {
+            pd[, i] &lt;- format(pd[, i], digits = 4)
+        }
+        tp &lt;- tableGrob2(pd, p.res)
+        p.res &lt;- p.res + theme(legend.position = &quot;none&quot;) + annotation_custom(tp, 
+            xmin = quantile(p.res$data$x, 0.5), xmax = quantile(p.res$data$x, 
+                0.95), ymin = quantile(p.res$data$runningScore, 
+                0.75), ymax = quantile(p.res$data$runningScore, 
+                0.9))
+    }
+    plotlist &lt;- list(p.res, p2, p.pos)[subplots]
+    n &lt;- length(plotlist)
+    plotlist[[n]] &lt;- plotlist[[n]] + 
+      theme(
+        # axis.line.x = element_line(), 
+        axis.ticks.x = element_line(),
+        axis.text.x = element_text()
+        )
+    if (length(subplots) == 1) 
+        return(plotlist[[1]] + theme(plot.margin = margin(t = 0.2, 
+            r = 0.2, b = 0.2, l = 0.2, unit = &quot;cm&quot;)))
+    if (length(rel_heights) &gt; length(subplots)) 
+        rel_heights &lt;- rel_heights[subplots]
+    aplot::gglist(gglist = plotlist, ncol = 1, heights = rel_heights)
+}</code></pre>
+<p>The figures below shows the GSEA plots with labels with a reverse
+rank compared to traditional ranking. In this case, the rank is based on
+increasing order of fold-change.</p>
+<p>In these plots, the segments (second panel) are colored by fold
+change (color range capped to -5 to 5)</p>
+<pre class="r"><code>i &lt;- names(gse_manual_list)[1]
+for(i in names(dge_list)) {
+  cat(&quot;### Comparison&quot;, i, &quot;\n\n&quot;)
+  
+  gse_manual_list[[i]]@result %&gt;% 
+    mutate(
+      NES = round(NES, 2),
+      pvalue = format.pval(pvalue, digits = 2),
+      p.adjust = format.pval(p.adjust, digits = 2)
+    ) %&gt;% 
+    dplyr::select(Description, setSize, NES, pvalue, p.adjust) %&gt;% 
+    kbl(caption = &#39;GSEA results&#39;,
+        row.names = F) %&gt;%
+    kable_paper(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;), 
+                full_width = F) %&gt;%
+    column_spec(1, bold = TRUE) %&gt;% 
+    print
+  
+  cat(&quot;\n\n&quot;)
+  
+  n_gsets &lt;- seq_along(gse_manual_list[[i]]$Description)
+  for(j in n_gsets) {
+    es_color &lt;- ifelse(gse_manual_list[[i]]$NES[j] &gt; 0, &quot;#e41a1c&quot;, &quot;#377eb8&quot;)
+    cat(&quot;####&quot;, gse_manual_list[[i]]$Description[j], &quot;\n\n&quot;)
+    res &lt;- gseaplot2_custom(
+      gse_manual_list[[i]], 
+      geneSetID = j, 
+      # pvalue_table = TRUE,
+      title = i,
+      base_size = 8,
+      rel_heights = c(1, 1.5, 0),
+      color =es_color,
+      p2.fill = &#39;grey90&#39;,
+      p2.linerange.linewidth = 0.80,
+      legend.position = &#39;top&#39;,
+      p.pos.ylab = &#39;Log2 Fold Change&#39;,
+      p2.labels = TRUE,
+      reverse.rank = FALSE,
+      p2.segment.color.var = &#39;geneList&#39;,
+      geneList.limit = 5
+    )
+    print(res)
+    cat(&quot;\n\n&quot;)
+  }
+}</code></pre>
+<div id="comparison-invivo_amhr2_kooverinvivo_control_sgrna"
+class="section level3" number="6.1">
+<h3><span class="header-section-number">6.1</span> Comparison
+InVivo_AMHR2_KO–over–InVivo_Control_sgRNA</h3>
+<table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+GSEA results
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Description
+</th>
+<th style="text-align:right;">
+setSize
+</th>
+<th style="text-align:right;">
+NES
+</th>
+<th style="text-align:left;">
+pvalue
+</th>
+<th style="text-align:left;">
+p.adjust
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+STAT1 target genes and interactors
+</td>
+<td style="text-align:right;">
+25
+</td>
+<td style="text-align:right;">
+2.26
+</td>
+<td style="text-align:left;">
+3.1e-06
+</td>
+<td style="text-align:left;">
+4.4e-06
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+EMT regulators and targets
+</td>
+<td style="text-align:right;">
+24
+</td>
+<td style="text-align:right;">
+-2.12
+</td>
+<td style="text-align:left;">
+2.3e-06
+</td>
+<td style="text-align:left;">
+4.4e-06
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+SMAD target genes and interactors
+</td>
+<td style="text-align:right;">
+25
+</td>
+<td style="text-align:right;">
+-2.09
+</td>
+<td style="text-align:left;">
+3.3e-06
+</td>
+<td style="text-align:left;">
+4.4e-06
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+Mammary epithelium proliferation
+</td>
+<td style="text-align:right;">
+23
+</td>
+<td style="text-align:right;">
+-1.21
+</td>
+<td style="text-align:left;">
+0.22
+</td>
+<td style="text-align:left;">
+0.22
+</td>
+</tr>
+</tbody>
+</table>
+<div id="stat1-target-genes-and-interactors" class="section level4"
+number="6.1.1">
+<h4><span class="header-section-number">6.1.1</span> STAT1 target genes
+and interactors</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gseaplot2-custom-labels-individual-plot-1.png" width="4320" style="display: block; margin: auto;" /></p>
+</div>
+<div id="emt-regulators-and-targets" class="section level4"
+number="6.1.2">
+<h4><span class="header-section-number">6.1.2</span> EMT regulators and
+targets</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gseaplot2-custom-labels-individual-plot-2.png" width="4320" style="display: block; margin: auto;" /></p>
+</div>
+<div id="smad-target-genes-and-interactors" class="section level4"
+number="6.1.3">
+<h4><span class="header-section-number">6.1.3</span> SMAD target genes
+and interactors</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gseaplot2-custom-labels-individual-plot-3.png" width="4320" style="display: block; margin: auto;" /></p>
+</div>
+<div id="mammary-epithelium-proliferation" class="section level4"
+number="6.1.4">
+<h4><span class="header-section-number">6.1.4</span> Mammary epithelium
+proliferation</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gseaplot2-custom-labels-individual-plot-4.png" width="4320" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="comparison-amhr2_ko_cultureoveramhr2_control_culture"
+class="section level3" number="6.2">
+<h3><span class="header-section-number">6.2</span> Comparison
+AMHR2_KO_culture–over–AMHR2_Control_culture</h3>
+<table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+GSEA results
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Description
+</th>
+<th style="text-align:right;">
+setSize
+</th>
+<th style="text-align:right;">
+NES
+</th>
+<th style="text-align:left;">
+pvalue
+</th>
+<th style="text-align:left;">
+p.adjust
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+EMT regulators and targets
+</td>
+<td style="text-align:right;">
+24
+</td>
+<td style="text-align:right;">
+-1.94
+</td>
+<td style="text-align:left;">
+0.00011
+</td>
+<td style="text-align:left;">
+0.00043
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+STAT1 target genes and interactors
+</td>
+<td style="text-align:right;">
+24
+</td>
+<td style="text-align:right;">
+1.81
+</td>
+<td style="text-align:left;">
+0.00065
+</td>
+<td style="text-align:left;">
+0.00131
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+SMAD target genes and interactors
+</td>
+<td style="text-align:right;">
+23
+</td>
+<td style="text-align:right;">
+-1.11
+</td>
+<td style="text-align:left;">
+0.31075
+</td>
+<td style="text-align:left;">
+0.41433
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+Mammary epithelium proliferation
+</td>
+<td style="text-align:right;">
+22
+</td>
+<td style="text-align:right;">
+-0.83
+</td>
+<td style="text-align:left;">
+0.71429
+</td>
+<td style="text-align:left;">
+0.71429
+</td>
+</tr>
+</tbody>
+</table>
+<div id="emt-regulators-and-targets-1" class="section level4"
+number="6.2.1">
+<h4><span class="header-section-number">6.2.1</span> EMT regulators and
+targets</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gseaplot2-custom-labels-individual-plot-5.png" width="4320" style="display: block; margin: auto;" /></p>
+</div>
+<div id="stat1-target-genes-and-interactors-1" class="section level4"
+number="6.2.2">
+<h4><span class="header-section-number">6.2.2</span> STAT1 target genes
+and interactors</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gseaplot2-custom-labels-individual-plot-6.png" width="4320" style="display: block; margin: auto;" /></p>
+</div>
+<div id="smad-target-genes-and-interactors-1" class="section level4"
+number="6.2.3">
+<h4><span class="header-section-number">6.2.3</span> SMAD target genes
+and interactors</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gseaplot2-custom-labels-individual-plot-7.png" width="4320" style="display: block; margin: auto;" /></p>
+</div>
+<div id="mammary-epithelium-proliferation-1" class="section level4"
+number="6.2.4">
+<h4><span class="header-section-number">6.2.4</span> Mammary epithelium
+proliferation</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gseaplot2-custom-labels-individual-plot-8.png" width="4320" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="comparison-amhr2_ko_notgfbetaoveramhr2_control_culture"
+class="section level3" number="6.3">
+<h3><span class="header-section-number">6.3</span> Comparison
+AMHR2_KO_noTGFbeta–over–AMHR2_Control_culture</h3>
+<table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+GSEA results
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Description
+</th>
+<th style="text-align:right;">
+setSize
+</th>
+<th style="text-align:right;">
+NES
+</th>
+<th style="text-align:left;">
+pvalue
+</th>
+<th style="text-align:left;">
+p.adjust
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+STAT1 target genes and interactors
+</td>
+<td style="text-align:right;">
+20
+</td>
+<td style="text-align:right;">
+1.36
+</td>
+<td style="text-align:left;">
+0.10
+</td>
+<td style="text-align:left;">
+0.40
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+SMAD target genes and interactors
+</td>
+<td style="text-align:right;">
+22
+</td>
+<td style="text-align:right;">
+-0.87
+</td>
+<td style="text-align:left;">
+0.67
+</td>
+<td style="text-align:left;">
+0.99
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+Mammary epithelium proliferation
+</td>
+<td style="text-align:right;">
+19
+</td>
+<td style="text-align:right;">
+-0.64
+</td>
+<td style="text-align:left;">
+0.93
+</td>
+<td style="text-align:left;">
+0.99
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+EMT regulators and targets
+</td>
+<td style="text-align:right;">
+23
+</td>
+<td style="text-align:right;">
+-0.52
+</td>
+<td style="text-align:left;">
+0.99
+</td>
+<td style="text-align:left;">
+0.99
+</td>
+</tr>
+</tbody>
+</table>
+<div id="stat1-target-genes-and-interactors-2" class="section level4"
+number="6.3.1">
+<h4><span class="header-section-number">6.3.1</span> STAT1 target genes
+and interactors</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gseaplot2-custom-labels-individual-plot-9.png" width="4320" style="display: block; margin: auto;" /></p>
+</div>
+<div id="smad-target-genes-and-interactors-2" class="section level4"
+number="6.3.2">
+<h4><span class="header-section-number">6.3.2</span> SMAD target genes
+and interactors</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gseaplot2-custom-labels-individual-plot-10.png" width="4320" style="display: block; margin: auto;" /></p>
+</div>
+<div id="mammary-epithelium-proliferation-2" class="section level4"
+number="6.3.3">
+<h4><span class="header-section-number">6.3.3</span> Mammary epithelium
+proliferation</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gseaplot2-custom-labels-individual-plot-11.png" width="4320" style="display: block; margin: auto;" /></p>
+</div>
+<div id="emt-regulators-and-targets-2" class="section level4"
+number="6.3.4">
+<h4><span class="header-section-number">6.3.4</span> EMT regulators and
+targets</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gseaplot2-custom-labels-individual-plot-12.png" width="4320" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="comparison-amhr2_ko_notgfbetaoveramhr2_ko_culture"
+class="section level3" number="6.4">
+<h3><span class="header-section-number">6.4</span> Comparison
+AMHR2_KO_noTGFbeta–over–AMHR2_KO_culture</h3>
+<table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+GSEA results
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Description
+</th>
+<th style="text-align:right;">
+setSize
+</th>
+<th style="text-align:right;">
+NES
+</th>
+<th style="text-align:left;">
+pvalue
+</th>
+<th style="text-align:left;">
+p.adjust
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+EMT regulators and targets
+</td>
+<td style="text-align:right;">
+24
+</td>
+<td style="text-align:right;">
+2.00
+</td>
+<td style="text-align:left;">
+4.7e-05
+</td>
+<td style="text-align:left;">
+0.00019
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+STAT1 target genes and interactors
+</td>
+<td style="text-align:right;">
+24
+</td>
+<td style="text-align:right;">
+-1.73
+</td>
+<td style="text-align:left;">
+0.002
+</td>
+<td style="text-align:left;">
+0.00409
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+SMAD target genes and interactors
+</td>
+<td style="text-align:right;">
+23
+</td>
+<td style="text-align:right;">
+1.21
+</td>
+<td style="text-align:left;">
+0.205
+</td>
+<td style="text-align:left;">
+0.27306
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+Mammary epithelium proliferation
+</td>
+<td style="text-align:right;">
+22
+</td>
+<td style="text-align:right;">
+-0.74
+</td>
+<td style="text-align:left;">
+0.866
+</td>
+<td style="text-align:left;">
+0.86556
+</td>
+</tr>
+</tbody>
+</table>
+<div id="emt-regulators-and-targets-3" class="section level4"
+number="6.4.1">
+<h4><span class="header-section-number">6.4.1</span> EMT regulators and
+targets</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gseaplot2-custom-labels-individual-plot-13.png" width="4320" style="display: block; margin: auto;" /></p>
+</div>
+<div id="stat1-target-genes-and-interactors-3" class="section level4"
+number="6.4.2">
+<h4><span class="header-section-number">6.4.2</span> STAT1 target genes
+and interactors</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gseaplot2-custom-labels-individual-plot-14.png" width="4320" style="display: block; margin: auto;" /></p>
+</div>
+<div id="smad-target-genes-and-interactors-3" class="section level4"
+number="6.4.3">
+<h4><span class="header-section-number">6.4.3</span> SMAD target genes
+and interactors</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gseaplot2-custom-labels-individual-plot-15.png" width="4320" style="display: block; margin: auto;" /></p>
+</div>
+<div id="mammary-epithelium-proliferation-3" class="section level4"
+number="6.4.4">
+<h4><span class="header-section-number">6.4.4</span> Mammary epithelium
+proliferation</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gseaplot2-custom-labels-individual-plot-16.png" width="4320" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="comparison-amhr2_overexpressionoveramhr2_control_culture"
+class="section level3" number="6.5">
+<h3><span class="header-section-number">6.5</span> Comparison
+AMHR2_Overexpression–over–AMHR2_Control_culture</h3>
+<table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+GSEA results
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Description
+</th>
+<th style="text-align:right;">
+setSize
+</th>
+<th style="text-align:right;">
+NES
+</th>
+<th style="text-align:left;">
+pvalue
+</th>
+<th style="text-align:left;">
+p.adjust
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+EMT regulators and targets
+</td>
+<td style="text-align:right;">
+23
+</td>
+<td style="text-align:right;">
+-1.55
+</td>
+<td style="text-align:left;">
+0.033
+</td>
+<td style="text-align:left;">
+0.066
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+SMAD target genes and interactors
+</td>
+<td style="text-align:right;">
+22
+</td>
+<td style="text-align:right;">
+-1.55
+</td>
+<td style="text-align:left;">
+0.023
+</td>
+<td style="text-align:left;">
+0.066
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+STAT1 target genes and interactors
+</td>
+<td style="text-align:right;">
+20
+</td>
+<td style="text-align:right;">
+-0.78
+</td>
+<td style="text-align:left;">
+0.772
+</td>
+<td style="text-align:left;">
+0.842
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+Mammary epithelium proliferation
+</td>
+<td style="text-align:right;">
+19
+</td>
+<td style="text-align:right;">
+-0.72
+</td>
+<td style="text-align:left;">
+0.842
+</td>
+<td style="text-align:left;">
+0.842
+</td>
+</tr>
+</tbody>
+</table>
+<div id="emt-regulators-and-targets-4" class="section level4"
+number="6.5.1">
+<h4><span class="header-section-number">6.5.1</span> EMT regulators and
+targets</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gseaplot2-custom-labels-individual-plot-17.png" width="4320" style="display: block; margin: auto;" /></p>
+</div>
+<div id="smad-target-genes-and-interactors-4" class="section level4"
+number="6.5.2">
+<h4><span class="header-section-number">6.5.2</span> SMAD target genes
+and interactors</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gseaplot2-custom-labels-individual-plot-18.png" width="4320" style="display: block; margin: auto;" /></p>
+</div>
+<div id="stat1-target-genes-and-interactors-4" class="section level4"
+number="6.5.3">
+<h4><span class="header-section-number">6.5.3</span> STAT1 target genes
+and interactors</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gseaplot2-custom-labels-individual-plot-19.png" width="4320" style="display: block; margin: auto;" /></p>
+</div>
+<div id="mammary-epithelium-proliferation-4" class="section level4"
+number="6.5.4">
+<h4><span class="header-section-number">6.5.4</span> Mammary epithelium
+proliferation</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gseaplot2-custom-labels-individual-plot-20.png" width="4320" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="comparison-amhr2_overexpressionoveramhr2_ko_culture"
+class="section level3" number="6.6">
+<h3><span class="header-section-number">6.6</span> Comparison
+AMHR2_Overexpression–over–AMHR2_KO_culture</h3>
+<table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+GSEA results
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Description
+</th>
+<th style="text-align:right;">
+setSize
+</th>
+<th style="text-align:right;">
+NES
+</th>
+<th style="text-align:left;">
+pvalue
+</th>
+<th style="text-align:left;">
+p.adjust
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+EMT regulators and targets
+</td>
+<td style="text-align:right;">
+24
+</td>
+<td style="text-align:right;">
+1.90
+</td>
+<td style="text-align:left;">
+0.00033
+</td>
+<td style="text-align:left;">
+0.0013
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+STAT1 target genes and interactors
+</td>
+<td style="text-align:right;">
+24
+</td>
+<td style="text-align:right;">
+-1.77
+</td>
+<td style="text-align:left;">
+0.00245
+</td>
+<td style="text-align:left;">
+0.0049
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+SMAD target genes and interactors
+</td>
+<td style="text-align:right;">
+23
+</td>
+<td style="text-align:right;">
+1.16
+</td>
+<td style="text-align:left;">
+0.26914
+</td>
+<td style="text-align:left;">
+0.3589
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+Mammary epithelium proliferation
+</td>
+<td style="text-align:right;">
+22
+</td>
+<td style="text-align:right;">
+-0.89
+</td>
+<td style="text-align:left;">
+0.60664
+</td>
+<td style="text-align:left;">
+0.6066
+</td>
+</tr>
+</tbody>
+</table>
+<div id="emt-regulators-and-targets-5" class="section level4"
+number="6.6.1">
+<h4><span class="header-section-number">6.6.1</span> EMT regulators and
+targets</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gseaplot2-custom-labels-individual-plot-21.png" width="4320" style="display: block; margin: auto;" /></p>
+</div>
+<div id="stat1-target-genes-and-interactors-5" class="section level4"
+number="6.6.2">
+<h4><span class="header-section-number">6.6.2</span> STAT1 target genes
+and interactors</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gseaplot2-custom-labels-individual-plot-22.png" width="4320" style="display: block; margin: auto;" /></p>
+</div>
+<div id="smad-target-genes-and-interactors-5" class="section level4"
+number="6.6.3">
+<h4><span class="header-section-number">6.6.3</span> SMAD target genes
+and interactors</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gseaplot2-custom-labels-individual-plot-23.png" width="4320" style="display: block; margin: auto;" /></p>
+</div>
+<div id="mammary-epithelium-proliferation-5" class="section level4"
+number="6.6.4">
+<h4><span class="header-section-number">6.6.4</span> Mammary epithelium
+proliferation</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gseaplot2-custom-labels-individual-plot-24.png" width="4320" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="comparison-amhr2_overexpressionoveramhr2_ko_notgfbeta"
+class="section level3" number="6.7">
+<h3><span class="header-section-number">6.7</span> Comparison
+AMHR2_Overexpression–over–AMHR2_KO_noTGFbeta</h3>
+<table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+GSEA results
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Description
+</th>
+<th style="text-align:right;">
+setSize
+</th>
+<th style="text-align:right;">
+NES
+</th>
+<th style="text-align:left;">
+pvalue
+</th>
+<th style="text-align:left;">
+p.adjust
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+SMAD target genes and interactors
+</td>
+<td style="text-align:right;">
+22
+</td>
+<td style="text-align:right;">
+-1.61
+</td>
+<td style="text-align:left;">
+0.022
+</td>
+<td style="text-align:left;">
+0.061
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+EMT regulators and targets
+</td>
+<td style="text-align:right;">
+23
+</td>
+<td style="text-align:right;">
+-1.57
+</td>
+<td style="text-align:left;">
+0.031
+</td>
+<td style="text-align:left;">
+0.061
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+STAT1 target genes and interactors
+</td>
+<td style="text-align:right;">
+20
+</td>
+<td style="text-align:right;">
+-1.32
+</td>
+<td style="text-align:left;">
+0.149
+</td>
+<td style="text-align:left;">
+0.199
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+Mammary epithelium proliferation
+</td>
+<td style="text-align:right;">
+19
+</td>
+<td style="text-align:right;">
+0.65
+</td>
+<td style="text-align:left;">
+0.901
+</td>
+<td style="text-align:left;">
+0.901
+</td>
+</tr>
+</tbody>
+</table>
+<div id="smad-target-genes-and-interactors-6" class="section level4"
+number="6.7.1">
+<h4><span class="header-section-number">6.7.1</span> SMAD target genes
+and interactors</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gseaplot2-custom-labels-individual-plot-25.png" width="4320" style="display: block; margin: auto;" /></p>
+</div>
+<div id="emt-regulators-and-targets-6" class="section level4"
+number="6.7.2">
+<h4><span class="header-section-number">6.7.2</span> EMT regulators and
+targets</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gseaplot2-custom-labels-individual-plot-26.png" width="4320" style="display: block; margin: auto;" /></p>
+</div>
+<div id="stat1-target-genes-and-interactors-6" class="section level4"
+number="6.7.3">
+<h4><span class="header-section-number">6.7.3</span> STAT1 target genes
+and interactors</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gseaplot2-custom-labels-individual-plot-27.png" width="4320" style="display: block; margin: auto;" /></p>
+</div>
+<div id="mammary-epithelium-proliferation-6" class="section level4"
+number="6.7.4">
+<h4><span class="header-section-number">6.7.4</span> Mammary epithelium
+proliferation</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gseaplot2-custom-labels-individual-plot-28.png" width="4320" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div
+id="comparison-invivo_amhr2_ko-amhr2_ko_cultureoverinvivo_control_sgrna-amhr2_control_culture"
+class="section level3" number="6.8">
+<h3><span class="header-section-number">6.8</span> Comparison
+InVivo_AMHR2_KO + AMHR2_KO_culture–over–InVivo_Control_sgRNA +
+AMHR2_Control_culture</h3>
+<table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+GSEA results
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Description
+</th>
+<th style="text-align:right;">
+setSize
+</th>
+<th style="text-align:right;">
+NES
+</th>
+<th style="text-align:left;">
+pvalue
+</th>
+<th style="text-align:left;">
+p.adjust
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+EMT regulators and targets
+</td>
+<td style="text-align:right;">
+24
+</td>
+<td style="text-align:right;">
+-2.32
+</td>
+<td style="text-align:left;">
+2.9e-08
+</td>
+<td style="text-align:left;">
+1.1e-07
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+STAT1 target genes and interactors
+</td>
+<td style="text-align:right;">
+25
+</td>
+<td style="text-align:right;">
+1.95
+</td>
+<td style="text-align:left;">
+9.3e-05
+</td>
+<td style="text-align:left;">
+0.00019
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+SMAD target genes and interactors
+</td>
+<td style="text-align:right;">
+24
+</td>
+<td style="text-align:right;">
+-1.66
+</td>
+<td style="text-align:left;">
+0.007
+</td>
+<td style="text-align:left;">
+0.00927
+</td>
+</tr>
+<tr>
+<td style="text-align:left;font-weight: bold;">
+Mammary epithelium proliferation
+</td>
+<td style="text-align:right;">
+22
+</td>
+<td style="text-align:right;">
+-1.32
+</td>
+<td style="text-align:left;">
+0.144
+</td>
+<td style="text-align:left;">
+0.14398
+</td>
+</tr>
+</tbody>
+</table>
+<div id="emt-regulators-and-targets-7" class="section level4"
+number="6.8.1">
+<h4><span class="header-section-number">6.8.1</span> EMT regulators and
+targets</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gseaplot2-custom-labels-individual-plot-29.png" width="4320" style="display: block; margin: auto;" /></p>
+</div>
+<div id="stat1-target-genes-and-interactors-7" class="section level4"
+number="6.8.2">
+<h4><span class="header-section-number">6.8.2</span> STAT1 target genes
+and interactors</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gseaplot2-custom-labels-individual-plot-30.png" width="4320" style="display: block; margin: auto;" /></p>
+</div>
+<div id="smad-target-genes-and-interactors-7" class="section level4"
+number="6.8.3">
+<h4><span class="header-section-number">6.8.3</span> SMAD target genes
+and interactors</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gseaplot2-custom-labels-individual-plot-31.png" width="4320" style="display: block; margin: auto;" /></p>
+</div>
+<div id="mammary-epithelium-proliferation-7" class="section level4"
+number="6.8.4">
+<h4><span class="header-section-number">6.8.4</span> Mammary epithelium
+proliferation</h4>
+<p><img src="figure/rnaseq-amhr2_ko-deg.Rmd/gseaplot2-custom-labels-individual-plot-32.png" width="4320" style="display: block; margin: auto;" /></p>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<p>R version 4.4.3 (2025-02-28) Platform: aarch64-apple-darwin20 Running
+under: macOS Sequoia 15.5</p>
+<p>Matrix products: default BLAS:
+/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib
+LAPACK:
+/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRlapack.dylib;
+LAPACK version 3.12.0</p>
+<p>locale: [1]
+en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8</p>
+<p>time zone: Europe/Zurich tzcode source: internal</p>
+<p>attached base packages: [1] grid stats4 stats graphics grDevices
+utils datasets [8] methods base</p>
+<p>other attached packages: [1] circlize_0.4.16
+ComplexHeatmap_2.22.0<br />
+[3] org.Mm.eg.db_3.20.0 AnnotationDbi_1.68.0<br />
+[5] PCAtools_2.18.0 pheatmap_1.0.12<br />
+[7] scran_1.34.0 scuttle_1.16.0<br />
+[9] SingleCellExperiment_1.28.1 DESeq2_1.46.0<br />
+[11] edgeR_4.4.2 limma_3.62.2<br />
+[13] SummarizedExperiment_1.36.0 Biobase_2.66.0<br />
+[15] GenomicRanges_1.58.0 GenomeInfoDb_1.42.3<br />
+[17] IRanges_2.40.1 S4Vectors_0.44.0<br />
+[19] BiocGenerics_0.52.0 MatrixGenerics_1.18.1<br />
+[21] matrixStats_1.5.0 openxlsx_4.2.8<br />
+[23] magrittr_2.0.3 ggrepel_0.9.6<br />
+[25] ggbeeswarm_0.7.2 RColorBrewer_1.1-3<br />
+[27] colorblindr_0.1.0 colorspace_2.1-1<br />
+[29] cowplot_1.1.3.9000 kableExtra_1.4.0<br />
+[31] knitr_1.50 DT_0.33<br />
+[33] foreach_1.5.2 showtext_0.9-7<br />
+[35] showtextdb_3.0 sysfonts_0.8.9<br />
+[37] lubridate_1.9.4 forcats_1.0.0<br />
+[39] stringr_1.5.1 dplyr_1.1.4<br />
+[41] purrr_1.0.4 readr_2.1.5<br />
+[43] tidyr_1.3.1 tibble_3.2.1<br />
+[45] ggplot2_3.5.2 tidyverse_2.0.0<br />
+[47] workflowr_1.7.1</p>
+<p>loaded via a namespace (and not attached): [1] splines_4.4.3
+later_1.4.2<br />
+[3] ggplotify_0.1.2 R.oo_1.27.1<br />
+[5] lifecycle_1.0.4 doParallel_1.0.17<br />
+[7] rprojroot_2.0.4 processx_3.8.6<br />
+[9] lattice_0.22-7 crosstalk_1.2.1<br />
+[11] sass_0.4.10 rmarkdown_2.29<br />
+[13] jquerylib_0.1.4 yaml_2.3.10<br />
+[15] ggtangle_0.0.6 metapod_1.14.0<br />
+[17] httpuv_1.6.16 zip_2.3.3<br />
+[19] DBI_1.2.3 abind_1.4-8<br />
+[21] zlibbioc_1.52.0 R.utils_2.13.0<br />
+[23] yulab.utils_0.2.0 git2r_0.36.2<br />
+[25] GenomeInfoDbData_1.2.13 enrichplot_1.26.6<br />
+[27] irlba_2.3.5.1 tidytree_0.4.6<br />
+[29] dqrng_0.4.1 svglite_2.2.1<br />
+[31] DelayedMatrixStats_1.28.1 codetools_0.2-20<br />
+[33] DelayedArray_0.32.0 DOSE_4.0.1<br />
+[35] xml2_1.3.8 tidyselect_1.2.1<br />
+[37] shape_1.4.6.1 aplot_0.2.5<br />
+[39] UCSC.utils_1.2.0 farver_2.1.2<br />
+[41] ScaledMatrix_1.14.0 jsonlite_2.0.0<br />
+[43] GetoptLong_1.0.5 BiocNeighbors_2.0.1<br />
+[45] iterators_1.0.14 systemfonts_1.2.3<br />
+[47] tools_4.4.3 treeio_1.30.0<br />
+[49] Rcpp_1.0.14 glue_1.8.0<br />
+[51] SparseArray_1.6.2 xfun_0.52<br />
+[53] here_1.0.1 qvalue_2.38.0<br />
+[55] withr_3.0.2 fastmap_1.2.0<br />
+[57] bluster_1.16.0 callr_3.7.6<br />
+[59] digest_0.6.37 rsvd_1.0.5<br />
+[61] gridGraphics_0.5-1 timechange_0.3.0<br />
+[63] R6_2.6.1 textshaping_1.0.1<br />
+[65] GO.db_3.20.0 dichromat_2.0-0.1<br />
+[67] RSQLite_2.3.11 R.methodsS3_1.8.2<br />
+[69] generics_0.1.4 data.table_1.17.2<br />
+[71] httr_1.4.7 htmlwidgets_1.6.4<br />
+[73] S4Arrays_1.6.0 whisker_0.4.1<br />
+[75] pkgconfig_2.0.3 gtable_0.3.6<br />
+[77] blob_1.2.4 XVector_0.46.0<br />
+[79] htmltools_0.5.8.1 fgsea_1.32.4<br />
+[81] clue_0.3-66 scales_1.4.0<br />
+[83] png_0.1-8 ggfun_0.1.8<br />
+[85] rstudioapi_0.17.1 tzdb_0.5.0<br />
+[87] reshape2_1.4.4 rjson_0.2.23<br />
+[89] nlme_3.1-168 cachem_1.1.0<br />
+[91] GlobalOptions_0.1.2 parallel_4.4.3<br />
+[93] vipor_0.4.7 pillar_1.10.2<br />
+[95] vctrs_0.6.5 promises_1.3.2<br />
+[97] BiocSingular_1.22.0 beachmat_2.22.0<br />
+[99] cluster_2.1.8.1 beeswarm_0.4.0<br />
+[101] evaluate_1.0.3 cli_3.6.5<br />
+[103] locfit_1.5-9.12 compiler_4.4.3<br />
+[105] rlang_1.1.6 crayon_1.5.3<br />
+[107] labeling_0.4.3 ps_1.9.1<br />
+[109] getPass_0.2-4 plyr_1.8.9<br />
+[111] fs_1.6.6 stringi_1.8.7<br />
+[113] viridisLite_0.4.2 BiocParallel_1.40.2<br />
+[115] Biostrings_2.74.1 lazyeval_0.2.2<br />
+[117] GOSemSim_2.32.0 Matrix_1.7-3<br />
+[119] patchwork_1.3.0 hms_1.1.3<br />
+[121] sparseMatrixStats_1.18.0 bit64_4.6.0-1<br />
+[123] KEGGREST_1.46.0 statmod_1.5.0<br />
+[125] igraph_2.1.4 memoise_2.0.1<br />
+[127] bslib_0.9.0 ggtree_3.14.0<br />
+[129] fastmatch_1.1-6 bit_4.6.0<br />
+[131] ape_5.8-1</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3,h4,h5",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
