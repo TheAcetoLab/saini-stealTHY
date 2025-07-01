@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Francesc Castro-Giner" />
+
+<meta name="date" content="2025-07-01" />
+
+<title>Analysis of association of AMHR2 KO with Immune Infiltrate</title>
+
+<script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.5.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">StealTHY</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/TheAcetoLab/saini-stealTHY">
+    <span class="fab fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Analysis of association of AMHR2 KO with
+Immune Infiltrate</h1>
+<h4 class="author">Francesc Castro-Giner</h4>
+<h4 class="date">July 01, 2025</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+workflowr <span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+</a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2025-07-01
+</p>
+<p>
+<strong>Checks:</strong> <span
+class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7
+<span class="glyphicon glyphicon-exclamation-sign text-danger"
+aria-hidden="true"></span> 0
+</p>
+<p>
+<strong>Knit directory:</strong> <code>saini-stealTHY/</code> <span
+class="glyphicon glyphicon-question-sign" aria-hidden="true"
+title="This is the local directory in which the code in this file was executed.">
+</span>
+</p>
+<p>
+This reproducible <a href="https://rmarkdown.rstudio.com">R Markdown</a>
+analysis was created with <a
+  href="https://github.com/workflowr/workflowr">workflowr</a> (version
+1.7.1). The <em>Checks</em> tab describes the reproducibility checks
+that were applied when the results were created. The <em>Past
+versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date
+</a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguptodate"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great! Since the R Markdown file has been committed to the Git
+repository, you know the exact version of the code that produced these
+results.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the
+global environment can affect the analysis in your R Markdown file in
+unknown ways. For reproduciblity it’s best to always run the code in an
+empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20240517code">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Seed:</strong>
+<code>set.seed(20240517)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20240517code"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20240517)</code> was run prior to running
+the code in the R Markdown file. Setting a seed ensures that any results
+that rely on randomness, e.g. subsampling or permutations, are
+reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Session information:</strong>
+recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package
+versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be
+confident that you successfully produced the results during this
+run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr
+project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtree2d1b5a6827bac6db4bf98f99c9267fd81f37ecc9targetblank2d1b5a6a">
+<span class="glyphicon glyphicon-ok text-success"
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/2d1b5a6827bac6db4bf98f99c9267fd81f37ecc9" target="_blank">2d1b5a6</a>
+</a>
+</p>
+</div>
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtree2d1b5a6827bac6db4bf98f99c9267fd81f37ecc9targetblank2d1b5a6a"
+class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development
+and connecting the code version to the results is critical for
+reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/2d1b5a6827bac6db4bf98f99c9267fd81f37ecc9" target="_blank">2d1b5a6</a>.
+See the <em>Past versions</em> tab to see a history of the changes made
+to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for
+the analysis have been committed to Git prior to generating the results
+(you can use <code>wflow_publish</code> or
+<code>wflow_git_commit</code>). workflowr only checks the R Markdown
+file, but you know if there are other scripts or data files that it
+depends on. Below is the status of the Git repository when the results
+were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .DS_Store
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+    Ignored:    analysis/.DS_Store
+    Ignored:    code/.DS_Store
+    Ignored:    code/raw_data_processing/rnaseq/p27851_o32062/pipelines/
+    Ignored:    configuration/.DS_Store
+    Ignored:    data/.DS_Store
+    Ignored:    data/crispr/
+    Ignored:    data/resources/
+    Ignored:    data/rnaseq/
+    Ignored:    output/.DS_Store
+    Ignored:    output/clinical/
+    Ignored:    output/crispr/
+    Ignored:    output/rnaseq/
+
+Untracked files:
+    Untracked:  analysis/crispr-hsapiens_2180_sgRNA_r1.Rmd
+    Untracked:  analysis/crispr-mm_2215_sgRNA-CMT167-LLC1-CT26.Rmd
+    Untracked:  analysis/crispr-mm_2215_sgRNA-clonality_r1.Rmd
+    Untracked:  analysis/crispr-mm_2215_sgRNA-r2oD_r1.Rmd
+    Untracked:  analysis/crispr-muller-mm_2215_sgRNA.Rmd
+    Untracked:  analysis/rnaseq-amhr2_ko-deg.Rmd
+    Untracked:  analysis/templates/
+    Untracked:  code/R-functions/subchunkify.R
+
+Unstaged changes:
+    Modified:   .gitignore
+    Modified:   analysis/crispr-hsapiens_2180_sgRNA.Rmd
+    Modified:   analysis/crispr-mm_2215_sgRNA-StealTHY.Rmd
+    Modified:   analysis/crispr-mm_2215_sgRNA-clonality.Rmd
+    Modified:   analysis/crispr-mm_2215_sgRNA-r2oC.Rmd
+    Modified:   analysis/rnaseq-tumor-bulk.Rmd
+    Modified:   analysis/rnaseq-tumor-facs-cancer.Rmd
+    Modified:   analysis/rnaseq-tumor-facs-immune.Rmd
+    Modified:   code/R-functions/gse_report.r
+    Modified:   configuration/rmarkdown/ggplot_theme.R
+    Modified:   update_workflowr.R
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not
+included in this status report because it is ok for generated content to
+have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+These are the previous versions of the repository in which changes were
+made to the R Markdown
+(<code>analysis/tcga_immune_infiltrate_amhr2_ko_signatures.Rmd</code>)
+and HTML
+(<code>docs/tcga_immune_infiltrate_amhr2_ko_signatures.html</code>)
+files. If you’ve configured a remote Git repository (see
+<code>?wflow_git_remote</code>), click on the hyperlinks in the table
+below to view the files as they were in that past version.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/2d1b5a6827bac6db4bf98f99c9267fd81f37ecc9/analysis/tcga_immune_infiltrate_amhr2_ko_signatures.Rmd" target="_blank">2d1b5a6</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-07-01
+</td>
+<td>
+add tcga analysis
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div id="load-libraries-additional-functions" class="section level2"
+number="1">
+<h2><span class="header-section-number">1</span> Load libraries,
+additional functions</h2>
+<p>Setup environment</p>
+<pre class="r"><code>knitr::opts_chunk$set(results=&#39;asis&#39;, echo=TRUE, message=FALSE, warning=FALSE, error=FALSE, fig.align = &#39;center&#39;, fig.width = 3.5, fig.asp = 0.618, dpi = 600, dev = c(&quot;png&quot;, &quot;pdf&quot;), engine.opts = list(bash = &quot;-l&quot;))
+
+options(stringsAsFactors = FALSE)
+
+use_seed &lt;- 1100101
+
+set.seed(use_seed)
+
+dir.create(params$output_dir, recursive = TRUE, showWarnings = FALSE)</code></pre>
+<p>Load packages</p>
+<pre class="r"><code>library(tidyverse)
+library(knitr)
+# library(showtext)
+library(foreach)
+library(SummarizedExperiment)
+# library(survival)
+# library(gtsummary)
+# library(ggsurvfit)
+# library(survminer)
+# library(meta)
+library(magrittr)
+# library(DT)
+# library(colorblindr)
+# library(ggdendro)
+# library(RColorBrewer)
+# library(circlize)
+# library(Hmisc)
+# library(ComplexHeatmap)
+# library(ineq)
+library(kableExtra)
+library(openxlsx)
+# library(magrittr)
+# library(ggrepel)
+# library(ggpubr)
+# library(ggbeeswarm)
+# library(ggridges)
+# library(openxlsx)
+# library(MAGeCKFlute)
+library(GSVA)
+library(tldr)
+library(ggcorrplot)</code></pre>
+<p>Load ggplot theme</p>
+<pre class="r"><code>source(&quot;./configuration/rmarkdown/ggplot_theme.R&quot;)
+source(&quot;./configuration/rmarkdown/color_palettes.R&quot;)</code></pre>
+<p>Clean files generated in previous runs</p>
+<pre class="r"><code>rmd_file &lt;- current_input()
+if(!is.null(rmd_file)) {
+  figures_dir &lt;- file.path(&#39;./docs/figure&#39;,rmd_file)
+  if(dir.exists(figures_dir)) {
+    unlink(file.path(figures_dir, &quot;*&quot;))
+  }
+}</code></pre>
+</div>
+<div id="data-wrangling" class="section level2" number="2">
+<h2><span class="header-section-number">2</span> Data wrangling</h2>
+<div id="generate-amhr2-ko-signatures" class="section level3"
+number="2.1">
+<h3><span class="header-section-number">2.1</span> Generate AMHR2 KO
+signatures</h3>
+<p>Load data</p>
+<pre class="r"><code># Load DGE results
+dge_list &lt;- readRDS(&#39;./output/rnaseq/amhr2_ko/dge-edgeR_QLF.rds&#39;)
+
+# Select comparisons
+use_comp &lt;- c(&quot;i_AMHR2_KO-o-i_ctrl_sgRNA&quot;, &quot;c_AMHR2_KO-o-c_AMHR2_ctrl&quot;, &quot;AMHR2_KO-o-ctrl&quot;)
+dge_list &lt;- dge_list[use_comp]</code></pre>
+<p>Extract top-100 genes for each comparison and direction (up, down)
+based on FDR and FC</p>
+<pre class="r"><code>i &lt;- dge_list[[1]]
+dge_up_fdr &lt;- foreach(i = dge_list) %do% {
+  i$results %&gt;% 
+    filter(FDR &lt; 0.001) %&gt;%
+    filter(logFC &gt; 1) %&gt;% 
+    arrange(FDR) %&gt;% 
+    head(100) %&gt;% 
+    pull(gene_name)
+}
+names(dge_up_fdr) &lt;- names(dge_list) %&gt;% gsub(&quot;.o.*&quot;, &quot;&quot;, .) %&gt;% paste0(&quot;up_fdr_&quot;, .)
+
+i &lt;- dge_list[[1]]
+dge_down_fdr &lt;- foreach(i = dge_list) %do% {
+  i$results %&gt;% 
+    filter(FDR &lt; 0.001) %&gt;%
+    filter(logFC &lt; -1) %&gt;% 
+    arrange(FDR) %&gt;% 
+    head(100) %&gt;% 
+    pull(gene_name)
+}
+names(dge_down_fdr) &lt;- names(dge_list) %&gt;% gsub(&quot;.o.*&quot;, &quot;&quot;, .) %&gt;% paste0(&quot;down_fdr_&quot;, .)
+
+
+i &lt;- dge_list[[1]]
+dge_up_fc &lt;- foreach(i = dge_list) %do% {
+  i$results %&gt;% 
+    filter(FDR &lt; 0.001) %&gt;%
+    filter(logFC &gt; 1) %&gt;% 
+    arrange(desc(logFC)) %&gt;% 
+    head(100) %&gt;% 
+    pull(gene_name)
+}
+names(dge_up_fc) &lt;- names(dge_list) %&gt;% gsub(&quot;.o.*&quot;, &quot;&quot;, .) %&gt;% paste0(&quot;up_fc_&quot;, .)
+
+i &lt;- dge_list[[1]]
+dge_down_fc &lt;- foreach(i = dge_list) %do% {
+  i$results %&gt;% 
+    filter(FDR &lt; 0.001) %&gt;%
+    filter(logFC &lt; -1) %&gt;% 
+    arrange(logFC) %&gt;% 
+    head(100) %&gt;% 
+    pull(gene_name)
+}
+names(dge_down_fc) &lt;- names(dge_list) %&gt;% gsub(&quot;.o.*&quot;, &quot;&quot;, .) %&gt;% paste0(&quot;down_fc_&quot;, .)
+
+dge_signatures_mm &lt;- c(dge_up_fdr, dge_down_fdr, dge_up_fc, dge_down_fc)</code></pre>
+<p>Convert to genes to from mouse to human orthologs</p>
+<pre class="r"><code>library(biomaRt)
+use_mart &lt;- useMart(&quot;ensembl&quot;, dataset = &quot;mmusculus_gene_ensembl&quot;)
+
+attributes&lt;-  c(&quot;external_gene_name&quot;,
+                &quot;hsapiens_homolog_ensembl_gene&quot;, 
+                &quot;hsapiens_homolog_associated_gene_name&quot;,
+                &quot;hsapiens_homolog_orthology_type&quot;,
+                &quot;hsapiens_homolog_perc_id_r1&quot;)
+
+orth_info &lt;-  getBM(attributes, filters=&quot;with_hsapiens_homolog&quot;,
+                    values=TRUE, mart = use_mart, uniqueRows=TRUE)
+i &lt;-  dge_signatures_mm[[1]]
+dge_signatures &lt;- foreach(i = dge_signatures_mm) %do% {
+  orth_info %&gt;% filter(external_gene_name %in% i) %&gt;% pull(hsapiens_homolog_associated_gene_name)
+}
+names(dge_signatures) &lt;- names(dge_signatures_mm)
+saveRDS(dge_signatures, file = file.path(params$output_dir, &#39;dge_signatures.rds&#39;))</code></pre>
+<p>Load signatures</p>
+<pre class="r"><code>dge_signatures &lt;- readRDS(file.path(params$output_dir, &#39;dge_signatures.rds&#39;))</code></pre>
+<p>Change signature names to more readable format</p>
+<pre class="r"><code>new_signature_names &lt;- c(
+  up_fc_i_AMHR2_KO = &#39;AMH loss signature (TME)&#39;,
+  up_fc_AMHR2_KO = &#39;AMH loss signature (CC)&#39;,
+  down_fc_i_AMHR2_KO = &#39;AMH active signature (TME)&#39;,
+  down_fc_AMHR2_KO = &#39;AMH active signature (CC)&#39;,
+  down_fc_c_AMHR2_KO = &#39;AMH fully active signature&#39;
+)
+# 
+# dge_signatures &lt;- dge_signatures[names(new_signature_names)]
+# names(dge_signatures) &lt;- new_signature_names</code></pre>
+</div>
+<div id="generate-data-for-the-analysis" class="section level3"
+number="2.2">
+<h3><span class="header-section-number">2.2</span> Generate data for the
+analysis</h3>
+<p>Define genes and TCGA projects</p>
+<pre class="r"><code>## Defines genes and signatures
+selected_signatures &lt;- dge_signatures
+
+## Define TCGA projects
+project_id &lt;- list.files(
+  path = params$data_dir, 
+  pattern = &#39;TCGA-[A-Z]+.rds$&#39;
+  ) %&gt;%
+  gsub(&quot;.rds&quot;, &quot;&quot;, .)
+
+use_projects &lt;- c(&#39;BRCA&#39;, &#39;LUAD&#39;, &#39;COAD&#39;) %&gt;% 
+  paste(&#39;TCGA&#39;, ., sep = &#39;-&#39;)
+
+
+project_id &lt;- intersect(project_id, use_projects)</code></pre>
+<p>Load Immune Infiltration from TIMER2.0</p>
+<pre class="r"><code>immune_infiltration_estimation &lt;- read_csv(params$infiltration_estimation) %&gt;% 
+  dplyr::rename(sampleID = cell_type)</code></pre>
+<p>For each study, we analyse: - the Spearman’s correlation of
+individual genes and signatures with the cell type scores - the
+association between quantiles of gene expression and signature
+scores</p>
+<pre class="r"><code>i &lt;- project_id[1]
+data_processed &lt;- foreach(i = project_id) %do%{
+  se &lt;- readRDS(file.path(params$data_dir, paste0(i, &#39;.rds&#39;)))
+
+  # Select primary tumor samples and samples used in the Immune Infiltration file
+  sample_annot &lt;- colData(se) %&gt;% data.frame %&gt;% 
+    filter(sample_type == &#39;Primary Tumor&#39;) %&gt;% 
+    filter(sampleID %in% immune_infiltration_estimation$sampleID)
+  
+  se &lt;- se[, rownames(sample_annot)]
+  colData(se) &lt;- DataFrame(sample_annot)
+
+  # Calculate log2CPM
+  assay(se, &#39;cpm&#39;) &lt;- edgeR::cpm(assay(se, &#39;normcounts&#39;), log = TRUE)
+  gsvapar &lt;- gsvaParam(
+    assay(se, &#39;cpm&#39;),
+    selected_signatures,
+    kcdf = &quot;Gaussian&quot;,
+    maxDiff = TRUE
+  )
+  gsva_res &lt;- gsva(gsvapar, 
+       verbose = FALSE) %&gt;% 
+    t()
+  
+  # Filter immune infiltrate data
+  use_imm_est &lt;- immune_infiltration_estimation %&gt;% 
+    filter(sampleID %in% colnames(se)) %&gt;% 
+    column_to_rownames(&#39;sampleID&#39;)
+  
+  # Generate correlation matrix
+  use_mat &lt;- cbind(
+    gsva_res[colnames(se),],
+    use_imm_est[colnames(se,),]
+  )
+  
+  corr &lt;- round(cor(use_mat, method = &#39;spearman&#39;), 2)
+  p.mat &lt;- cor_pmat(use_mat, method = &#39;spearman&#39;)
+  
+  corr &lt;- corr[names(selected_signatures), colnames(use_imm_est)]
+  p.mat &lt;- p.mat[names(selected_signatures), colnames(use_imm_est)]
+  
+  # Generate correlation data.frame
+  corr_df &lt;- corr %&gt;% data.frame(check.names = FALSE) %&gt;% 
+    rownames_to_column(&#39;gene&#39;) %&gt;%
+    pivot_longer(-gene, names_to = &#39;cell_type&#39;, values_to = &#39;corr&#39;)
+  p.mat_df &lt;- p.mat %&gt;% data.frame(check.names = FALSE) %&gt;% 
+    rownames_to_column(&#39;gene&#39;) %&gt;%
+    pivot_longer(-gene, names_to = &#39;cell_type&#39;, values_to = &#39;p.val&#39;)
+  corr_df %&lt;&gt;% 
+    left_join(p.mat_df, by = c(&#39;gene&#39;, &#39;cell_type&#39;))
+    
+  # Set quantiles
+  quantile_df &lt;- apply(gsva_res, 2, function(x){cutp(x, p=c(0.33, 0.66), labels=c(&#39;T1&#39;, &#39;T2&#39;, &#39;T3&#39;))}) %&gt;% 
+    set_rownames(colnames(se)) %&gt;% 
+    data.frame(check.names = FALSE) #%&gt;%
+    # rownames_to_column(&#39;sampleID&#39;) %&gt;% 
+    # pivot_longer(-sampleID, names_to = &#39;gene&#39;, values_to = &#39;quantile&#39;) %&gt;% 
+    # # Add immune infiltration scores
+    # left_join(use_imm_est %&gt;% rownames_to_column(&#39;sampleID&#39;), by = &#39;sampleID&#39;) %&gt;% 
+    # pivot_longer(-c(sampleID, gene, quantile), names_to = &#39;cell_type&#39;, values_to = &#39;score&#39;)
+
+  # Comparing scores between terciles
+  x &lt;- quantile_df %&gt;% 
+    rownames_to_column(&#39;sampleID&#39;) %&gt;%
+    # pivot_longer(-sampleID, names_to = &#39;gene&#39;, values_to = &#39;quantile&#39;) %&gt;%
+    # Add immune infiltration scores
+    left_join(use_imm_est %&gt;% rownames_to_column(&#39;sampleID&#39;), by = &#39;sampleID&#39;) #%&gt;%
+    # pivot_longer(-c(sampleID, gene, quantile), names_to = &#39;cell_type&#39;, values_to = &#39;score&#39;) %&gt;% 
+    # filter(quantile %in% c(&#39;T1&#39;, &#39;T3&#39;))
+  
+  use_group_var &lt;- c(names(selected_signatures))
+  use_cell_types &lt;- colnames(use_imm_est)
+  g &lt;- use_group_var[1]
+  ct &lt;- use_cell_types[1]
+  
+  wilcox_results &lt;- foreach(g = use_group_var, .combine = rbind) %do% {
+    foreach(ct = use_cell_types, .combine = rbind) %do% {
+      t1_rows &lt;- x[,g] == &#39;T1&#39;
+      t3_rows &lt;- x[,g] == &#39;T3&#39;
+      # Convert output of wilcox.test to a table
+      wilcox.test(x[t1_rows,ct], x[t3_rows,ct]) %&gt;% 
+        broom::tidy() %&gt;% 
+        mutate(
+          gene = g,
+          cell_type = ct
+        ) %&gt;% 
+        dplyr::select(gene, cell_type, everything())
+    }
+  }
+  
+  ttest_results &lt;- foreach(g = use_group_var, .combine = rbind) %do% {
+    foreach(ct = use_cell_types, .combine = rbind) %do% {
+      t1_rows &lt;- x[,g] == &#39;T1&#39;
+      t3_rows &lt;- x[,g] == &#39;T3&#39;
+      # Convert output of wilcox.test to a table
+      t.test(x[t1_rows,ct], x[t3_rows,ct]) %&gt;% 
+        broom::tidy() %&gt;% 
+        mutate(
+          gene = g,
+          cell_type = ct
+        ) %&gt;% 
+        dplyr::select(gene, cell_type, everything())
+    }
+  }
+    
+  
+  res &lt;- list(
+    corr = list(
+      mat = corr,
+      p.mat = p.mat,
+      df = corr_df
+    ),
+    quantile = list(
+      data = quantile_df,
+      wilcox = wilcox_results,
+      ttest = ttest_results
+    )
+  )
+}
+names(data_processed) &lt;- project_id
+
+# Remove NULL elements
+data_processed &lt;- compact(data_processed)
+saveRDS(data_processed, file = file.path(params$output_dir, &#39;data_processed.rds&#39;))</code></pre>
+<p>Load data</p>
+<pre class="r"><code>data_processed &lt;- readRDS(file.path(params$output_dir, &#39;data_processed.rds&#39;))</code></pre>
+</div>
+</div>
+<div id="gene-signatures" class="section level2" number="3">
+<h2><span class="header-section-number">3</span> Gene signatures</h2>
+<!-- Write signatures to xlsx file -->
+<pre class="r"><code># File name summary
+rmd_file &lt;- current_input()
+if(is.null(rmd_file))
+  rmd_file &lt;- &#39;tmp&#39;
+file_xlsx &lt;- file.path(&#39;./docs/file&#39;,rmd_file, &#39;dge_signatures.xlsx&#39;)
+
+dir.create(dirname(file_xlsx), recursive = TRUE, showWarnings = FALSE)
+
+# Generate workbook
+wb &lt;- createWorkbook()
+for(i in names(dge_signatures)) {
+  addWorksheet(wb, i)
+  res &lt;- dge_signatures[[i]] %&gt;% data.frame %&gt;% 
+    set_names(&#39;Gene&#39;) %&gt;%
+    filter(Gene != &#39;&#39;)
+  writeData(wb, i, res)
+}
+saveWorkbook(wb, file_xlsx, TRUE)
+
+dge_file_xlsx &lt;- file_xlsx</code></pre>
+<p>You can download the list of genes per signature using the following
+link:</p>
+<ul>
+<li><a
+href="./file/tcga_immune_infiltrate_amhr2_ko_signatures.Rmd/dge_signatures.xlsx"><strong>Differential
+gene expression signatures</strong></a></li>
+</ul>
+<p>Below you will find a summary table with the number of genes for each
+signature.</p>
+<pre class="r"><code>lapply(dge_signatures, function(x) length(x[x!=&#39;&#39;])) %&gt;% 
+  data.frame() %&gt;%
+  t() %&gt;% 
+  data.frame %&gt;% 
+  set_names(&#39;Number of genes&#39;) %&gt;%
+  rownames_to_column(&#39;signature&#39;)  %&gt;%
+  kbl(caption = &#39;Number of genes by signaure&#39;) %&gt;%
+  kable_paper(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;), full_width = F)</code></pre>
+<table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+Number of genes by signaure
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+signature
+</th>
+<th style="text-align:right;">
+Number of genes
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+up_fdr_i_AMHR2_KO
+</td>
+<td style="text-align:right;">
+94
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+up_fdr_c_AMHR2_KO
+</td>
+<td style="text-align:right;">
+100
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+up_fdr_AMHR2_KO
+</td>
+<td style="text-align:right;">
+89
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+down_fdr_i_AMHR2_KO
+</td>
+<td style="text-align:right;">
+94
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+down_fdr_c_AMHR2_KO
+</td>
+<td style="text-align:right;">
+96
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+down_fdr_AMHR2_KO
+</td>
+<td style="text-align:right;">
+91
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+up_fc_i_AMHR2_KO
+</td>
+<td style="text-align:right;">
+73
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+up_fc_c_AMHR2_KO
+</td>
+<td style="text-align:right;">
+81
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+up_fc_AMHR2_KO
+</td>
+<td style="text-align:right;">
+73
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+down_fc_i_AMHR2_KO
+</td>
+<td style="text-align:right;">
+74
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+down_fc_c_AMHR2_KO
+</td>
+<td style="text-align:right;">
+92
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+down_fc_AMHR2_KO
+</td>
+<td style="text-align:right;">
+107
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div
+id="figure-7g-correlation-of-amh-signatures-with-immune-cell-fractions-across-tcga-cohorts-heatmaps"
+class="section level2" number="4">
+<h2><span class="header-section-number">4</span> Figure 7G: Correlation
+of AMH signatures with immune cell fractions across TCGA cohorts
+(Heatmaps)</h2>
+<p>Using CIBERSORT and showing correlation of gene expression and immune
+infiltration.</p>
+<pre class="r"><code>i &lt;- names(data_processed)[1]
+
+combined_corr &lt;- foreach(i = names(data_processed), .combine = rbind) %do% {
+  data_processed[[i]]$corr$df %&gt;% 
+    mutate(study  = gsub(&quot;TCGA-&quot;, &quot;&quot;, i))
+}
+
+combined_corr &lt;- combined_corr %&gt;% 
+  filter(grepl(&#39;_CIBERSORT-ABS&#39;, cell_type)) %&gt;% 
+  mutate(
+    cell_type = gsub(&#39;_CIBERSORT-ABS&#39;, &#39;&#39;, cell_type)
+    )
+
+# Gene and signatures levels (order)
+gene_order &lt;- c(
+  selected_signatures[[names(selected_signatures)[1]]], 
+  selected_signatures[[names(selected_signatures)[2]]],
+  names(selected_signatures)
+)
+gene_order &lt;- intersect(gene_order, combined_corr$gene)
+# gene_order[!gene_order %in% combined_corr$gene]
+combined_corr$gene &lt;- factor(combined_corr$gene, levels = gene_order)
+
+# Cell type order
+ct_order &lt;- c(
+  &#39;T cell gamma delta&#39;,
+  &#39;T cell follicular helper&#39;,
+  &#39;T cell CD4+ naive&#39;,
+  &#39;T cell CD4+ memory activated&#39;,
+  &#39;NK cell resting&#39;,
+  &#39;Myeloid dendritic cell activated&#39;,
+  &#39;Mast cell resting&#39;,
+  &#39;Mast cell activated&#39;,
+  &#39;B cell memory&#39;,
+  &#39;T cell CD8+&#39;,
+  &#39;T cell CD4+ memory resting&#39;,
+  &#39;T cell regulatory (Tregs)&#39;,
+  &#39;NK cell activated&#39;,
+  &#39;Monocyte&#39;,
+  &#39;Macrophage M0&#39;,
+  &#39;Macrophage M1&#39;,
+  &#39;Macrophage M2&#39;,
+  &#39;Neutrophil&#39;,
+  &#39;Eosinophil&#39;,
+  &#39;B cell plasma&#39;,
+  &#39;B cell naive&#39;,
+  &#39;Myeloid dendritic cell resting&#39;
+)
+combined_corr$cell_type &lt;- factor(combined_corr$cell_type, levels = rev(ct_order))
+
+
+# Filter signatures
+combined_corr %&lt;&gt;% filter(gene %in% names(new_signature_names))
+combined_corr$gene &lt;- new_signature_names[combined_corr$gene] %&gt;% 
+  factor(., levels = new_signature_names)
+
+# Signature direction
+combined_corr$Direction &lt;- ifelse(grepl(&quot;active&quot;, combined_corr$gene), &quot;Active&quot;, &quot;Loss&quot;)</code></pre>
+<pre class="r"><code>sign_row_order &lt;- c(
+  &quot;AMH loss signature (TME)&quot;,
+  &quot;AMH active signature (TME)&quot;,
+  &quot;AMH loss signature (CC)&quot;,
+  &quot;AMH active signature (CC)&quot;,
+  &quot;AMH fully active signature&quot;
+)
+
+ct_column_order &lt;- c(
+  &#39;immune score&#39;,
+  &#39;microenvironment score&#39;,
+  &#39;T cell CD4+ memory&#39;,
+  &#39;T cell CD8+ central memory&#39;,
+  &#39;NK cell&#39;,
+  &#39;Neutrophil&#39;,
+  &#39;Macrophage&#39;,
+  &#39;Monocyte&#39;,
+  &#39;Granulocyte-monocyte progenitor&#39;,
+  &#39;Myeloid dendritic cell&#39;,
+  &#39;Cancer associated fibroblast&#39;,
+  &#39;stroma score&#39;,
+  &#39;B cell&#39;,
+  &#39;B cell memory&#39;,
+  &#39;B cell naive&#39;,
+  &#39;B cell plasma&#39;,
+  &#39;Class-switched memory B cell&#39;,
+  &#39;Common lymphoid progenitor&#39;,
+  &#39;Common myeloid progenitor&#39;,
+  &#39;Endothelial Cell&#39;,
+  &#39;Eosinophil&#39;,
+  &#39;Hematopoietic stem cell&#39;,
+  &#39;Macrophage M1&#39;,
+  &#39;Macrophage M2&#39;,
+  &#39;Mast Cell&#39;,
+  &#39;T cell CD4+ (non regulatory)&#39;,
+  &#39;T cell CD4+ central memory&#39;,
+  &#39;T cell CD4+ effector memory&#39;,
+  &#39;T cell CD4+ naive&#39;,
+  &#39;T cell CD4+ Th1&#39;,
+  &#39;T cell CD4+ Th2&#39;,
+  &#39;T cell CD8+&#39;,
+  &#39;T cell CD8+ effector memory&#39;,
+  &#39;T cell CD8+ naive&#39;,
+  &#39;T cell gamma delta&#39;,
+  &#39;T cell NK&#39;,
+  &#39;T regulatory cells (T regs)&#39;,
+  &#39;Plasmocytoid dendritic cell&#39;,
+  &#39;Myeloid dendritic cell activated&#39;
+)
+
+i &lt;- names(data_processed)[1]
+for(i in names(data_processed)) {
+  cat(&#39;#### &#39;, i, &#39;\n&#39;)
+  corr &lt;- data_processed[[i]]$corr$mat
+  p.mat &lt;- data_processed[[i]]$corr$p.mat
+  use_cols &lt;- grep(&#39;_CIBERSORT-ABS&#39;, colnames(corr), value = TRUE)
+  corr &lt;- corr[, use_cols]
+  p.mat &lt;- p.mat[, use_cols]
+  colnames(corr) &lt;- gsub(&quot;_CIBERSORT-ABS&quot;, &quot;&quot;, use_cols)
+  colnames(p.mat) &lt;- gsub(&quot;_CIBERSORT-ABS&quot;, &quot;&quot;, use_cols)
+  
+  # Filter signatures
+  corr &lt;- corr[names(new_signature_names),]
+  rownames(corr) &lt;- new_signature_names[rownames(corr)]
+  p.mat &lt;- p.mat[names(new_signature_names),]
+  rownames(p.mat) &lt;- new_signature_names[rownames(p.mat)]
+  
+  # Order rows and columns
+  col_order &lt;- intersect(ct_column_order, colnames(corr))
+  row_order &lt;- sign_row_order
+  corr &lt;- corr[row_order, col_order]
+  p.mat &lt;- p.mat[row_order, col_order]
+  
+  res_plot &lt;- ggcorrplot(t(corr), 
+             method = &quot;square&quot;, 
+             p.mat = t(p.mat),
+             # lab = TRUE, 
+             insig = &quot;blank&quot;) +
+    labs(
+      subtitle = paste(i, &#39;Spearman correlation. Blank values represent P &lt; 0.05&#39;),
+    ) +
+    theme(
+      text = element_text(size=8),
+      axis.text.y =  element_text(size=8),
+      axis.text.x =  element_text(size=8),
+      legend.text =  element_text(size=8)
+    )
+  print(res_plot)
+  cat(&#39;\n\n&#39;)
+}</code></pre>
+<div id="tcga-brca" class="section level4" number="4.0.1">
+<h4><span class="header-section-number">4.0.1</span> TCGA-BRCA</h4>
+<p><img src="figure/tcga_immune_infiltrate_amhr2_ko_signatures.Rmd/cibersort-correlation-heatmaps-1.png" width="4320" style="display: block; margin: auto;" /></p>
+</div>
+<div id="tcga-coad" class="section level4" number="4.0.2">
+<h4><span class="header-section-number">4.0.2</span> TCGA-COAD</h4>
+<p><img src="figure/tcga_immune_infiltrate_amhr2_ko_signatures.Rmd/cibersort-correlation-heatmaps-2.png" width="4320" style="display: block; margin: auto;" /></p>
+</div>
+<div id="tcga-luad" class="section level4" number="4.0.3">
+<h4><span class="header-section-number">4.0.3</span> TCGA-LUAD</h4>
+<p><img src="figure/tcga_immune_infiltrate_amhr2_ko_signatures.Rmd/cibersort-correlation-heatmaps-3.png" width="4320" style="display: block; margin: auto;" /></p>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<p>R version 4.4.3 (2025-02-28) Platform: aarch64-apple-darwin20 Running
+under: macOS Sequoia 15.5</p>
+<p>Matrix products: default BLAS:
+/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib
+LAPACK:
+/Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRlapack.dylib;
+LAPACK version 3.12.0</p>
+<p>locale: [1]
+en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8</p>
+<p>time zone: Europe/Zurich tzcode source: internal</p>
+<p>attached base packages: [1] stats4 stats graphics grDevices utils
+datasets methods<br />
+[8] base</p>
+<p>other attached packages: [1] cowplot_1.1.3.9000
+ggcorrplot_0.1.4.1<br />
+[3] tldr_0.4.0 GSVA_2.0.7<br />
+[5] openxlsx_4.2.8 kableExtra_1.4.0<br />
+[7] magrittr_2.0.3 SummarizedExperiment_1.36.0 [9] Biobase_2.66.0
+GenomicRanges_1.58.0<br />
+[11] GenomeInfoDb_1.42.3 IRanges_2.40.1<br />
+[13] S4Vectors_0.44.0 BiocGenerics_0.52.0<br />
+[15] MatrixGenerics_1.18.1 matrixStats_1.5.0<br />
+[17] foreach_1.5.2 knitr_1.50<br />
+[19] lubridate_1.9.4 forcats_1.0.0<br />
+[21] stringr_1.5.1 dplyr_1.1.4<br />
+[23] purrr_1.0.4 readr_2.1.5<br />
+[25] tidyr_1.3.1 tibble_3.2.1<br />
+[27] ggplot2_3.5.2 tidyverse_2.0.0<br />
+[29] workflowr_1.7.1</p>
+<p>loaded via a namespace (and not attached): [1] RColorBrewer_1.1-3
+rstudioapi_0.17.1<br />
+[3] jsonlite_2.0.0 magick_2.8.6<br />
+[5] farver_2.1.2 rmarkdown_2.29<br />
+[7] fs_1.6.6 zlibbioc_1.52.0<br />
+[9] vctrs_0.6.5 memoise_2.0.1<br />
+[11] htmltools_0.5.8.1 S4Arrays_1.6.0<br />
+[13] Rhdf5lib_1.28.0 SparseArray_1.6.2<br />
+[15] rhdf5_2.50.2 sass_0.4.10<br />
+[17] bslib_0.9.0 plyr_1.8.9<br />
+[19] cachem_1.1.0 whisker_0.4.1<br />
+[21] lifecycle_1.0.4 iterators_1.0.14<br />
+[23] pkgconfig_2.0.3 rsvd_1.0.5<br />
+[25] Matrix_1.7-3 R6_2.6.1<br />
+[27] fastmap_1.2.0 GenomeInfoDbData_1.2.13<br />
+[29] digest_0.6.37 AnnotationDbi_1.68.0<br />
+[31] ps_1.9.1 rprojroot_2.0.4<br />
+[33] irlba_2.3.5.1 textshaping_1.0.1<br />
+[35] RSQLite_2.3.11 beachmat_2.22.0<br />
+[37] labeling_0.4.3 timechange_0.3.0<br />
+[39] httr_1.4.7 abind_1.4-8<br />
+[41] compiler_4.4.3 bit64_4.6.0-1<br />
+[43] withr_3.0.2 BiocParallel_1.40.2<br />
+[45] DBI_1.2.3 HDF5Array_1.34.0<br />
+[47] DelayedArray_0.32.0 rjson_0.2.23<br />
+[49] tools_4.4.3 zip_2.3.3<br />
+[51] httpuv_1.6.16 glue_1.8.0<br />
+[53] callr_3.7.6 rhdf5filters_1.18.1<br />
+[55] promises_1.3.2 grid_4.4.3<br />
+[57] getPass_0.2-4 reshape2_1.4.4<br />
+[59] generics_0.1.4 gtable_0.3.6<br />
+[61] tzdb_0.5.0 hms_1.1.3<br />
+[63] BiocSingular_1.22.0 ScaledMatrix_1.14.0<br />
+[65] xml2_1.3.8 XVector_0.46.0<br />
+[67] pillar_1.10.2 vroom_1.6.5<br />
+[69] later_1.4.2 lattice_0.22-7<br />
+[71] bit_4.6.0 annotate_1.84.0<br />
+[73] tidyselect_1.2.1 SingleCellExperiment_1.28.1 [75] Biostrings_2.74.1
+git2r_0.36.2<br />
+[77] svglite_2.2.1 xfun_0.52<br />
+[79] stringi_1.8.7 UCSC.utils_1.2.0<br />
+[81] yaml_2.3.10 evaluate_1.0.3<br />
+[83] codetools_0.2-20 graph_1.84.1<br />
+[85] cli_3.6.5 xtable_1.8-4<br />
+[87] systemfonts_1.2.3 processx_3.8.6<br />
+[89] jquerylib_0.1.4 dichromat_2.0-0.1<br />
+[91] Rcpp_1.0.14 png_0.1-8<br />
+[93] XML_3.99-0.18 parallel_4.4.3<br />
+[95] blob_1.2.4 sparseMatrixStats_1.18.0<br />
+[97] SpatialExperiment_1.16.0 viridisLite_0.4.2<br />
+[99] GSEABase_1.68.0 scales_1.4.0<br />
+[101] crayon_1.5.3 rlang_1.1.6<br />
+[103] KEGGREST_1.46.0</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+https://docs.mathjax.org/en/latest/web/configuration.html. This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3,h4,h5",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
