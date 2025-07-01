@@ -1,0 +1,292 @@
+<!-- To be compatible with workflowr, we need to specify the absolute directory under which the plots are generated, otherwise they will be saved into figure/<basename>.Rmd/<chunk-name>.<extension. and not visible in the html document: https://github.com/workflowr/workflowr/issues/111 -->
+```{r template-options, include = FALSE}
+library(ggbeeswarm)
+knitr::opts_knit$set(
+  base.dir = "docs"
+  )
+```
+
+
+## Download results
+
+<!-- Write DGE results to xlsx file -->
+```{r write-dge-xlsx}
+# File name summary
+rmd_file <- current_input()
+if(is.null(rmd_file))
+  rmd_file <- 'tmp'
+file_xlsx <- file.path('./docs/file',rmd_file, 'dge.xlsx')
+
+dir.create(dirname(file_xlsx), recursive = TRUE, showWarnings = FALSE)
+
+# Generate workbook
+wb <- createWorkbook()
+for(i in names(dge_list)) {
+  addWorksheet(wb, i)
+  res <- dge_list[[i]]$results %>% 
+    dplyr::select(feature, gene_name, mean, detected, logFC, PValue, FDR)
+  writeData(wb, i, res)
+}
+saveWorkbook(wb, file_xlsx, TRUE)
+
+dge_file_xlsx <- file_xlsx
+```
+
+<!-- Write GSE results to xlsx file -->
+```{r write-gse_list-xlsx}
+gse_collections <- list(
+  GSEA = names(gmt_files_symbols),
+  gseGO = c("BP", "MF")
+)
+
+# File name summary
+rmd_file <- current_input()
+if(is.null(rmd_file))
+  rmd_file <- 'tmp'
+
+file_xlsx_list <- list()
+for(sr in names(gse_collections)) {
+  file_xlsx_list[[sr]] <- list()
+  for(gc in gse_collections[[sr]]) {
+    # Generate file
+    file_xlsx <- file.path('./docs/file', 
+                           rmd_file, 
+                           paste0('gse_', tolower(sr), '_', tolower(gc), '.xlsx')
+                           )
+    file_xlsx_list[[sr]][[gc]] <- file_xlsx
+    dir.create(dirname(file_xlsx), recursive = TRUE, showWarnings = FALSE)
+    
+    # Generate workbook
+    wb <- createWorkbook()
+    for(i in names(gse_list)) {
+      addWorksheet(wb, i)
+      if(!is.null(gse_list[[i]][[sr]][[gc]])) {
+        res <- gse_list[[i]][[sr]][[gc]]@result
+        writeData(wb, i, res)
+      }
+    }
+    saveWorkbook(wb, file_xlsx, TRUE)
+  }
+}
+```
+
+<!-- Change dge_list names after writing to xlsx -->
+```{r change-dge-names}
+comp_names <- comp_list_description$comparison_long %>% 
+  set_names(comp_list_description$comparison)
+names(comp_list) <- comp_names[names(comp_list)]
+names(dge_list) <- comp_names[names(dge_list)]
+names(gse_list) <- comp_names[names(gse_list)]
+```
+
+
+The tables of results can be downloaded using the following links:
+
+- [**Differential gene expression**](`r gsub("docs/", "" , dge_file_xlsx)`)
+<!-- Write links to download GSE results -->
+```{r write-links, echo = FALSE}
+for(sr in names(file_xlsx_list)) {
+  for(gc in names(file_xlsx_list[[sr]])) {
+    file_xlsx <- gsub("docs/", "", file_xlsx_list[[sr]][[gc]])
+    if(sr == 'GSEA') {
+      cat(paste0("- [**Gene set enrichment analysis: ", gc, "**](", file_xlsx, ")"), '\n\n')
+    }
+    if(sr == 'gseGO') {
+      cat(paste0("- [**Gene set enrichment analysis: GO:", gc, "**](", file_xlsx, ")"), '\n\n')
+    }
+  }
+}
+```
+
+## Functional enrichment analysis
+```{r set-gsea-collections}
+gse_collections <- list(
+  GSEA = names(gmt_files_symbols)
+)
+
+```
+
+### Download results
+<!-- Write links to download GSE results -->
+```{r write-links-gse-2, echo = FALSE}
+for(sr in names(file_xlsx_list)) {
+  for(gc in names(file_xlsx_list[[sr]])) {
+    file_xlsx <- gsub("docs/", "", file_xlsx_list[[sr]][[gc]])
+    if(sr == 'GSEA') {
+      cat(paste0("- [**Gene set enrichment analysis: ", gc, "**](", file_xlsx, ")"), '\n\n')
+    }
+    if(sr == 'gseGO') {
+      cat(paste0("- [**Gene set enrichment analysis: GO:", gc, "**](", file_xlsx, ")"), '\n\n')
+    }
+  }
+}
+```
+
+### Summary of results
+```{r gse-summary-fdr}
+res <- foreach(i = names(gse_list), .combine = rbind) %do% {
+  foreach(sr = names(gse_collections), .combine = rbind) %do% {
+    foreach(gc = gse_collections[[sr]], .combine = rbind) %do% {
+      if(sr == 'GSEA') {
+        x <- gse_list[[i]][[sr]][[gc]]@result %>%
+          filter(p.adjust <= 0.05)
+        if(gc == 'msigdb.c2.cp') {
+          x %<>%
+            filter(grepl('REACTOME|KEGG|WP', ID))
+        }
+      }
+      if(sr == 'gseGO') {
+        x <- gse_list[[i]][[sr]][[gc]]@result %>%
+          filter(p.adjust <= 0.05)
+      }
+      c(
+        Comparison = i,
+        `Collection` = gc,
+        `Total` = nrow(x),
+        `Supressed` = x %>% filter(NES < 0) %>% nrow,
+        `Activated` = x %>% filter(NES > 0) %>% nrow
+      )
+    }
+  }
+}
+res <- res %>% data.frame(check.names = F)
+```
+
+#### Table
+```{r gse-summary-fdr-table}
+res %>%
+  data.frame(check.names = F) %>%
+  kbl(caption = 'Number of gene sets at FDR < 0.05',
+              row.names = F) %>%
+  kable_paper(bootstrap_options = c("striped", "hover", "condensed"),
+              full_width = F) %>%
+  column_spec(1, bold = TRUE)
+```
+
+#### Barplot
+```{r gse-summary-fdr-barplot, fig.asp = 1.8}
+res %>%
+  pivot_longer(cols = c('Total', 'Supressed', 'Activated'), names_to = 'Direction', values_to = 'Count') %>%
+  mutate(
+    comb_names = paste(Comparison, Collection),
+    Count = as.numeric(Count),
+    Comparison = gsub("-over-", " over\n", Comparison),
+    Comparison = gsub(" corrected", "\ncorrected", Comparison)
+    ) %>%
+  ggplot(aes(Collection, Count, fill = Direction)) +
+  geom_col(position = "dodge") +
+  coord_flip() +
+  facet_grid(rows = vars(Comparison)) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
+  scale_fill_manual(values = c(Supressed = '#74add1',
+                               Activated = '#f46d43',
+                               Total = 'grey80')
+                    ) +
+  labs(x = '', fill = '') +
+  theme_facet +
+  theme(
+    axis.line = element_blank(),
+    axis.ticks = element_line(linewidth = one_pt/4, color = 'black'),
+    strip.text = element_text(size = 5)
+
+  )
+```
+
+### Dotplots
+<!-- # Subchunkify dotplots -->
+<!-- ## chunk options need to be set to echo=FALSE, results='asis' -->
+<!-- ## Cause results='asis',we must use raw HTML to print text and headings -->
+```{r gse-dotplot, echo=FALSE, results='asis'}
+knitr::opts_knit$set(
+  base.dir = "docs"
+  )
+
+use_linewidth <- 1/2.141959
+root_section_number <- 5.3
+section_n <- 
+subsection_n <- 1
+
+for(i in names(gse_list)) {
+  h_section_number <- paste(root_section_number, section_n, sep=".")
+  cat("<h4> <span class=\"header-section-number\">",h_section_number,"</span>Comparison", i, "</h4>\n\n") #Caue results='asis',we must use raw HTML
+  section_n <- section_n + 1
+  for(sr in names(gse_collections)) {
+    for(gc in gse_collections[[sr]]) {
+      if(sr == 'GSEA') {
+        x <- gse_list[[i]][[sr]][[gc]]@result %>%
+          filter(p.adjust <= 0.05) %>%
+          mutate(Description = clean_msigdb_names(Description))
+        if(gc == 'msigdb.c2.cp') {
+          x %<>%
+            filter(grepl('REACTOME|KEGG|WP', ID))
+        }
+      }
+      if(sr == 'gseGO') {
+        x <- gse_list[[i]][[sr]][[gc]]@result %>%
+          filter(p.adjust <= 0.05 & simplify)
+      }
+      if(nrow(x) > 0) {
+        h_subsection_number <- paste(h_section_number, subsection_n, sep=".")
+        # cat("<h5> <span class=\"header-section-number\">",h_subsection_number,"</span>Collection", gc, "</h5>\n\n") #Caue results='asis',we must use raw HTML
+        subsection_n <- subsection_n + 1
+
+        x %<>%
+          mutate(log10P = -log10(p.adjust)) %>%
+          arrange(p.adjust) %>%
+          head(30)
+
+        res <- gse.dotplot(
+          x,
+          x = 'NES',
+          color = 'NES',
+          size = "log10P",
+          # color2log10 = TRUE,
+          showCategory = 20,
+          label_format = 60,
+          decreasing = TRUE
+        ) +
+          geom_vline(xintercept = 0, lty = 3) +
+          scale_size_continuous(range=c(0.3, 2.5)) +
+          scale_color_gradient2(trans = "reverse") +
+          scale_x_continuous(expand = expansion(mult = c(0.05, 0.05))) +
+          labs(
+            size = expression(paste("lo", g[10],"(Adjusted P value)")),
+            caption = 'Showing only top-30 gene sets\nNES = Normalized Enrichment Score'
+            # size = 'Gene set\nsize'
+          ) +
+          theme(
+            panel.border = element_rect(color = "black", fill = NA, size = use_linewidth/2),
+
+            axis.line = element_blank(),
+            axis.ticks = element_line(color = "black", size = use_linewidth/2),
+            axis.text.y = element_text(size = 4),
+            axis.text.x = element_text(size = 4),
+
+            legend.text = element_text(size = 4),
+            legend.title = element_text(size = 4),
+            legend.key.width = unit(0.2, "cm")
+          )
+        if(i == 'msigdb.c2.cp') {
+          h_scale <- 0.08
+        } else {
+          h_scale <- 0.05
+        }
+        subchunkify(res,
+                    fig.width = 3.5,
+                    fig.height = (3.5*0.3) + nrow(x)*h_scale,
+                    dpi = 600,
+                    prefix = 'gse-dotplot',
+                    suffix = paste0(tolower(i) %>% gsub(" ", "-", .), '_', sr, '_', gc) )
+        cat("\n\n")
+      }
+    }
+  }
+}
+
+```
+
+
+
+
+
+
