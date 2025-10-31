@@ -40,7 +40,6 @@ The results form our analyses are listed below in webpage format. They were gene
 Files containing pre-computed results from differential expression or gene-set enrichment analyses were deposited in [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11374563.svg)](https://doi.org/10.5281/zenodo.11374563). In order to generate those files again change the option `eval = FALSE` to `eval = TRUE` in the specific code chunk from the R Markdown file.
 
 ## Analyses
-
 -   [In-vivo CRISPR screening in mouse: sgRNA distribution](crispr-mm_2215_sgRNA-clonality.html)
 -   [RNA-seq of primary tumor transcriptomes from syngeneic hosts based on Cas9 delivery TrCD8a status](rnaseq-tumor-bulk.html)
 -   [Restoration of metastatic gene discovery by StealTHY CRISPR screening](crispr-mm_2215_sgRNA-StealTHY.html)
@@ -60,7 +59,7 @@ Files containing pre-computed results from differential expression or gene-set e
 ### Main figures
 
 #### Figure 2
-    -   [Figure 2B](crispr-mm_2215_sgRNA-clonality.html#31_Figure_2B:_sgRNA_distribution_in_mice_transplanted_with_4T1_cells)
+-   [Figure 2B](crispr-mm_2215_sgRNA-clonality.html#31_Figure_2B:_sgRNA_distribution_in_mice_transplanted_with_4T1_cells)
     -   [Figure 2C](crispr-mm_2215_sgRNA-clonality.html#5_Figure_2C:_Representative_Müller_plots_of_4T1_in_syngeneic_recipients)
     
 #### Figure 3
