@@ -152,46 +152,6 @@ res <- foreach(i = names(gse_list), .combine = rbind) %do% {
 res <- res %>% data.frame(check.names = F)
 ```
 
-#### Table
-```{r gse-summary-fdr-table}
-res %>%
-  data.frame(check.names = F) %>%
-  kbl(caption = 'Number of gene sets at FDR < 0.05',
-              row.names = F) %>%
-  kable_paper(bootstrap_options = c("striped", "hover", "condensed"),
-              full_width = F) %>%
-  column_spec(1, bold = TRUE)
-```
-
-#### Barplot
-```{r gse-summary-fdr-barplot, fig.asp = 1.8}
-res %>%
-  pivot_longer(cols = c('Total', 'Supressed', 'Activated'), names_to = 'Direction', values_to = 'Count') %>%
-  mutate(
-    comb_names = paste(Comparison, Collection),
-    Count = as.numeric(Count),
-    Comparison = gsub("-over-", " over\n", Comparison),
-    Comparison = gsub(" corrected", "\ncorrected", Comparison)
-    ) %>%
-  ggplot(aes(Collection, Count, fill = Direction)) +
-  geom_col(position = "dodge") +
-  coord_flip() +
-  facet_grid(rows = vars(Comparison)) +
-  scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
-  scale_fill_manual(values = c(Supressed = '#74add1',
-                               Activated = '#f46d43',
-                               Total = 'grey80')
-                    ) +
-  labs(x = '', fill = '') +
-  theme_facet +
-  theme(
-    axis.line = element_blank(),
-    axis.ticks = element_line(linewidth = one_pt/4, color = 'black'),
-    strip.text = element_text(size = 5)
-
-  )
-```
-
 ### Dotplots
 <!-- # Subchunkify dotplots -->
 <!-- ## chunk options need to be set to echo=FALSE, results='asis' -->

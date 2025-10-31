@@ -598,3 +598,7 @@ gost.gsva <- function(x, method = 'gsva', terms = NULL, sources = NULL) {
     meta = res_meta
   )
 }
+
+
+clean_msigdb_names <- function(x) x %>% gsub('HALLMARK_', '', .) %>% gsub('REACTOME_', '', .) %>% gsub('WP_', '', .) %>% gsub('BIOCARTA_', '', .) %>% gsub('KEGG_', '', .) %>% gsub('PID_', '', .) %>% gsub('GOBP_', '', .) %>% gsub('_', ' ', .)
+

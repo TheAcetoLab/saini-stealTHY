@@ -64,13 +64,15 @@ palette_donor <- c(
 palette_vector <- c(
   `Thy1`  = '#F7EC13',
   `Puro`  = '#58595B',
-  `dCas9+Puro` = 'black'
+  `dCas9+Puro` = 'black',
+  `dCas9 + Puro` = 'black'
 )
 
 palette_vector_line <- c(
   `Thy1` = 'black',
   `Puro`  = 'white',
-  `dCas9+Puro` = 'white'
+  `dCas9+Puro` = 'white',
+  `dCas9 + Puro` = 'white'
 )
 
 

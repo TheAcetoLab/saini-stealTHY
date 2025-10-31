@@ -2,23 +2,55 @@ name: StealTHY
 output_dir: ../docs
 navbar:
   title: StealTHY
-  left:
+  left: ~
+  right:
   - text: Home
+    icon: fa-home
     href: index.html
   - text: About
+    icon: fa-info
     href: about.html
+  - text: Analyses
+    icon: fa-bar-chart
+    menu:
+      - text: "Main results"
+      - text: "In-vivo CRISPR screening in mouse: sgRNA distribution"
+        href: crispr-mm_2215_sgRNA-clonality.html
+      - text: "RNA-seq of primary tumor transcriptomes from syngeneic hosts based on Cas9 delivery TrCD8a status"
+        href: rnaseq-tumor-bulk.html
+      - text: "Restoration of metastatic gene discovery by StealTHY CRISPR screening"
+        href: crispr-mm_2215_sgRNA-StealTHY.html
+      - text: "CRISPR screening transplantation in immunocompetent hosts of metastatic lung carcinoma cells (LLC1, C167) and colon carcinoma cells (CT26) previously subjected to StealTHY KO"
+        href: crispr-mm_2215_sgRNA-CMT167-LLC1-CT26.html
+      - text: "CRISPR screening in humanized mice by StealTHY"
+        href: crispr-hsapiens_2180_sgRNA.html
+      - text: "Survival analysis of gene-signatures identified in the CRISPR screening in humanized mice by StealTHY"
+        href: tcga_survival_crispr_hits_signatures.html
+      - text: "RNA-sequencing of primary tumors from syngeneic FVB/N orthotopically transplanted with Py2T carrying StealTHY KO of Amhr2 or a non-targeting sgRNA"
+        href: rnaseq-amhr2_ko-deg.html
+      - text: "RNA-seq of FACs sorted CD3+ TIL cells comparing Cas9-Thy1(A) versus Thy1(A) transduction"
+        href: rnaseq-tumor-facs-immune.html
+      - text: "RNA-seq of FACs sorted carcinoma cells comparing Cas9-Thy1(A) versus Thy1(A) transduction"
+        href: rnaseq-tumor-facs-cancer.html
+      - text: "Correlation of AMH signatures with immune cell fractions in TCGA"
+        href: tcga_immune_infiltrate_amhr2_ko_signatures.html
+      - text: "Survival analysis of AMH signatures in TCGA cohorts"
+        href: tcga_survival_amhr2_ko_signatures.html
+      - text: "Survival analysis of AMH, AMHR2 and GDF9 expression in TCGA cohorts"
+        href: tcga_survival_crispr_hits_genes.html
   - text: License
     href: license.html
-  right:
-  - icon: fab fa-github
-    text: Source code
+  - icon: fa-github
     href: https://github.com/TheAcetoLab/saini-stealTHY
+  - icon: fa-flask
+    href: https://www.theacetolab.com
 output:
   workflowr::wflow_html:
+    keep_md: yes
     toc: yes
     toc_float: yes
-    theme: cosmo
-    highlight: textmate
-    number_sections: yes
+    toc_depth: 4
+    theme: journal
+    highlight: pygments
     code_folding: hide
-    toc_depth: 5
+    css: style.css
