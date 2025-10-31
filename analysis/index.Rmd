@@ -54,34 +54,33 @@ Files containing pre-computed results from differential expression or gene-set e
 -   [Survival analysis of *AMH*, *AMHR2* and *GDF9* expression in TCGA cohorts](tcga_survival_crispr_hits_genes.html)
 
 
-## Paper figures and tables
 
-### Main figures
+## Main figures
 
-#### Figure 2
+### Figure 2
 -   [Figure 2B](crispr-mm_2215_sgRNA-clonality.html#31_Figure_2B:_sgRNA_distribution_in_mice_transplanted_with_4T1_cells)
 -   [Figure 2C](crispr-mm_2215_sgRNA-clonality.html#5_Figure_2C:_Representative_Müller_plots_of_4T1_in_syngeneic_recipients)
     
-#### Figure 3
+### Figure 3
 -   [Figure 3D](rnaseq-tumor-bulk.html#Figure_3D_:_qRT-PCR_in_TrCD8a+_and_TrCD8a-)
 -   [Figure 3H](rnaseq-tumor-bulk.html#Figure_3H:_Sample_distances_in_MVT1_models)
 
-#### Figure 4
+### Figure 4
 -   [Figure 4D](crispr-mm_2215_sgRNA-StealTHY.html#sgRNA_distribution2)
 -   [Figure 4C](crispr-mm_2215_sgRNA-StealTHY.html#Figure_4C_and_Supplementary_Figure_4F)
 -   [Figure 4D](crispr-mm_2215_sgRNA-StealTHY.html#Figure_4D:_Proportion_of_non-expressed_hits)
 
-#### Figure 5   
+### Figure 5   
 -   [Figure 5H](crispr-hsapiens_2180_sgRNA.html#31_Figure_5H:_Muller_plots_for_huNSGs)
 
-#### Figure 6    
+### Figure 6    
 -   [Figure 6B](crispr-hsapiens_2180_sgRNA.html#sgRNA_distribution_by_condition_Primary_tumor)
 -   [Figure 6C](crispr-hsapiens_2180_sgRNA.html#Figure_6C:_Volcano_plots_showing_genes_Lungs_over_Primary_Tumor_in_StealTHY_KO)
 -   [Figure 6D](crispr-hsapiens_2180_sgRNA.html#Figure_6D:_Distribution_of_the_fold-change_of_Lungs_over_Primary_Tumor_in_huNSG_and_NSG_host)
 -   [Figure 6E](tcga_survival_crispr_hits_signatures.html#Figure_6F:_Forest_plot_by_study)
 -   [Figure 6F](tcga_survival_crispr_hits_signatures.html#Figure_6E:_Kaplan-Meier_plots)
 
-#### Figure 7    
+### Figure 7    
 -   [Figure 7F](rnaseq-amhr2_ko-deg.html#__531_Comparison_InVivo_AMHR2_KO_+_AMHR2_KO_culture–over–InVivo_Control_sgRNA_+_AMHR2_Control_culture_)
 -   [Figure 7G](tcga_immune_infiltrate_amhr2_ko_signatures.html#4_Figure_7G:_Correlation_of_AMH_signatures_with_immune_cell_fractions_across_TCGA_cohorts_(Heatmaps))
 -   [Figure 7H: Left panel](tcga_survival_amhr2_ko_signatures.html#Figure_7H_Right:_Pooled_Kaplan-Meier_plots_-_Optimal_cut-off)
@@ -89,9 +88,9 @@ Files containing pre-computed results from differential expression or gene-set e
       
 
     
-### Supplementary figures
+## Supplementary figures
 
-#### Supplementary Figure 2
+### Supplementary Figure 2
 -   [Supplementary Figure 2B](crispr-mm_2215_sgRNA-clonality.html#32_Supplementary_Figure_2B:_sgRNA_distribution_in_mice_transplanted_with_Py2T_and_MVT1_cells)
 -   [Supplementary Figure 2C-left](crispr-mm_2215_sgRNA-clonality.html#41_Supplementary_Figure_2C_left_:_K-S_test_table)
 -   [Supplementary Figure 2C-right](crispr-mm_2215_sgRNA-clonality.html#42_Supplementary_Figure_2C_right_:_Empirical_Cumulative_Density_Function_(ECDF)_plots)
@@ -107,11 +106,11 @@ Files containing pre-computed results from differential expression or gene-set e
 -   [Supplementary Figure 2H: Carcinoma cells upper panel](rnaseq-tumor-facs-cancer.html#41_Supplementary_Figure_2H_top_right:_Differential_expressed_genes_in_dCas9-Thy1_over_Thy1_transduction_in_sorted_carcinoma_cells)
 -   [Supplementary Figure 2H: Carcinoma cells lower panel](rnaseq-tumor-facs-cancer.html#51_Supplementary_Figure_2H_bottom_right:_Representative_gene-sets_enriched_in_dCas9-Thy1_over_Thy1_transduction)  
 
-#### Supplementary Figure 3   
+### Supplementary Figure 3   
 -   [Supplementary Figure 3E: Py2T1 (left panel)](rnaseq-tumor-bulk.html#Supplementary_figure_3E_left:_Sample_distances_in_Py2T_model)
 -   [Supplementary Figure 3E: 4T1 (right panel)](rnaseq-tumor-bulk.html#Supplementary_figure_3E_right:_Sample_distances_in_4T1_model)
 
-#### Supplementary Figure 4  
+### Supplementary Figure 4  
 -   [Supplementary Figure 4B](crispr-mm_2215_sgRNA-StealTHY.html#Supplementary_figure_4B:_sgRNA_distribution_in_mice_transplanted_with_4T1_cells_previously_subjected_to_StealTHY_KO)
 -   [Supplementary Figure 4C](crispr-mm_2215_sgRNA-clonality.html#7_Supplementary_Figure_4C)
 -   [Supplementary Figure 4D](crispr-mm_2215_sgRNA-StealTHY.html#Supplementary_Figure_4D_:_K-S_test_table)
@@ -122,12 +121,12 @@ Files containing pre-computed results from differential expression or gene-set e
 -   [Supplementary Figure 4M](crispr-mm_2215_sgRNA-CMT167-LLC1-CT26.html#Supplementary_figure_4M:_Differential_abundance_of_selected_genes)
 -   [Supplementary Figure 4N](crispr-mm_2215_sgRNA-CMT167-LLC1-CT26.html#Supplementary_figure_4N:_Muller_plots_of_selected_genes)
     
-#### Supplementary Figure 6
+### Supplementary Figure 6
 -   [Supplementary Figure 6D](crispr-hsapiens_2180_sgRNA.html#Supplementary_Figure_6D:_Fold-change_of_Lungs_over_Primary_Tumor_in_huNSG_and_NSG_host)
 -   [Supplementary Figure 6L](tcga_survival_crispr_hits_genes.html#Supplementary_Figure_6L:_Forest_plot_by_study)
 -   [Supplementary Figure 6E](tcga_survival_crispr_hits_genes.html#Supplementary_Figure_6E:_Kaplan-Meier_plots)
 
-#### Supplementary Figure 7     
+### Supplementary Figure 7     
 -   [Supplementary Figure 7L](rnaseq-amhr2_ko-deg.html#Supplementary_Figure_7L)
 -   [Supplementary Figure 7M: Positive Galunisertib](rnaseq-amhr2_ko-deg.html#Supplementary_Figure_7M_(Galunisertib_positive))
 -   [Supplementary Figure 7M: Negative Galunisertib](rnaseq-amhr2_ko-deg.html#Mammary_epithelium_proliferation30)
