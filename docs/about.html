@@ -273,26 +273,48 @@ $(document).ready(function () {
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu">
-    <li class="dropdown-header">Data generation</li>
-    <li>
-      <a href="0_differential_expression_gsea_gsva.html">Run differential gene expression analysis, GSEA and GSVA</a>
-    </li>
-    <li class="divider"></li>
     <li class="dropdown-header">Main results</li>
     <li>
-      <a href="patients_ctc_counts_distribution.html">CTC counts distribution in breast cancer patients</a>
+      <a href="crispr-mm_2215_sgRNA-clonality.html">In-vivo CRISPR screening in mouse: sgRNA distribution</a>
     </li>
     <li>
-      <a href="br16_pca.html">PCA analysis of CTC gene expression in NSG-CDX-BR16 mice</a>
+      <a href="rnaseq-tumor-bulk.html">RNA-seq of primary tumor transcriptomes from syngeneic hosts based on Cas9 delivery TrCD8a status</a>
     </li>
     <li>
-      <a href="br16_dge.html">Differential gene expression report for NSG-CDX-BR16 data</a>
+      <a href="crispr-mm_2215_sgRNA-StealTHY.html">Restoration of metastatic gene discovery by StealTHY CRISPR screening</a>
     </li>
     <li>
-      <a href="gsea_across_models.html">Report of GSEA and GSVA analysis in NSG-CDX-BR16, NSG-LM2, Patient and NSG-LM2 time kinetics</a>
+      <a href="crispr-mm_2215_sgRNA-CMT167-LLC1-CT26.html">CRISPR screening transplantation in immunocompetent hosts of metastatic lung carcinoma cells (LLC1, C167) and colon carcinoma cells (CT26) previously subjected to StealTHY KO</a>
     </li>
     <li>
-      <a href="core_gene_sets.html">Analysis of genes from candidate pathways</a>
+      <a href="crispr-hsapiens_2180_sgRNA.html">CRISPR screening in humanized mice by StealTHY</a>
+    </li>
+    <li>
+      <a href="tcga_survival_crispr_hits_signatures.html">Survival analysis of gene-signatures identified in the CRISPR screening in humanized mice by StealTHY</a>
+    </li>
+    <li>
+      <a href="rnaseq-amhr2_ko-deg.html">RNA-sequencing of primary tumors from syngeneic FVB/N orthotopically transplanted with Py2T carrying StealTHY KO of Amhr2 or a non-targeting sgRNA</a>
+    </li>
+    <li>
+      <a href="rnaseq-tumor-facs-immune.html">RNA-seq of FACs sorted CD3+ TIL cells comparing Cas9-Thy1(A) versus Thy1(A) transduction</a>
+    </li>
+    <li>
+      <a href="rnaseq-tumor-facs-cancer.html">RNA-seq of FACs sorted carcinoma cells comparing Cas9-Thy1(A) versus Thy1(A) transduction</a>
+    </li>
+    <li>
+      <a href="tcga_immune_infiltrate_amhr2_ko_signatures.html">Correlation of *AMH* signatures with immune cell fractions in TCGA</a>
+    </li>
+    <li>
+      <a href="tcga_survival_amhr2_ko_signatures.html">Survival analysis of *AMH* signatures in TCGA cohorts</a>
+    </li>
+    <li>
+      <a href="tcga_survival_crispr_hits_genes.html">Survival analysis of *AMH*, *AMHR2* and *GDF9* expression in TCGA cohorts</a>
+    </li>
+    <li>
+      <a href="index.html#Main_figures">Main Figures</a>
+    </li>
+    <li>
+      <a href="index.html#Supplementary_figures">Supplementary Figures</a>
     </li>
   </ul>
 </li>
@@ -404,15 +426,15 @@ results.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtree7bb3fec1f59a54caf60f6f727bd2b08ec5a5dec9targetblank7bb3feca">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtreeaa04e35a434c6815631b0107424f4798d3fd697btargetblankaa04e35a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/7bb3fec1f59a54caf60f6f727bd2b08ec5a5dec9" target="_blank">7bb3fec</a>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/aa04e35a434c6815631b0107424f4798d3fd697b" target="_blank">aa04e35</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtree7bb3fec1f59a54caf60f6f727bd2b08ec5a5dec9targetblank7bb3feca"
+id="strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtreeaa04e35a434c6815631b0107424f4798d3fd697btargetblankaa04e35a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -422,7 +444,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/7bb3fec1f59a54caf60f6f727bd2b08ec5a5dec9" target="_blank">7bb3fec</a>.
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/aa04e35a434c6815631b0107424f4798d3fd697b" target="_blank">aa04e35</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -455,6 +477,7 @@ Ignored files:
     Ignored:    output/rnaseq/
 
 Untracked files:
+    Untracked:  analysis/about.md
     Untracked:  analysis/crispr-hsapiens_2180_sgRNA.md
     Untracked:  analysis/crispr-mm_2215_sgRNA-CMT167-LLC1-CT26.md
     Untracked:  analysis/crispr-mm_2215_sgRNA-StealTHY.md
@@ -546,6 +569,23 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/TheAcetoLab/saini-stealTHY/e544ed7063a82d700e2039eb89e7fbc3cc5b35f9/docs/about.html" target="_blank">e544ed7</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-10-31
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
