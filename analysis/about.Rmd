@@ -7,4 +7,23 @@ editor_options:
   chunk_output_type: console
 ---
 
-Describe your project.
+## StealTHY eludes CRISPR immunogenicity to expose concealed metastatic regulators
+
+**Abstract**
+
+CRISPR screens have become standard gene discovery platforms in various contexts, including cancer. Yet, commonly available CRISPR-Cas9 tools are increasingly recognized as unfit for in vivo investigations in immunocompetent contexts, due to broad immunogenicity of bacterial nucleases and reporters. Here, we show how conventional CRISPR screens in tumor grafts are systematically jeopardized by immunoediting in syngeneic and humanized immunocompetent hosts, resulting in iatrogenic clonal dropouts and ultimately compromising target identification. To resolve this, we present StealTHY, an immunogen-free CRISPR platform compatible with virtually all immunocompetent designs, enabling preservation of clonal architecture and exposing previously concealed cancer vulnerabilities. Among these, we identify the AMH-AMHR2 axis as a formerly unappreciated metastasis target. Thus, with StealTHY, we provide a new resource to expand the applicability of CRISPR screens to immunocompetent models including humanized tumor grafts, revealing metastasis regulators of therapeutic relevance. 
+
+**Authors**
+
+Massimo Saini<sup>1</sup>, Francesc Castro-Giner<sup>1</sup>, Adriana Hotz<sup>2</sup>, Magdalena K. Sznurkowska<sup>1</sup>, Manuel Nüesch<sup>1</sup>, François M. Cuenot<sup>1</sup>, Selina Budinjas<sup>1</sup> Gilles Bilfeld<sup>1</sup>, Ece Su Ildız<sup>1</sup>, Karin Strittmatter<sup>1</sup>, Ilona Krol<sup>1</sup>, Zoi Diamantopoulou<sup>1</sup>,<sup>3</sup>, Aino Paasinen-Sohns<sup>4</sup>, Maria Waldmeier<sup>1</sup>, Rafaela Cássio<sup>2</sup>, Susanne Kreutzer<sup>2</sup>, Zacharias Kontarakis<sup>2,5</sup>, Ana Gvozdenovic<sup>1</sup>, & Nicola Aceto<sup>1,6,*</sup>
+
+<sup>1</sup> Department of Biology, Institute of Molecular Health Sciences, Swiss Federal Institute of Technology (ETH) Zurich, 8093 Zurich, Switzerland 
+<sup>2</sup> Functional Genomics Center Zurich, Swiss Federal Institute of Technology (ETH) Zurich, 8093 Zurich, Switzerland.
+<sup>3</sup> Current address: Cancer Research UK Scotland Institute, Garscube Estate, Switchback Road Glasgow, G61 1BD, UK and School of Cancer Sciences, University of Glasgow, Garscube Estate, Switchback Road, Glasgow, G61 1QH, UK
+<sup>4</sup> Department of Biomedicine, University of Basel and University Hospital Basel, 4058 Basel, Switzerland
+<sup>5</sup> Genome Engineering and Measurement Laboratory (GEML), Swiss Federal Institute of Technology (ETH) Zurich, 8093 Zurich, Switzerland   
+<sup>6</sup> Lead Contact
+
+<sup>*</sup>Corresponding author
+
+## Citation
