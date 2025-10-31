@@ -11,14 +11,14 @@
 
 <meta name="author" content="Francesc Castro-Giner" />
 
-<meta name="date" content="2025-07-01" />
+<meta name="date" content="2025-10-31" />
 
 <title>StealTHY CRISPR screen</title>
 
 <script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<link href="site_libs/bootstrap-3.3.5/css/journal.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
@@ -36,12 +36,10 @@
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <script src="site_libs/navigation-1.1/codefolding.js"></script>
-<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
-<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
 <link href="site_libs/htmltools-fill-0.5.8.1/fill.css" rel="stylesheet" />
 <script src="site_libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
 <link href="site_libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
-<script src="site_libs/datatables-binding-0.33/datatables.js"></script>
+<script src="site_libs/datatables-binding-0.34.0/datatables.js"></script>
 <link href="site_libs/dt-core-1.13.6/css/jquery.dataTables.min.css" rel="stylesheet" />
 <link href="site_libs/dt-core-1.13.6/css/jquery.dataTables.extra.css" rel="stylesheet" />
 <script src="site_libs/dt-core-1.13.6/js/jquery.dataTables.min.js"></script>
@@ -55,8 +53,8 @@
 <script src="site_libs/nouislider-7.0.10/jquery.nouislider.min.js"></script>
 <link href="site_libs/selectize-0.12.0/selectize.bootstrap3.css" rel="stylesheet" />
 <script src="site_libs/selectize-0.12.0/selectize.min.js"></script>
-<link href="site_libs/crosstalk-1.2.1/css/crosstalk.min.css" rel="stylesheet" />
-<script src="site_libs/crosstalk-1.2.1/js/crosstalk.min.js"></script>
+<link href="site_libs/crosstalk-1.2.2/css/crosstalk.min.css" rel="stylesheet" />
+<script src="site_libs/crosstalk-1.2.2/js/crosstalk.min.js"></script>
 <link href="site_libs/font-awesome-6.5.2/css/all.min.css" rel="stylesheet" />
 <link href="site_libs/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet" />
 
@@ -79,22 +77,125 @@ div.section {
   ul.task-list{list-style: none;}
     </style>
 
-<style type="text/css">code{white-space: pre;}</style>
-<script type="text/javascript">
-if (window.hljs) {
-  hljs.configure({languages: []});
-  hljs.initHighlightingOnLoad();
-  if (document.readyState && document.readyState === "complete") {
-    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+
+
+<style type="text/css">
+  code {
+    white-space: pre;
   }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
 }
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+.sourceCode .row {
+  width: 100%;
+}
+.sourceCode {
+  overflow-x: auto;
+}
+.code-folding-btn {
+  margin-right: -30px;
+}
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
 </script>
 
 
 
 
-
-
+<link rel="stylesheet" href="style.css" type="text/css" />
 
 
 
@@ -355,22 +456,68 @@ div.tocify {
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
+        
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
         <li>
-  <a href="index.html">Home</a>
+  <a href="index.html">
+    <span class="fa fa-home"></span>
+     
+    Home
+  </a>
 </li>
 <li>
-  <a href="about.html">About</a>
+  <a href="about.html">
+    <span class="fa fa-info"></span>
+     
+    About
+  </a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-bar-chart"></span>
+     
+    Analyses
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li class="dropdown-header">Data generation</li>
+    <li>
+      <a href="0_differential_expression_gsea_gsva.html">Run differential gene expression analysis, GSEA and GSVA</a>
+    </li>
+    <li class="divider"></li>
+    <li class="dropdown-header">Main results</li>
+    <li>
+      <a href="patients_ctc_counts_distribution.html">CTC counts distribution in breast cancer patients</a>
+    </li>
+    <li>
+      <a href="br16_pca.html">PCA analysis of CTC gene expression in NSG-CDX-BR16 mice</a>
+    </li>
+    <li>
+      <a href="br16_dge.html">Differential gene expression report for NSG-CDX-BR16 data</a>
+    </li>
+    <li>
+      <a href="gsea_across_models.html">Report of GSEA and GSVA analysis in NSG-CDX-BR16, NSG-LM2, Patient and NSG-LM2 time kinetics</a>
+    </li>
+    <li>
+      <a href="core_gene_sets.html">Analysis of genes from candidate pathways</a>
+    </li>
+  </ul>
 </li>
 <li>
   <a href="license.html">License</a>
 </li>
-      </ul>
-      <ul class="nav navbar-nav navbar-right">
-        <li>
+<li>
   <a href="https://github.com/TheAcetoLab/saini-stealTHY">
-    <span class="fab fa-github"></span>
+    <span class="fa fa-github"></span>
      
-    Source code
+  </a>
+</li>
+<li>
+  <a href="https://www.theacetolab.com">
+    <span class="fa fa-flask"></span>
+     
   </a>
 </li>
       </ul>
@@ -394,7 +541,7 @@ div.tocify {
 <h3 class="subtitle">Mouse libray (n = 2215) - Reviewer 2 Observation
 C</h3>
 <h4 class="author">Francesc Castro-Giner</h4>
-<h4 class="date">July 01, 2025</h4>
+<h4 class="date">October 31, 2025</h4>
 
 </div>
 
@@ -423,7 +570,7 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-07-01
+<strong>Last updated:</strong> 2025-10-31
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -554,15 +701,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtreeb6bc77088b14bf2712a35dc41be83f6032057e27targetblankb6bc770a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtree455fa9121fcca51363cf639f7ee170fb108e34c1targetblank455fa91a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/b6bc77088b14bf2712a35dc41be83f6032057e27" target="_blank">b6bc770</a>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/455fa9121fcca51363cf639f7ee170fb108e34c1" target="_blank">455fa91</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtreeb6bc77088b14bf2712a35dc41be83f6032057e27targetblankb6bc770a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtree455fa9121fcca51363cf639f7ee170fb108e34c1targetblank455fa91a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -572,7 +719,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/b6bc77088b14bf2712a35dc41be83f6032057e27" target="_blank">b6bc770</a>.
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/455fa9121fcca51363cf639f7ee170fb108e34c1" target="_blank">455fa91</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -591,6 +738,7 @@ Ignored files:
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
     Ignored:    analysis/.DS_Store
+    Ignored:    analysis/templates/.DS_Store
     Ignored:    code/.DS_Store
     Ignored:    code/raw_data_processing/rnaseq/p27851_o32062/pipelines/
     Ignored:    configuration/.DS_Store
@@ -604,16 +752,42 @@ Ignored files:
     Ignored:    output/rnaseq/
 
 Untracked files:
-    Untracked:  analysis/crispr-hsapiens_2180_sgRNA_r1.Rmd
-    Untracked:  analysis/crispr-mm_2215_sgRNA-clonality_r1.Rmd
-    Untracked:  analysis/templates/
+    Untracked:  analysis/crispr-mm_2215_sgRNA-StealTHY.md
+    Untracked:  analysis/crispr-mm_2215_sgRNA-clonality.md
+    Untracked:  analysis/index.md
+    Untracked:  analysis/rnaseq-tumor-bulk.md
+    Untracked:  analysis/style.css
     Untracked:  code/R-functions/subchunkify.R
 
 Unstaged changes:
     Modified:   .gitignore
-    Modified:   analysis/crispr-hsapiens_2180_sgRNA.Rmd
-    Modified:   analysis/crispr-mm_2215_sgRNA-r2oC.Rmd
+    Modified:   analysis/_site.yml
+    Deleted:    analysis/crispr-hsapiens_2180_sgRNA_r1.Rmd
+    Deleted:    analysis/crispr-mm_2215_sgRNA-clonality_r1.Rmd
+    Deleted:    analysis/crispr-mm_2215_sgRNA-r2oC.Rmd
+    Deleted:    analysis/crispr-mm_2215_sgRNA-r2oD.Rmd
+    Deleted:    analysis/crispr-mm_2215_sgRNA-r2oD_r1.Rmd
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_ko_culture--over--amhr2_control_culture_GSEA_msigdb.h-1.pdf
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_ko_culture--over--amhr2_control_culture_GSEA_msigdb.h-1.png
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_ko_notgfbeta--over--amhr2_ko_culture_GSEA_msigdb.h-1.pdf
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_ko_notgfbeta--over--amhr2_ko_culture_GSEA_msigdb.h-1.png
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_overexpression--over--amhr2_control_culture_GSEA_msigdb.h-1.pdf
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_overexpression--over--amhr2_control_culture_GSEA_msigdb.h-1.png
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_overexpression--over--amhr2_ko_culture_GSEA_msigdb.h-1.pdf
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_overexpression--over--amhr2_ko_culture_GSEA_msigdb.h-1.png
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_overexpression--over--amhr2_ko_notgfbeta_GSEA_msigdb.h-1.pdf
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_overexpression--over--amhr2_ko_notgfbeta_GSEA_msigdb.h-1.png
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-invivo_amhr2_ko-+-amhr2_ko_culture--over--invivo_control_sgrna-+-amhr2_control_culture_GSEA_msigdb.h-1.pdf
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-invivo_amhr2_ko-+-amhr2_ko_culture--over--invivo_control_sgrna-+-amhr2_control_culture_GSEA_msigdb.h-1.png
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-invivo_amhr2_ko--over--invivo_control_sgrna_GSEA_msigdb.h-1.pdf
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-invivo_amhr2_ko--over--invivo_control_sgrna_GSEA_msigdb.h-1.png
+    Deleted:    analysis/templates/docs/file/tmp/dge.xlsx
+    Deleted:    analysis/templates/docs/file/tmp/gse_gsea_msigdb.h.xlsx
+    Deleted:    analysis/templates/docs/file/tmp/gse_gsego_bp.xlsx
+    Deleted:    analysis/templates/docs/file/tmp/gse_gsego_mf.xlsx
+    Modified:   analysis/templates/rnaseq-deg-edger.Rmd
     Modified:   code/R-functions/gse_report.r
+    Modified:   configuration/rmarkdown/color_palettes.R
     Modified:   configuration/rmarkdown/ggplot_theme.R
     Modified:   update_workflowr.R
 
@@ -666,6 +840,40 @@ Message
 Rmd
 </td>
 <td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/455fa9121fcca51363cf639f7ee170fb108e34c1/analysis/crispr-mm_2215_sgRNA-CMT167-LLC1-CT26.Rmd" target="_blank">455fa91</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-10-31
+</td>
+<td>
+Prepare files for publication
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/TheAcetoLab/saini-stealTHY/a6972e9baca3624749a8db52f17092d7d2e8c2e2/docs/crispr-mm_2215_sgRNA-CMT167-LLC1-CT26.html" target="_blank">a6972e9</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-07-01
+</td>
+<td>
+Build site.
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
 <a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/b6bc77088b14bf2712a35dc41be83f6032057e27/analysis/crispr-mm_2215_sgRNA-CMT167-LLC1-CT26.Rmd" target="_blank">b6bc770</a>
 </td>
 <td>
@@ -686,253 +894,241 @@ update crispr analysis
 </div>
 </div>
 <div id="load-libraries-additional-functions-and-data"
-class="section level2" number="1">
-<h2><span class="header-section-number">1</span> Load libraries,
-additional functions and data</h2>
+class="section level2">
+<h2>Load libraries, additional functions and data</h2>
 <p>Setup environment</p>
-<pre class="r"><code>knitr::opts_chunk$set(results=&#39;asis&#39;, echo=TRUE, message=FALSE, warning=FALSE, error=FALSE, fig.align = &#39;center&#39;, fig.width = 3.5, fig.asp = 0.618, dpi = 600, dev = c(&quot;png&quot;, &quot;pdf&quot;), fig.showtext = FALSE, engine.opts = list(bash = &quot;-l&quot;))
-
-options(stringsAsFactors = FALSE)
-
-use_seed &lt;- 1100101
-
-set.seed(use_seed)
-
-# dir.create(params$output_dir, recursive = TRUE, showWarnings = FALSE)</code></pre>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">results=</span><span class="st">&#39;asis&#39;</span>, <span class="at">echo=</span><span class="cn">TRUE</span>, <span class="at">message=</span><span class="cn">FALSE</span>, <span class="at">warning=</span><span class="cn">FALSE</span>, <span class="at">error=</span><span class="cn">FALSE</span>, <span class="at">fig.align =</span> <span class="st">&#39;center&#39;</span>, <span class="at">fig.width =</span> <span class="fl">3.5</span>, <span class="at">fig.asp =</span> <span class="fl">0.618</span>, <span class="at">dpi =</span> <span class="dv">600</span>, <span class="at">dev =</span> <span class="fu">c</span>(<span class="st">&quot;png&quot;</span>, <span class="st">&quot;pdf&quot;</span>), <span class="at">fig.showtext =</span> <span class="cn">FALSE</span>, <span class="at">engine.opts =</span> <span class="fu">list</span>(<span class="at">bash =</span> <span class="st">&quot;-l&quot;</span>))</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">options</span>(<span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>use_seed <span class="ot">&lt;-</span> <span class="dv">1100101</span></span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a><span class="fu">set.seed</span>(use_seed)</span></code></pre></div>
 <p>Load packages</p>
-<pre class="r"><code>library(tidyverse)
-library(knitr)
-library(foreach)
-library(magrittr)
-library(DT)
-library(kableExtra)
-library(diptest)
-library(SummarizedExperiment)
-library(openxlsx)
-
-library(ggridges)
-library(ggh4x)
-library(patchwork)
-library(colorblindr)
-library(ggbeeswarm)
-library(ggpubr)
-
-library(MAGeCKFlute)</code></pre>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="fu">library</span>(foreach)</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="fu">library</span>(magrittr)</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="fu">library</span>(DT)</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="fu">library</span>(kableExtra)</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="fu">library</span>(diptest)</span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a><span class="fu">library</span>(SummarizedExperiment)</span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="fu">library</span>(openxlsx)</span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a><span class="fu">library</span>(ggridges)</span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a><span class="fu">library</span>(ggh4x)</span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a><span class="fu">library</span>(patchwork)</span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a><span class="fu">library</span>(colorblindr)</span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a><span class="fu">library</span>(ggbeeswarm)</span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a><span class="fu">library</span>(ggpubr)</span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a></span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a><span class="fu">library</span>(MAGeCKFlute)</span></code></pre></div>
 <p>Load ggplot theme</p>
-<pre class="r"><code>source(&quot;./configuration/rmarkdown/ggplot_theme.R&quot;)</code></pre>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;./configuration/rmarkdown/ggplot_theme.R&quot;</span>)</span></code></pre></div>
 <p>Load ggplot theme</p>
-<pre class="r"><code>source(&quot;./configuration/rmarkdown/color_palettes.R&quot;)</code></pre>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;./configuration/rmarkdown/color_palettes.R&quot;</span>)</span></code></pre></div>
 <p>Load Summarized Experiment object</p>
-<pre class="r"><code>se &lt;- readRDS(file.path(params$data_dir, &#39;se.rds&#39;))</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>se <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="fu">file.path</span>(params<span class="sc">$</span>data_dir, <span class="st">&#39;se.rds&#39;</span>))</span></code></pre></div>
 <p>Filter samples used for this analysis</p>
-<pre class="r"><code>use_cols &lt;- colData(se) %&gt;% 
-  data.frame %&gt;% 
-  rownames
-
-se &lt;- se[,use_cols]</code></pre>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>use_cols <span class="ot">&lt;-</span> <span class="fu">colData</span>(se) <span class="sc">%&gt;%</span> </span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>  data.frame <span class="sc">%&gt;%</span> </span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>  rownames</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>se <span class="ot">&lt;-</span> se[,use_cols]</span></code></pre></div>
 <p>Data wrangling</p>
-<pre class="r"><code>chunk_colData &lt;- colData(se) %&gt;% data.frame %&gt;%
-  mutate(
-    vector_short = ifelse(vector_short == &#39;Puro_EF1alpha_SpCas9&#39;, 
-                          &#39;Cas9+Puro&#39;, vector_short),
-    vector_short = ifelse(vector_short == &#39;Puro+ dCas9&#39;, 
-                          &#39;Cas9+Puro&#39;, vector_short),
-    vector_short = factor(vector_short, levels = c(&#39;Thy1&#39;, &#39;Puro&#39;, &#39;Cas9+Puro&#39;)),
-    mouse_model_short = case_match(mouse_model_global,
-                                   &#39;immunodeficient&#39; ~ &#39;NSG&#39;,
-                                   &#39;immunocompetent&#39; ~ &#39;Syngeneic&#39;,
-                                   &#39;C57BL6&#39; ~ &#39;Syngeneic&#39;
-                                   ),
-    mouse_model_short = factor(mouse_model_short, levels = c(&#39;NSG&#39;, &#39;Syngeneic&#39;)),
-    vector_mhost = paste0(vector_short, &#39;, &#39;, mouse_model_short),
-    model_vector_mhost = paste0(donor,&#39;, &#39;, vector_short, &#39;, &#39;, mouse_model_short),
-    sample_type = ifelse(cancer_type %in% c(&#39;Breast&#39;, &#39;CRC&#39;),
-                         case_match(sample_type, 
-                             &#39;whole_tumor&#39; ~ &#39;Primary tumor&#39;, 
-                             &#39;whole_lung&#39; ~ &#39;Lung mets&#39;,
-                             &#39;bulk&#39; ~ &#39;Bulk&#39;,
-                             &#39;cell_culture&#39; ~ &#39;Cell culture&#39;),
-                         sample_type
-                         ),
-        sample_type = ifelse(cancer_type %in% c(&#39;NSCLC&#39;),
-                         case_match(sample_type, 
-                             &#39;met_liver&#39; ~ &#39;Liver mets&#39;, 
-                             &#39;whole_lung&#39; ~ &#39;Primary tumor&#39;,
-                             &#39;bulk&#39; ~ &#39;Bulk&#39;,
-                             &#39;cell_culture&#39; ~ &#39;Cell culture&#39;),
-                         sample_type
-                         ),
-    
-    sample_type = factor(sample_type, levels = c(&#39;Primary tumor&#39;, &#39;Lung mets&#39;, &#39;Liver mets&#39;, &#39;Bulk&#39;, &#39;Cell culture&#39;))
-    
-  )
-
-colData(se) &lt;- chunk_colData %&gt;% DataFrame</code></pre>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>chunk_colData <span class="ot">&lt;-</span> <span class="fu">colData</span>(se) <span class="sc">%&gt;%</span> data.frame <span class="sc">%&gt;%</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>    <span class="at">vector_short =</span> <span class="fu">ifelse</span>(vector_short <span class="sc">==</span> <span class="st">&#39;Puro_EF1alpha_SpCas9&#39;</span>, </span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>                          <span class="st">&#39;Cas9+Puro&#39;</span>, vector_short),</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>    <span class="at">vector_short =</span> <span class="fu">ifelse</span>(vector_short <span class="sc">==</span> <span class="st">&#39;Puro+ dCas9&#39;</span>, </span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>                          <span class="st">&#39;Cas9+Puro&#39;</span>, vector_short),</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>    <span class="at">vector_short =</span> <span class="fu">factor</span>(vector_short, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&#39;Thy1&#39;</span>, <span class="st">&#39;Puro&#39;</span>, <span class="st">&#39;Cas9+Puro&#39;</span>)),</span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>    <span class="at">mouse_model_short =</span> <span class="fu">case_match</span>(mouse_model_global,</span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>                                   <span class="st">&#39;immunodeficient&#39;</span> <span class="sc">~</span> <span class="st">&#39;NSG&#39;</span>,</span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a>                                   <span class="st">&#39;immunocompetent&#39;</span> <span class="sc">~</span> <span class="st">&#39;Syngeneic&#39;</span>,</span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a>                                   <span class="st">&#39;C57BL6&#39;</span> <span class="sc">~</span> <span class="st">&#39;Syngeneic&#39;</span></span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a>                                   ),</span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a>    <span class="at">mouse_model_short =</span> <span class="fu">factor</span>(mouse_model_short, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&#39;NSG&#39;</span>, <span class="st">&#39;Syngeneic&#39;</span>)),</span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a>    <span class="at">vector_mhost =</span> <span class="fu">paste0</span>(vector_short, <span class="st">&#39;, &#39;</span>, mouse_model_short),</span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a>    <span class="at">model_vector_mhost =</span> <span class="fu">paste0</span>(donor,<span class="st">&#39;, &#39;</span>, vector_short, <span class="st">&#39;, &#39;</span>, mouse_model_short),</span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a>    <span class="at">sample_type =</span> <span class="fu">ifelse</span>(cancer_type <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&#39;Breast&#39;</span>, <span class="st">&#39;CRC&#39;</span>),</span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a>                         <span class="fu">case_match</span>(sample_type, </span>
+<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a>                             <span class="st">&#39;whole_tumor&#39;</span> <span class="sc">~</span> <span class="st">&#39;Primary tumor&#39;</span>, </span>
+<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a>                             <span class="st">&#39;whole_lung&#39;</span> <span class="sc">~</span> <span class="st">&#39;Lung mets&#39;</span>,</span>
+<span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a>                             <span class="st">&#39;bulk&#39;</span> <span class="sc">~</span> <span class="st">&#39;Bulk&#39;</span>,</span>
+<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a>                             <span class="st">&#39;cell_culture&#39;</span> <span class="sc">~</span> <span class="st">&#39;Cell culture&#39;</span>),</span>
+<span id="cb7-22"><a href="#cb7-22" tabindex="-1"></a>                         sample_type</span>
+<span id="cb7-23"><a href="#cb7-23" tabindex="-1"></a>                         ),</span>
+<span id="cb7-24"><a href="#cb7-24" tabindex="-1"></a>        <span class="at">sample_type =</span> <span class="fu">ifelse</span>(cancer_type <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&#39;NSCLC&#39;</span>),</span>
+<span id="cb7-25"><a href="#cb7-25" tabindex="-1"></a>                         <span class="fu">case_match</span>(sample_type, </span>
+<span id="cb7-26"><a href="#cb7-26" tabindex="-1"></a>                             <span class="st">&#39;met_liver&#39;</span> <span class="sc">~</span> <span class="st">&#39;Liver mets&#39;</span>, </span>
+<span id="cb7-27"><a href="#cb7-27" tabindex="-1"></a>                             <span class="st">&#39;whole_lung&#39;</span> <span class="sc">~</span> <span class="st">&#39;Primary tumor&#39;</span>,</span>
+<span id="cb7-28"><a href="#cb7-28" tabindex="-1"></a>                             <span class="st">&#39;bulk&#39;</span> <span class="sc">~</span> <span class="st">&#39;Bulk&#39;</span>,</span>
+<span id="cb7-29"><a href="#cb7-29" tabindex="-1"></a>                             <span class="st">&#39;cell_culture&#39;</span> <span class="sc">~</span> <span class="st">&#39;Cell culture&#39;</span>),</span>
+<span id="cb7-30"><a href="#cb7-30" tabindex="-1"></a>                         sample_type</span>
+<span id="cb7-31"><a href="#cb7-31" tabindex="-1"></a>                         ),</span>
+<span id="cb7-32"><a href="#cb7-32" tabindex="-1"></a>    </span>
+<span id="cb7-33"><a href="#cb7-33" tabindex="-1"></a>    <span class="at">sample_type =</span> <span class="fu">factor</span>(sample_type, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&#39;Primary tumor&#39;</span>, <span class="st">&#39;Lung mets&#39;</span>, <span class="st">&#39;Liver mets&#39;</span>, <span class="st">&#39;Bulk&#39;</span>, <span class="st">&#39;Cell culture&#39;</span>))</span>
+<span id="cb7-34"><a href="#cb7-34" tabindex="-1"></a>    </span>
+<span id="cb7-35"><a href="#cb7-35" tabindex="-1"></a>  )</span>
+<span id="cb7-36"><a href="#cb7-36" tabindex="-1"></a></span>
+<span id="cb7-37"><a href="#cb7-37" tabindex="-1"></a><span class="fu">colData</span>(se) <span class="ot">&lt;-</span> chunk_colData <span class="sc">%&gt;%</span> DataFrame</span></code></pre></div>
 </div>
-<div id="configure-analyses" class="section level2" number="2">
-<h2><span class="header-section-number">2</span> Configure analyses</h2>
-<div id="mageck-analysis" class="section level3" number="2.1">
-<h3><span class="header-section-number">2.1</span> MAGeCK analysis</h3>
-<div id="list-of-comparisons" class="section level4" number="2.1.1">
-<h4><span class="header-section-number">2.1.1</span> List of
-comparisons</h4>
+<div id="configure-analyses" class="section level2">
+<h2>Configure analyses</h2>
+<div id="mageck-analysis" class="section level3">
+<h3>MAGeCK analysis</h3>
+<div id="list-of-comparisons" class="section level4">
+<h4>List of comparisons</h4>
 <p>List of comparisons for differential abundance using MAGeCK, using
 Mets over Primary tumor</p>
-<pre class="r"><code>x &lt;- colData(se) %&gt;% data.frame
-mageck_comp_list &lt;- list(
-  `StealTHY KO Syngeneic CMT167` = list(
-    `Liver mets` = x %&gt;% filter(vector_mmodel == &#39;CMT167-KO-Thy1-C57BL6&#39; &amp; sample_type == &#39;Liver mets&#39; ) %&gt;% pull(sample_alias),
-    `Primary tumor` = x %&gt;% filter(vector_mmodel == &#39;CMT167-KO-Thy1-C57BL6&#39; &amp; sample_type == &#39;Primary tumor&#39; ) %&gt;% pull(sample_alias)
-    ),
-  `StealTHY KO Syngeneic LLC1` = list(
-    `Liver mets` = x %&gt;% filter(vector_mmodel == &#39;LLC1-KO-Thy1-C57BL6&#39; &amp; sample_type == &#39;Liver mets&#39; ) %&gt;% pull(sample_alias),
-    `Primary tumor` = x %&gt;% filter(vector_mmodel == &#39;LLC1-KO-Thy1-C57BL6&#39; &amp; sample_type == &#39;Primary tumor&#39; ) %&gt;% pull(sample_alias)
-    ),
-  `StealTHY KO Syngeneic CT26` = list(
-    `Liver mets` = x %&gt;% filter(vector_mmodel == &#39;CT26-KO-Thy1-BALB&#39; &amp; sample_type == &#39;Lung mets&#39; ) %&gt;% pull(sample_alias),
-    `Primary tumor` = x %&gt;% filter(vector_mmodel == &#39;CT26-KO-Thy1-BALB&#39; &amp; sample_type == &#39;Primary tumor&#39; ) %&gt;% pull(sample_alias)
-    )
-)
-
-
-mageck_comp_list_names &lt;- names(mageck_comp_list) 
-names(mageck_comp_list_names) &lt;- names(mageck_comp_list) %&gt;% gsub(&quot; &quot;, &quot;_&quot;,.) %&gt;% tolower</code></pre>
-<pre class="r"><code>data_comp &lt;- foreach(i = names(mageck_comp_list), .combine = rbind) %do% {
-  c(
-    Comparison = i,
-    Case = paste(mageck_comp_list[[i]][[1]], collapse = &quot; &quot;),
-    Control = paste(mageck_comp_list[[i]][[2]], collapse = &quot; &quot;)
-  )
-}
-
-data_comp %&gt;% 
-  datatable(., 
-            rownames = FALSE, 
-            filter = &#39;top&#39;, 
-            caption = &#39;List of comparisons for MAGeCK analysis&#39;,
-            extensions = &#39;Buttons&#39;, 
-            options = list(
-              dom = &#39;Blfrtip&#39;,
-              buttons = c(&#39;csv&#39;, &#39;excel&#39;),
-              columnDefs = list(
-                list(width = 120, targets = 1:2)
-              )
-            )
-            )</code></pre>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">colData</span>(se) <span class="sc">%&gt;%</span> data.frame</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>mageck_comp_list <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>  <span class="st">`</span><span class="at">StealTHY KO Syngeneic CMT167</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">list</span>(</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>    <span class="st">`</span><span class="at">Liver mets</span><span class="st">`</span> <span class="ot">=</span> x <span class="sc">%&gt;%</span> <span class="fu">filter</span>(vector_mmodel <span class="sc">==</span> <span class="st">&#39;CMT167-KO-Thy1-C57BL6&#39;</span> <span class="sc">&amp;</span> sample_type <span class="sc">==</span> <span class="st">&#39;Liver mets&#39;</span> ) <span class="sc">%&gt;%</span> <span class="fu">pull</span>(sample_alias),</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>    <span class="st">`</span><span class="at">Primary tumor</span><span class="st">`</span> <span class="ot">=</span> x <span class="sc">%&gt;%</span> <span class="fu">filter</span>(vector_mmodel <span class="sc">==</span> <span class="st">&#39;CMT167-KO-Thy1-C57BL6&#39;</span> <span class="sc">&amp;</span> sample_type <span class="sc">==</span> <span class="st">&#39;Primary tumor&#39;</span> ) <span class="sc">%&gt;%</span> <span class="fu">pull</span>(sample_alias)</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>    ),</span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>  <span class="st">`</span><span class="at">StealTHY KO Syngeneic LLC1</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">list</span>(</span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>    <span class="st">`</span><span class="at">Liver mets</span><span class="st">`</span> <span class="ot">=</span> x <span class="sc">%&gt;%</span> <span class="fu">filter</span>(vector_mmodel <span class="sc">==</span> <span class="st">&#39;LLC1-KO-Thy1-C57BL6&#39;</span> <span class="sc">&amp;</span> sample_type <span class="sc">==</span> <span class="st">&#39;Liver mets&#39;</span> ) <span class="sc">%&gt;%</span> <span class="fu">pull</span>(sample_alias),</span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>    <span class="st">`</span><span class="at">Primary tumor</span><span class="st">`</span> <span class="ot">=</span> x <span class="sc">%&gt;%</span> <span class="fu">filter</span>(vector_mmodel <span class="sc">==</span> <span class="st">&#39;LLC1-KO-Thy1-C57BL6&#39;</span> <span class="sc">&amp;</span> sample_type <span class="sc">==</span> <span class="st">&#39;Primary tumor&#39;</span> ) <span class="sc">%&gt;%</span> <span class="fu">pull</span>(sample_alias)</span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>    ),</span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a>  <span class="st">`</span><span class="at">StealTHY KO Syngeneic CT26</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">list</span>(</span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a>    <span class="st">`</span><span class="at">Liver mets</span><span class="st">`</span> <span class="ot">=</span> x <span class="sc">%&gt;%</span> <span class="fu">filter</span>(vector_mmodel <span class="sc">==</span> <span class="st">&#39;CT26-KO-Thy1-BALB&#39;</span> <span class="sc">&amp;</span> sample_type <span class="sc">==</span> <span class="st">&#39;Lung mets&#39;</span> ) <span class="sc">%&gt;%</span> <span class="fu">pull</span>(sample_alias),</span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a>    <span class="st">`</span><span class="at">Primary tumor</span><span class="st">`</span> <span class="ot">=</span> x <span class="sc">%&gt;%</span> <span class="fu">filter</span>(vector_mmodel <span class="sc">==</span> <span class="st">&#39;CT26-KO-Thy1-BALB&#39;</span> <span class="sc">&amp;</span> sample_type <span class="sc">==</span> <span class="st">&#39;Primary tumor&#39;</span> ) <span class="sc">%&gt;%</span> <span class="fu">pull</span>(sample_alias)</span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a>    )</span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a>)</span>
+<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a></span>
+<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a></span>
+<span id="cb8-18"><a href="#cb8-18" tabindex="-1"></a>mageck_comp_list_names <span class="ot">&lt;-</span> <span class="fu">names</span>(mageck_comp_list) </span>
+<span id="cb8-19"><a href="#cb8-19" tabindex="-1"></a><span class="fu">names</span>(mageck_comp_list_names) <span class="ot">&lt;-</span> <span class="fu">names</span>(mageck_comp_list) <span class="sc">%&gt;%</span> <span class="fu">gsub</span>(<span class="st">&quot; &quot;</span>, <span class="st">&quot;_&quot;</span>,.) <span class="sc">%&gt;%</span> tolower</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>data_comp <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">i =</span> <span class="fu">names</span>(mageck_comp_list), <span class="at">.combine =</span> rbind) <span class="sc">%do%</span> {</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>  <span class="fu">c</span>(</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>    <span class="at">Comparison =</span> i,</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>    <span class="at">Case =</span> <span class="fu">paste</span>(mageck_comp_list[[i]][[<span class="dv">1</span>]], <span class="at">collapse =</span> <span class="st">&quot; &quot;</span>),</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>    <span class="at">Control =</span> <span class="fu">paste</span>(mageck_comp_list[[i]][[<span class="dv">2</span>]], <span class="at">collapse =</span> <span class="st">&quot; &quot;</span>)</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>  )</span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>}</span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a></span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>data_comp <span class="sc">%&gt;%</span> </span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>  <span class="fu">datatable</span>(., </span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a>            <span class="at">rownames =</span> <span class="cn">FALSE</span>, </span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a>            <span class="at">filter =</span> <span class="st">&#39;top&#39;</span>, </span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a>            <span class="at">caption =</span> <span class="st">&#39;List of comparisons for MAGeCK analysis&#39;</span>,</span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a>            <span class="at">extensions =</span> <span class="st">&#39;Buttons&#39;</span>, </span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a>            <span class="at">options =</span> <span class="fu">list</span>(</span>
+<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a>              <span class="at">dom =</span> <span class="st">&#39;Blfrtip&#39;</span>,</span>
+<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a>              <span class="at">buttons =</span> <span class="fu">c</span>(<span class="st">&#39;csv&#39;</span>, <span class="st">&#39;excel&#39;</span>),</span>
+<span id="cb9-18"><a href="#cb9-18" tabindex="-1"></a>              <span class="at">columnDefs =</span> <span class="fu">list</span>(</span>
+<span id="cb9-19"><a href="#cb9-19" tabindex="-1"></a>                <span class="fu">list</span>(<span class="at">width =</span> <span class="dv">120</span>, <span class="at">targets =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>)</span>
+<span id="cb9-20"><a href="#cb9-20" tabindex="-1"></a>              )</span>
+<span id="cb9-21"><a href="#cb9-21" tabindex="-1"></a>            )</span>
+<span id="cb9-22"><a href="#cb9-22" tabindex="-1"></a>            )</span></code></pre></div>
 <div class="datatables html-widget html-fill-item" id="htmlwidget-0e41329c1963262c826a" style="width:100%;height:auto;"></div>
 <script type="application/json" data-for="htmlwidget-0e41329c1963262c826a">{"x":{"filter":"top","vertical":false,"filterHTML":"<tr>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n  <td data-type=\"character\" style=\"vertical-align: top;\">\n    <div class=\"form-group has-feedback\" style=\"margin-bottom: auto;\">\n      <input type=\"search\" placeholder=\"All\" class=\"form-control\" style=\"width: 100%;\"/>\n      <span class=\"glyphicon glyphicon-remove-circle form-control-feedback\"><\/span>\n    <\/div>\n  <\/td>\n<\/tr>","extensions":["Buttons"],"caption":"<caption>List of comparisons for MAGeCK analysis<\/caption>","data":[["StealTHY KO Syngeneic CMT167","StealTHY KO Syngeneic LLC1","StealTHY KO Syngeneic CT26"],["C167_StealTHY_Met_1 C167_StealTHY_Met_3 C167_StealTHY_Met_4 C167_StealTHY_Met_5","LLC1_StealTHY_Met_1 LLC1_StealTHY_Met_2 LLC1_StealTHY_Met_3 LLC1_StealTHY_Met_4 LLC1_StealTHY_Met_5","ColoCT26_StealTHY_Met_1 ColoCT26_StealTHY_Met_2 Replacement_1 Replacement_3 Replacement_4bis"],["C167_StealTHY_Tum_1 C167_StealTHY_Tum_2 C167_StealTHY_Tum_3 C167_StealTHY_Tum_4 C167_StealTHY_Tum_5","LLC1_StealTHY_Tum_1 LLC1_StealTHY_Tum_2 LLC1_StealTHY_Tum_3 LLC1_StealTHY_Tum_4 LLC1_StealTHY_Tum_5","ColoCT26_StealTHY_Tum_1 ColoCT26_StealTHY_Tum_2 ColoCT26_StealTHY_Tum_3 Replacement_2 Replacement_4"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>Comparison<\/th>\n      <th>Case<\/th>\n      <th>Control<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"Blfrtip","buttons":["csv","excel"],"columnDefs":[{"width":120,"targets":[1,2]},{"name":"Comparison","targets":0},{"name":"Case","targets":1},{"name":"Control","targets":2}],"order":[],"autoWidth":false,"orderClasses":false,"orderCellsTop":true}},"evals":[],"jsHooks":[]}</script>
 </div>
-<div id="run-mageck" class="section level4" number="2.1.2">
-<h4><span class="header-section-number">2.1.2</span> Run MAGeCK</h4>
+<div id="run-mageck" class="section level4">
+<h4>Run MAGeCK</h4>
 <p>Generate MAGeCK test scripts. To generate the script files change
 <code>eval = FALSE</code> to <code>eval = TRUE</code> in the chunk
 options.</p>
 <p>The scripts must be run in the terminal, inside the path . The script
 will activate the mageck environment and run the test for each
 comparison. The results will be saved in the same directory.</p>
-<pre class="r"><code>chunk_se &lt;- se
-out_dir &lt;- file.path(params$output_dir, params$mageck_dir)
-dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
-
-# Generate count matrix
-count_mat &lt;- assay(chunk_se, &#39;counts&#39;) %&gt;% data.frame(check.names = FALSE) %&gt;% 
-  rownames_to_column(&#39;sgRNA&#39;) %&gt;% 
-  mutate(Gene = rowData(chunk_se)$Gene) %&gt;% 
-  dplyr::select(sgRNA, Gene, everything())
-write_tsv(count_mat, file = file.path(out_dir, &#39;counts.txt&#39;))
-
-# Generate list of control sgRNA IDs
-non_target_list &lt;- rownames(chunk_se) %&gt;% grep(&#39;Non_Target&#39;, ., value = T) %&gt;% data.frame
-write_tsv(non_target_list, file = file.path(out_dir, &#39;control_sgrna.txt&#39;), col_names = F)
-
-# Generate mageck commands
-res_cmd &lt;- data.frame(&#39;source activate mageckenv&#39;)
-res_cmd &lt;- foreach(i=names(mageck_comp_list), .combine = rbind) %do% {
-  paste(&#39;mageck test -k counts.txt --control-sgrna control_sgrna.txt --norm-method control -t&#39;, paste(mageck_comp_list[[i]][[1]], collapse = &#39;,&#39;),&#39;-c&#39;,  paste(mageck_comp_list[[i]][[2]], collapse = &#39;,&#39;), &#39;-n&#39;, tolower(gsub(&quot; &quot;, &quot;_&quot;, i)), &#39;\n&#39;)
-} %&gt;% data.frame()
-
-res_cmd &lt;- rbind(&#39;conda activate mageckenv&#39;, res_cmd, &#39;conda deactivate&#39;)
-write_tsv(res_cmd, file.path(out_dir, &#39;run_mageck_test.sh&#39;), col_names = FALSE)</code></pre>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>chunk_se <span class="ot">&lt;-</span> se</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>out_dir <span class="ot">&lt;-</span> <span class="fu">file.path</span>(params<span class="sc">$</span>output_dir, params<span class="sc">$</span>mageck_dir)</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="fu">dir.create</span>(out_dir, <span class="at">recursive =</span> <span class="cn">TRUE</span>, <span class="at">showWarnings =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a><span class="co"># Generate count matrix</span></span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>count_mat <span class="ot">&lt;-</span> <span class="fu">assay</span>(chunk_se, <span class="st">&#39;counts&#39;</span>) <span class="sc">%&gt;%</span> <span class="fu">data.frame</span>(<span class="at">check.names =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a>  <span class="fu">rownames_to_column</span>(<span class="st">&#39;sgRNA&#39;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Gene =</span> <span class="fu">rowData</span>(chunk_se)<span class="sc">$</span>Gene) <span class="sc">%&gt;%</span> </span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(sgRNA, Gene, <span class="fu">everything</span>())</span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a><span class="fu">write_tsv</span>(count_mat, <span class="at">file =</span> <span class="fu">file.path</span>(out_dir, <span class="st">&#39;counts.txt&#39;</span>))</span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a></span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a><span class="co"># Generate list of control sgRNA IDs</span></span>
+<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a>non_target_list <span class="ot">&lt;-</span> <span class="fu">rownames</span>(chunk_se) <span class="sc">%&gt;%</span> <span class="fu">grep</span>(<span class="st">&#39;Non_Target&#39;</span>, ., <span class="at">value =</span> T) <span class="sc">%&gt;%</span> data.frame</span>
+<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a><span class="fu">write_tsv</span>(non_target_list, <span class="at">file =</span> <span class="fu">file.path</span>(out_dir, <span class="st">&#39;control_sgrna.txt&#39;</span>), <span class="at">col_names =</span> F)</span>
+<span id="cb10-15"><a href="#cb10-15" tabindex="-1"></a></span>
+<span id="cb10-16"><a href="#cb10-16" tabindex="-1"></a><span class="co"># Generate mageck commands</span></span>
+<span id="cb10-17"><a href="#cb10-17" tabindex="-1"></a>res_cmd <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="st">&#39;source activate mageckenv&#39;</span>)</span>
+<span id="cb10-18"><a href="#cb10-18" tabindex="-1"></a>res_cmd <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">i=</span><span class="fu">names</span>(mageck_comp_list), <span class="at">.combine =</span> rbind) <span class="sc">%do%</span> {</span>
+<span id="cb10-19"><a href="#cb10-19" tabindex="-1"></a>  <span class="fu">paste</span>(<span class="st">&#39;mageck test -k counts.txt --control-sgrna control_sgrna.txt --norm-method control -t&#39;</span>, <span class="fu">paste</span>(mageck_comp_list[[i]][[<span class="dv">1</span>]], <span class="at">collapse =</span> <span class="st">&#39;,&#39;</span>),<span class="st">&#39;-c&#39;</span>,  <span class="fu">paste</span>(mageck_comp_list[[i]][[<span class="dv">2</span>]], <span class="at">collapse =</span> <span class="st">&#39;,&#39;</span>), <span class="st">&#39;-n&#39;</span>, <span class="fu">tolower</span>(<span class="fu">gsub</span>(<span class="st">&quot; &quot;</span>, <span class="st">&quot;_&quot;</span>, i)), <span class="st">&#39;</span><span class="sc">\n</span><span class="st">&#39;</span>)</span>
+<span id="cb10-20"><a href="#cb10-20" tabindex="-1"></a>} <span class="sc">%&gt;%</span> <span class="fu">data.frame</span>()</span>
+<span id="cb10-21"><a href="#cb10-21" tabindex="-1"></a></span>
+<span id="cb10-22"><a href="#cb10-22" tabindex="-1"></a>res_cmd <span class="ot">&lt;-</span> <span class="fu">rbind</span>(<span class="st">&#39;conda activate mageckenv&#39;</span>, res_cmd, <span class="st">&#39;conda deactivate&#39;</span>)</span>
+<span id="cb10-23"><a href="#cb10-23" tabindex="-1"></a><span class="fu">write_tsv</span>(res_cmd, <span class="fu">file.path</span>(out_dir, <span class="st">&#39;run_mageck_test.sh&#39;</span>), <span class="at">col_names =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
 </div>
-<div id="load-mageck-results" class="section level4" number="2.1.3">
-<h4><span class="header-section-number">2.1.3</span> Load MAGeCK
-results</h4>
-<pre class="r"><code>gene_summ_files &lt;- list.files(path = file.path(params$output_dir, params$mageck_dir), pattern = &#39;gene_summary.txt&#39;, full.names = TRUE)
-analysis_prefix &lt;- basename(gene_summ_files) %&gt;% gsub(&quot;.gene_summary.txt&quot;, &quot;&quot;, .)
-gene_summ &lt;- foreach(i = gene_summ_files) %do% read.delim(i, check.names = FALSE)
-names(gene_summ) &lt;- analysis_prefix
-
-sgrna_summ_files &lt;- list.files(path = file.path(params$output_dir, params$mageck_dir), pattern = &#39;sgrna_summary.txt&#39;, full.names = TRUE)
-analysis_prefix &lt;- basename(sgrna_summ_files) %&gt;% gsub(&quot;.sgrna_summary.txt&quot;, &quot;&quot;, .)
-sgrna_summ &lt;- foreach(i = sgrna_summ_files) %do% read.delim(i, check.names = FALSE)
-names(sgrna_summ) &lt;- analysis_prefix
-
-gene_summ_files &lt;- list.files(path = file.path(params$output_dir, params$mageck_dir), pattern = &#39;gene_summary.txt&#39;, full.names = TRUE)
-analysis_prefix &lt;- basename(gene_summ_files) %&gt;% gsub(&quot;.gene_summary.txt&quot;, &quot;&quot;, .)
-gene_summ &lt;- foreach(i = gene_summ_files) %do% read.delim(i, check.names = FALSE)
-names(gene_summ) &lt;- analysis_prefix
-
-
-gene_summ_files &lt;- list.files(path = file.path(&#39;./output/crispr/mm_2215_sgRNA&#39;, &#39;mageck_rra_expr&#39;), pattern = &#39;gene_summary.txt&#39;, full.names = TRUE)
-analysis_prefix &lt;- basename(gene_summ_files) %&gt;% gsub(&quot;.gene_summary.txt&quot;, &quot;&quot;, .)
-gene_summ_5C &lt;- foreach(i = gene_summ_files) %do% read.delim(i, check.names = FALSE)
-names(gene_summ_5C) &lt;- analysis_prefix</code></pre>
-</div>
+<div id="load-mageck-results" class="section level4">
+<h4>Load MAGeCK results</h4>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a>gene_summ_files <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="at">path =</span> <span class="fu">file.path</span>(params<span class="sc">$</span>output_dir, params<span class="sc">$</span>mageck_dir), <span class="at">pattern =</span> <span class="st">&#39;gene_summary.txt&#39;</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>analysis_prefix <span class="ot">&lt;-</span> <span class="fu">basename</span>(gene_summ_files) <span class="sc">%&gt;%</span> <span class="fu">gsub</span>(<span class="st">&quot;.gene_summary.txt&quot;</span>, <span class="st">&quot;&quot;</span>, .)</span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>gene_summ <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">i =</span> gene_summ_files) <span class="sc">%do%</span> <span class="fu">read.delim</span>(i, <span class="at">check.names =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a><span class="fu">names</span>(gene_summ) <span class="ot">&lt;-</span> analysis_prefix</span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a></span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a>sgrna_summ_files <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="at">path =</span> <span class="fu">file.path</span>(params<span class="sc">$</span>output_dir, params<span class="sc">$</span>mageck_dir), <span class="at">pattern =</span> <span class="st">&#39;sgrna_summary.txt&#39;</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a>analysis_prefix <span class="ot">&lt;-</span> <span class="fu">basename</span>(sgrna_summ_files) <span class="sc">%&gt;%</span> <span class="fu">gsub</span>(<span class="st">&quot;.sgrna_summary.txt&quot;</span>, <span class="st">&quot;&quot;</span>, .)</span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a>sgrna_summ <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">i =</span> sgrna_summ_files) <span class="sc">%do%</span> <span class="fu">read.delim</span>(i, <span class="at">check.names =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a><span class="fu">names</span>(sgrna_summ) <span class="ot">&lt;-</span> analysis_prefix</span>
+<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a></span>
+<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a>gene_summ_files <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="at">path =</span> <span class="fu">file.path</span>(params<span class="sc">$</span>output_dir, params<span class="sc">$</span>mageck_dir), <span class="at">pattern =</span> <span class="st">&#39;gene_summary.txt&#39;</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a>analysis_prefix <span class="ot">&lt;-</span> <span class="fu">basename</span>(gene_summ_files) <span class="sc">%&gt;%</span> <span class="fu">gsub</span>(<span class="st">&quot;.gene_summary.txt&quot;</span>, <span class="st">&quot;&quot;</span>, .)</span>
+<span id="cb11-13"><a href="#cb11-13" tabindex="-1"></a>gene_summ <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">i =</span> gene_summ_files) <span class="sc">%do%</span> <span class="fu">read.delim</span>(i, <span class="at">check.names =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb11-14"><a href="#cb11-14" tabindex="-1"></a><span class="fu">names</span>(gene_summ) <span class="ot">&lt;-</span> analysis_prefix</span>
+<span id="cb11-15"><a href="#cb11-15" tabindex="-1"></a></span>
+<span id="cb11-16"><a href="#cb11-16" tabindex="-1"></a></span>
+<span id="cb11-17"><a href="#cb11-17" tabindex="-1"></a>gene_summ_files <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="at">path =</span> <span class="fu">file.path</span>(<span class="st">&#39;./output/crispr/mm_2215_sgRNA&#39;</span>, <span class="st">&#39;mageck_rra_expr&#39;</span>), <span class="at">pattern =</span> <span class="st">&#39;gene_summary.txt&#39;</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb11-18"><a href="#cb11-18" tabindex="-1"></a>analysis_prefix <span class="ot">&lt;-</span> <span class="fu">basename</span>(gene_summ_files) <span class="sc">%&gt;%</span> <span class="fu">gsub</span>(<span class="st">&quot;.gene_summary.txt&quot;</span>, <span class="st">&quot;&quot;</span>, .)</span>
+<span id="cb11-19"><a href="#cb11-19" tabindex="-1"></a>gene_summ_5C <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">i =</span> gene_summ_files) <span class="sc">%do%</span> <span class="fu">read.delim</span>(i, <span class="at">check.names =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb11-20"><a href="#cb11-20" tabindex="-1"></a><span class="fu">names</span>(gene_summ_5C) <span class="ot">&lt;-</span> analysis_prefix</span></code></pre></div>
 </div>
 </div>
-<div id="download-mageck-results" class="section level2" number="3">
-<h2><span class="header-section-number">3</span> Download MAGeCK
-results</h2>
-<pre class="r"><code># File name gene summary
-rmd_file &lt;- current_input()
-if(is.null(rmd_file))
-  rmd_file &lt;- &#39;tmp&#39;
-gene_file_xlsx &lt;- file.path(&#39;./docs/file&#39;,rmd_file, &#39;mageck_gene_summary.xlsx&#39;)
-sgrna_file_xlsx &lt;- file.path(&#39;./docs/file&#39;,rmd_file, &#39;mageck_sgrna_summary.xlsx&#39;)</code></pre>
-<pre class="r"><code>for(i in names(mageck_comp_list)) {
-  i &lt;- tolower(i) %&gt;% gsub(&quot; &quot;, &quot;_&quot;,.) 
-  file_xlsx &lt;- file.path(&#39;./docs/file&#39;,rmd_file, paste0(i, &#39;_mageck_results.xlsx&#39;))
-  dir.create(dirname(file_xlsx), recursive = TRUE, showWarnings = FALSE)
-  # Generate workbook
-  wb &lt;- createWorkbook()
-  wsn &lt;- &#39;gene_summ&#39;
-  addWorksheet(wb, wsn)
-  writeData(wb, wsn, gene_summ[[i]])
-  wsn &lt;- &#39;sgrna_summ&#39;
-  addWorksheet(wb, wsn)
-  # writeData(wb, wsn, sgrna_summ[[i]])
-  # for(wsn in names(mageck_flute[[i]])) {
-  #   addWorksheet(wb, wsn)
-  #   writeData(wb, wsn, mageck_flute[[i]][[wsn]])
-  # }
-  saveWorkbook(wb, file_xlsx, TRUE)
-}</code></pre>
-<pre class="r"><code># File name gene summary
-file_xlsx &lt;- gene_file_xlsx
-dir.create(dirname(file_xlsx), recursive = TRUE, showWarnings = FALSE)
-
-# Generate workbook
-wb &lt;- createWorkbook()
-for(i in names(gene_summ)) {
-  addWorksheet(wb, i)
-  writeData(wb, i, gene_summ[[i]])
-}
-saveWorkbook(wb, file_xlsx, TRUE)
-
-# File name sgRNA summary
-file_xlsx &lt;- sgrna_file_xlsx
-dir.create(dirname(file_xlsx), recursive = TRUE, showWarnings = FALSE)
-
-# Generate workbook
-wb &lt;- createWorkbook()
-for(i in names(sgrna_summ)) {
-  addWorksheet(wb, i)
-  writeData(wb, i, sgrna_summ[[i]])
-}
-saveWorkbook(wb, file_xlsx, TRUE)</code></pre>
-<div id="overall-summaries" class="section level3" number="3.1">
-<h3><span class="header-section-number">3.1</span> Overall
-summaries</h3>
+</div>
+<div id="download-mageck-results" class="section level2">
+<h2>Download MAGeCK results</h2>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="co"># File name gene summary</span></span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>rmd_file <span class="ot">&lt;-</span> <span class="fu">current_input</span>()</span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a><span class="cf">if</span>(<span class="fu">is.null</span>(rmd_file))</span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>  rmd_file <span class="ot">&lt;-</span> <span class="st">&#39;tmp&#39;</span></span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a>gene_file_xlsx <span class="ot">&lt;-</span> <span class="fu">file.path</span>(<span class="st">&#39;./docs/file&#39;</span>,rmd_file, <span class="st">&#39;mageck_gene_summary.xlsx&#39;</span>)</span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a>sgrna_file_xlsx <span class="ot">&lt;-</span> <span class="fu">file.path</span>(<span class="st">&#39;./docs/file&#39;</span>,rmd_file, <span class="st">&#39;mageck_sgrna_summary.xlsx&#39;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="fu">names</span>(mageck_comp_list)) {</span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>  i <span class="ot">&lt;-</span> <span class="fu">tolower</span>(i) <span class="sc">%&gt;%</span> <span class="fu">gsub</span>(<span class="st">&quot; &quot;</span>, <span class="st">&quot;_&quot;</span>,.) </span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a>  file_xlsx <span class="ot">&lt;-</span> <span class="fu">file.path</span>(<span class="st">&#39;./docs/file&#39;</span>,rmd_file, <span class="fu">paste0</span>(i, <span class="st">&#39;_mageck_results.xlsx&#39;</span>))</span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>  <span class="fu">dir.create</span>(<span class="fu">dirname</span>(file_xlsx), <span class="at">recursive =</span> <span class="cn">TRUE</span>, <span class="at">showWarnings =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>  <span class="co"># Generate workbook</span></span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>  wb <span class="ot">&lt;-</span> <span class="fu">createWorkbook</span>()</span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a>  wsn <span class="ot">&lt;-</span> <span class="st">&#39;gene_summ&#39;</span></span>
+<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a>  <span class="fu">addWorksheet</span>(wb, wsn)</span>
+<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a>  <span class="fu">writeData</span>(wb, wsn, gene_summ[[i]])</span>
+<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a>  wsn <span class="ot">&lt;-</span> <span class="st">&#39;sgrna_summ&#39;</span></span>
+<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a>  <span class="fu">addWorksheet</span>(wb, wsn)</span>
+<span id="cb13-12"><a href="#cb13-12" tabindex="-1"></a>  <span class="fu">saveWorkbook</span>(wb, file_xlsx, <span class="cn">TRUE</span>)</span>
+<span id="cb13-13"><a href="#cb13-13" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="co"># File name gene summary</span></span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>file_xlsx <span class="ot">&lt;-</span> gene_file_xlsx</span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a><span class="fu">dir.create</span>(<span class="fu">dirname</span>(file_xlsx), <span class="at">recursive =</span> <span class="cn">TRUE</span>, <span class="at">showWarnings =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a><span class="co"># Generate workbook</span></span>
+<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a>wb <span class="ot">&lt;-</span> <span class="fu">createWorkbook</span>()</span>
+<span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="fu">names</span>(gene_summ)) {</span>
+<span id="cb14-8"><a href="#cb14-8" tabindex="-1"></a>  <span class="fu">addWorksheet</span>(wb, i)</span>
+<span id="cb14-9"><a href="#cb14-9" tabindex="-1"></a>  <span class="fu">writeData</span>(wb, i, gene_summ[[i]])</span>
+<span id="cb14-10"><a href="#cb14-10" tabindex="-1"></a>}</span>
+<span id="cb14-11"><a href="#cb14-11" tabindex="-1"></a><span class="fu">saveWorkbook</span>(wb, file_xlsx, <span class="cn">TRUE</span>)</span>
+<span id="cb14-12"><a href="#cb14-12" tabindex="-1"></a></span>
+<span id="cb14-13"><a href="#cb14-13" tabindex="-1"></a><span class="co"># File name sgRNA summary</span></span>
+<span id="cb14-14"><a href="#cb14-14" tabindex="-1"></a>file_xlsx <span class="ot">&lt;-</span> sgrna_file_xlsx</span>
+<span id="cb14-15"><a href="#cb14-15" tabindex="-1"></a><span class="fu">dir.create</span>(<span class="fu">dirname</span>(file_xlsx), <span class="at">recursive =</span> <span class="cn">TRUE</span>, <span class="at">showWarnings =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb14-16"><a href="#cb14-16" tabindex="-1"></a></span>
+<span id="cb14-17"><a href="#cb14-17" tabindex="-1"></a><span class="co"># Generate workbook</span></span>
+<span id="cb14-18"><a href="#cb14-18" tabindex="-1"></a>wb <span class="ot">&lt;-</span> <span class="fu">createWorkbook</span>()</span>
+<span id="cb14-19"><a href="#cb14-19" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="fu">names</span>(sgrna_summ)) {</span>
+<span id="cb14-20"><a href="#cb14-20" tabindex="-1"></a>  <span class="fu">addWorksheet</span>(wb, i)</span>
+<span id="cb14-21"><a href="#cb14-21" tabindex="-1"></a>  <span class="fu">writeData</span>(wb, i, sgrna_summ[[i]])</span>
+<span id="cb14-22"><a href="#cb14-22" tabindex="-1"></a>}</span>
+<span id="cb14-23"><a href="#cb14-23" tabindex="-1"></a><span class="fu">saveWorkbook</span>(wb, file_xlsx, <span class="cn">TRUE</span>)</span></code></pre></div>
+<div id="overall-summaries" class="section level3">
+<h3>Overall summaries</h3>
 <p>The tables of results can be downloaded using the following
 links:</p>
 <ul>
@@ -947,17 +1143,16 @@ summary results</strong></a></p></li>
 href="https://sourceforge.net/p/mageck/wiki/output/">MAGeCK
 output</a></p>
 </div>
-<div id="results-by-comparison" class="section level3" number="3.2">
-<h3><span class="header-section-number">3.2</span> Results by
-comparison</h3>
+<div id="results-by-comparison" class="section level3">
+<h3>Results by comparison</h3>
 <p>Download the results by comparison, including gene-set analysis
 level:</p>
-<pre class="r"><code>x &lt;- foreach(i=names(mageck_comp_list), .combine = c) %do% {
-  ilower &lt;- tolower(i) %&gt;% gsub(&quot; &quot;, &quot;_&quot;,.) 
-  file_xlsx &lt;- file.path(&#39;./file&#39;, rmd_file, paste0(ilower, &#39;_mageck_results.xlsx&#39;))
-  paste0(&quot;[&quot;, i, &quot;](&quot;, file_xlsx,&quot;)&quot;, sep = &quot;&quot;)
-}
-cat(paste(x, collapse = &#39; - &#39;), &quot;\n\n&quot;)</code></pre>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">i=</span><span class="fu">names</span>(mageck_comp_list), <span class="at">.combine =</span> c) <span class="sc">%do%</span> {</span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a>  ilower <span class="ot">&lt;-</span> <span class="fu">tolower</span>(i) <span class="sc">%&gt;%</span> <span class="fu">gsub</span>(<span class="st">&quot; &quot;</span>, <span class="st">&quot;_&quot;</span>,.) </span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a>  file_xlsx <span class="ot">&lt;-</span> <span class="fu">file.path</span>(<span class="st">&#39;./file&#39;</span>, rmd_file, <span class="fu">paste0</span>(ilower, <span class="st">&#39;_mageck_results.xlsx&#39;</span>))</span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">&quot;[&quot;</span>, i, <span class="st">&quot;](&quot;</span>, file_xlsx,<span class="st">&quot;)&quot;</span>, <span class="at">sep =</span> <span class="st">&quot;&quot;</span>)</span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a>}</span>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">paste</span>(x, <span class="at">collapse =</span> <span class="st">&#39; - &#39;</span>), <span class="st">&quot;</span><span class="sc">\n\n</span><span class="st">&quot;</span>)</span></code></pre></div>
 <p><a
 href="./file/crispr-mm_2215_sgRNA-CMT167-LLC1-CT26.Rmd/stealthy_ko_syngeneic_cmt167_mageck_results.xlsx">StealTHY
 KO Syngeneic CMT167</a> - <a
@@ -967,399 +1162,481 @@ href="./file/crispr-mm_2215_sgRNA-CMT167-LLC1-CT26.Rmd/stealthy_ko_syngeneic_ct2
 KO Syngeneic CT26</a></p>
 </div>
 </div>
-<div id="differential-abundance-analysis" class="section level2"
-number="4">
-<h2><span class="header-section-number">4</span> Differential abundance
-analysis</h2>
-<pre class="r"><code>gene_info &lt;- readxl::read_xlsx(&#39;./data/resources/selected_gene_list/gene_list_for_figure_5c_additional_models.xlsx&#39;)
-
-use_colors &lt;- c(
-  `Immune system cytokines and chemokines` = &#39;grey&#39;,
-  `Immune system cytokines\nand chemokines` = &#39;grey&#39;,
-  
-  `Interferone, TNF and danger/death-inducing signals` = &#39;black&#39;,
-  `Interferon, TNF\nand danger/death-inducing\nsignals` = &#39;black&#39;,
-  `Interferon, TNF and\ndanger/death-inducing\nsignals` = &#39;black&#39;,
-  
-  `TGF-β family related` = &#39;red&#39;,
-  
-  `RTK signaling` = &#39;blue&#39;,
-  `Positive controls` = &#39;black&#39;
-)
-
-use_fill &lt;- c(
-  `Immune system cytokines and chemokines` = &#39;grey&#39;,
-  `Immune system cytokines\nand chemokines` = &#39;grey&#39;,
-  
-  `Interferone, TNF and danger/death-inducing signals` = &#39;black&#39;,
-  `Interferon, TNF\nand danger/death-inducing\nsignals` = &#39;black&#39;,
-  `Interferon, TNF and\ndanger/death-inducing\nsignals` = &#39;black&#39;,
-  `TGF-β family related` = &#39;red&#39;,
-  
-  `RTK signaling` = &#39;blue&#39;,
-  `Positive controls` = &#39;white&#39;
-)
-
-use_shape &lt;- c(
-  `Immune system cytokines and chemokines` = 16,
-  `Immune system cytokines\nand chemokines` = 16,
-  
-  `Interferone, TNF and danger/death-inducing signals` = 16,
-  `Interferon, TNF\nand danger/death-inducing\nsignals` = 16,
-  `Interferon, TNF and\ndanger/death-inducing\nsignals` = 16,
-  `TGF-β family related` = 16,
-  
-  `RTK signaling` = 16,
-  `Positive controls` = 1
-)
-
-# get gene order based on Original figure
-# gene_levels &lt;- gene_summ_5C[[&#39;stealthy_ko_syngeneic&#39;]] %&gt;%
-#   ReadRRA(score = &#39;lfc&#39;) %&gt;%
-#   dplyr::rename(LFC = Score) %&gt;%
-#   left_join(gene_info, by = c(&#39;id&#39; = &#39;id&#39;)) %&gt;%
-#   filter(!is.na(gene_set)) %&gt;%
-#   mutate(gene_name = fct_reorder(gene_name, LFC, .desc = FALSE)) %&gt;%
-#   pull(gene_name) %&gt;%
-#   levels
-gene_levels &lt;- rev(gene_info$id)
-
-
-gene_levels_list &lt;- list()
-gene_levels_list[[&#39;stealthy_ko_syngeneic_llc1&#39;]] &lt;- c(
-  &quot;Pcna&quot;,
-  # &quot;Tgfb2&quot;,&quot;Gdf9&quot;,&quot;Amhr2&quot;,&quot;Tgfbr2&quot;,&quot;Gdf15&quot;,&quot;Tgfb3&quot;,&quot;Tgfbr1&quot;,
-  &quot;Amh&quot;, &quot;Amhr2&quot;,  &quot;Tgfbr2&quot;, &quot;Acvr2b&quot;, &quot;Gdf15&quot;, &quot;Tgfb3&quot;, &quot;Tgfbr1&quot;,
-  # &quot;Met&quot;,&quot;Igf2r&quot;,&quot;Igf1r&quot;,&quot;Egfr&quot;,&quot;Axl&quot;,&quot;Gas6&quot;, &quot;Erbb3&quot;,&quot;Erbb2&quot;,&quot;Egf&quot;,
-  &quot;Mertk&quot;, &quot;Igf2r&quot;, &quot;Angpt2&quot;, &quot;Igf1r&quot;, &quot;Egfr&quot;, &quot;Axl&quot;, &quot;Gas6&quot;,
-  &quot;Plk1&quot;,&quot;Trim72&quot;,
-  &quot;Cd30&quot;,&quot;Ifnlr1&quot;,&quot;Ifnar1&quot;,&quot;Trail&quot;,&quot;Ifne&quot;,&quot;Lta&quot;,&quot;Ltbr&quot;,&quot;Tnfr2&quot;,&quot;Light&quot;, 
-  &quot;Ccl25&quot;,&quot;Cxcl9&quot;,&quot;Ccrl2&quot;,&quot;Cxcr5&quot;,&quot;Ccr6&quot;,&quot;Ccr4&quot;,&quot;Relt&quot;, &quot;Il18ra1&quot;, &quot;Il13ra2&quot;, &quot;Il13ra1&quot;, &quot;Il18&quot;,&quot;Cxcl4&quot;,&quot;Ccl4&quot;,&quot;Cxcl14&quot;
-  )
-
-gene_levels_list[[&#39;stealthy_ko_syngeneic_ct26&#39;]] &lt;- c(
-  &quot;Pcna&quot;,
-  # &quot;Amhr2&quot;,&quot;Gdf9&quot;,&quot;Tgfbr1&quot;,&quot;Tgfbr2&quot;,&quot;Tgfb2&quot;,&quot;Gdf15&quot;,&quot;Tgfb3&quot;,
-  &#39;Amhr2&#39;, &#39;Amh&#39;, &#39;Gdf15&#39;, &#39;Tgfbr2&#39;, &#39;Gdf9&#39;, &#39;Acvr1b&#39;, &#39;Tgfbr1&#39;,
-  # &quot;Met&quot;,&quot;Igf1r&quot;,&quot;Igf2r&quot;,&quot;Egfr&quot;,&quot;Axl&quot;,&quot;Erbb3&quot;,&quot;Erbb2&quot;,&quot;Egf&quot;,&quot;Gas6&quot;,
-  &#39;Axl&#39;, &#39;Egfr&#39;, &#39;Erbb3&#39;, &#39;Igf2r&#39;, &#39;Mertk&#39;, &#39;Gas6&#39;, &#39;Met&#39;,
-  &quot;Plk1&quot;,&quot;Trim72&quot;,
-  &quot;Cd30&quot;,&quot;Ifnlr1&quot;,&quot;Ifnar1&quot;,&quot;Trail&quot;,&quot;Ifne&quot;,&quot;Lta&quot;,&quot;Ltbr&quot;,&quot;Tnfr2&quot;,&quot;Light&quot;, 
-  &quot;Ccl25&quot;,&quot;Cxcl9&quot;,&quot;Ccrl2&quot;,&quot;Cxcr5&quot;,&quot;Ccr6&quot;,&quot;Ccr4&quot;,&quot;Relt&quot;, &quot;Il18ra1&quot;, &quot;Il13ra2&quot;, &quot;Il13ra1&quot;, &quot;Il18&quot;,&quot;Cxcl4&quot;,&quot;Ccl4&quot;,&quot;Cxcl14&quot;
-  )
-
-gene_levels_list[[&#39;stealthy_ko_syngeneic_cmt167&#39;]]  &lt;- c(
-  &quot;Pcna&quot;,
-  # &quot;Amhr2&quot;,&quot;Gdf9&quot;,&quot;Tgfbr2&quot;,&quot;Tgfbr1&quot;,&quot;Tgfb2&quot;,&quot;Gdf15&quot;,&quot;Tgfb3&quot;,
-  &#39;Amhr2&#39;, &#39;Amh&#39;, &#39;Gdf9&#39;, &#39;Acvr1b&#39;, &#39;Acvr1&#39;, &#39;Tgfbr2&#39;, &#39;Tgfbr1&#39;,
-  # &quot;Met&quot;,&quot;Igf1r&quot;,&quot;Igf2r&quot;,&quot;Egfr&quot;,&quot;Axl&quot;,&quot;Erbb3&quot;,&quot;Erbb2&quot;,&quot;Egf&quot;,&quot;Gas6&quot;,
-  &#39;Met&#39;, &#39;Igf1r&#39;, &#39;Igf2r&#39;, &#39;Egfr&#39;, &#39;Mertk&#39;, &#39;Axl&#39;, &#39;Angpt2&#39;,
-  &quot;Plk1&quot;,&quot;Trim72&quot;,
-  &quot;Cd30&quot;,&quot;Ifnlr1&quot;,&quot;Ifnar1&quot;,&quot;Trail&quot;,&quot;Ifne&quot;,&quot;Lta&quot;,&quot;Ltbr&quot;,&quot;Tnfr2&quot;,&quot;Light&quot;,
-  &quot;Ccl25&quot;,&quot;Cxcl9&quot;,&quot;Ccrl2&quot;,&quot;Cxcr5&quot;,&quot;Ccr6&quot;,&quot;Ccr4&quot;,&quot;Relt&quot;, &quot;Il18ra1&quot;, &quot;Il13ra2&quot;, &quot;Il13ra1&quot;, &quot;Il18&quot;,&quot;Cxcl4&quot;,&quot;Ccl4&quot;,&quot;Cxcl14&quot;
-  )</code></pre>
+<div id="differential-abundance-analysis" class="section level2">
+<h2>Differential abundance analysis</h2>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>gene_info <span class="ot">&lt;-</span> readxl<span class="sc">::</span><span class="fu">read_xlsx</span>(<span class="st">&#39;./data/resources/selected_gene_list/gene_list_for_figure_5c_additional_models.xlsx&#39;</span>)</span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a>use_colors <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a>  <span class="st">`</span><span class="at">Immune system cytokines and chemokines</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&#39;grey&#39;</span>,</span>
+<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a>  <span class="st">`</span><span class="at">Immune system cytokines</span><span class="sc">\n</span><span class="at">and chemokines</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&#39;grey&#39;</span>,</span>
+<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a>  </span>
+<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a>  <span class="st">`</span><span class="at">Interferone, TNF and danger/death-inducing signals</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&#39;black&#39;</span>,</span>
+<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a>  <span class="st">`</span><span class="at">Interferon, TNF</span><span class="sc">\n</span><span class="at">and danger/death-inducing</span><span class="sc">\n</span><span class="at">signals</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&#39;black&#39;</span>,</span>
+<span id="cb16-9"><a href="#cb16-9" tabindex="-1"></a>  <span class="st">`</span><span class="at">Interferon, TNF and</span><span class="sc">\n</span><span class="at">danger/death-inducing</span><span class="sc">\n</span><span class="at">signals</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&#39;black&#39;</span>,</span>
+<span id="cb16-10"><a href="#cb16-10" tabindex="-1"></a>  </span>
+<span id="cb16-11"><a href="#cb16-11" tabindex="-1"></a>  <span class="st">`</span><span class="at">TGF-β family related</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&#39;red&#39;</span>,</span>
+<span id="cb16-12"><a href="#cb16-12" tabindex="-1"></a>  </span>
+<span id="cb16-13"><a href="#cb16-13" tabindex="-1"></a>  <span class="st">`</span><span class="at">RTK signaling</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&#39;blue&#39;</span>,</span>
+<span id="cb16-14"><a href="#cb16-14" tabindex="-1"></a>  <span class="st">`</span><span class="at">Positive controls</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&#39;black&#39;</span></span>
+<span id="cb16-15"><a href="#cb16-15" tabindex="-1"></a>)</span>
+<span id="cb16-16"><a href="#cb16-16" tabindex="-1"></a></span>
+<span id="cb16-17"><a href="#cb16-17" tabindex="-1"></a>use_fill <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb16-18"><a href="#cb16-18" tabindex="-1"></a>  <span class="st">`</span><span class="at">Immune system cytokines and chemokines</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&#39;grey&#39;</span>,</span>
+<span id="cb16-19"><a href="#cb16-19" tabindex="-1"></a>  <span class="st">`</span><span class="at">Immune system cytokines</span><span class="sc">\n</span><span class="at">and chemokines</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&#39;grey&#39;</span>,</span>
+<span id="cb16-20"><a href="#cb16-20" tabindex="-1"></a>  </span>
+<span id="cb16-21"><a href="#cb16-21" tabindex="-1"></a>  <span class="st">`</span><span class="at">Interferone, TNF and danger/death-inducing signals</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&#39;black&#39;</span>,</span>
+<span id="cb16-22"><a href="#cb16-22" tabindex="-1"></a>  <span class="st">`</span><span class="at">Interferon, TNF</span><span class="sc">\n</span><span class="at">and danger/death-inducing</span><span class="sc">\n</span><span class="at">signals</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&#39;black&#39;</span>,</span>
+<span id="cb16-23"><a href="#cb16-23" tabindex="-1"></a>  <span class="st">`</span><span class="at">Interferon, TNF and</span><span class="sc">\n</span><span class="at">danger/death-inducing</span><span class="sc">\n</span><span class="at">signals</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&#39;black&#39;</span>,</span>
+<span id="cb16-24"><a href="#cb16-24" tabindex="-1"></a>  <span class="st">`</span><span class="at">TGF-β family related</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&#39;red&#39;</span>,</span>
+<span id="cb16-25"><a href="#cb16-25" tabindex="-1"></a>  </span>
+<span id="cb16-26"><a href="#cb16-26" tabindex="-1"></a>  <span class="st">`</span><span class="at">RTK signaling</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&#39;blue&#39;</span>,</span>
+<span id="cb16-27"><a href="#cb16-27" tabindex="-1"></a>  <span class="st">`</span><span class="at">Positive controls</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&#39;white&#39;</span></span>
+<span id="cb16-28"><a href="#cb16-28" tabindex="-1"></a>)</span>
+<span id="cb16-29"><a href="#cb16-29" tabindex="-1"></a></span>
+<span id="cb16-30"><a href="#cb16-30" tabindex="-1"></a>use_shape <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb16-31"><a href="#cb16-31" tabindex="-1"></a>  <span class="st">`</span><span class="at">Immune system cytokines and chemokines</span><span class="st">`</span> <span class="ot">=</span> <span class="dv">16</span>,</span>
+<span id="cb16-32"><a href="#cb16-32" tabindex="-1"></a>  <span class="st">`</span><span class="at">Immune system cytokines</span><span class="sc">\n</span><span class="at">and chemokines</span><span class="st">`</span> <span class="ot">=</span> <span class="dv">16</span>,</span>
+<span id="cb16-33"><a href="#cb16-33" tabindex="-1"></a>  </span>
+<span id="cb16-34"><a href="#cb16-34" tabindex="-1"></a>  <span class="st">`</span><span class="at">Interferone, TNF and danger/death-inducing signals</span><span class="st">`</span> <span class="ot">=</span> <span class="dv">16</span>,</span>
+<span id="cb16-35"><a href="#cb16-35" tabindex="-1"></a>  <span class="st">`</span><span class="at">Interferon, TNF</span><span class="sc">\n</span><span class="at">and danger/death-inducing</span><span class="sc">\n</span><span class="at">signals</span><span class="st">`</span> <span class="ot">=</span> <span class="dv">16</span>,</span>
+<span id="cb16-36"><a href="#cb16-36" tabindex="-1"></a>  <span class="st">`</span><span class="at">Interferon, TNF and</span><span class="sc">\n</span><span class="at">danger/death-inducing</span><span class="sc">\n</span><span class="at">signals</span><span class="st">`</span> <span class="ot">=</span> <span class="dv">16</span>,</span>
+<span id="cb16-37"><a href="#cb16-37" tabindex="-1"></a>  <span class="st">`</span><span class="at">TGF-β family related</span><span class="st">`</span> <span class="ot">=</span> <span class="dv">16</span>,</span>
+<span id="cb16-38"><a href="#cb16-38" tabindex="-1"></a>  </span>
+<span id="cb16-39"><a href="#cb16-39" tabindex="-1"></a>  <span class="st">`</span><span class="at">RTK signaling</span><span class="st">`</span> <span class="ot">=</span> <span class="dv">16</span>,</span>
+<span id="cb16-40"><a href="#cb16-40" tabindex="-1"></a>  <span class="st">`</span><span class="at">Positive controls</span><span class="st">`</span> <span class="ot">=</span> <span class="dv">1</span></span>
+<span id="cb16-41"><a href="#cb16-41" tabindex="-1"></a>)</span>
+<span id="cb16-42"><a href="#cb16-42" tabindex="-1"></a></span>
+<span id="cb16-43"><a href="#cb16-43" tabindex="-1"></a></span>
+<span id="cb16-44"><a href="#cb16-44" tabindex="-1"></a>gene_levels <span class="ot">&lt;-</span> <span class="fu">rev</span>(gene_info<span class="sc">$</span>id)</span>
+<span id="cb16-45"><a href="#cb16-45" tabindex="-1"></a></span>
+<span id="cb16-46"><a href="#cb16-46" tabindex="-1"></a></span>
+<span id="cb16-47"><a href="#cb16-47" tabindex="-1"></a>gene_levels_list <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb16-48"><a href="#cb16-48" tabindex="-1"></a>gene_levels_list[[<span class="st">&#39;stealthy_ko_syngeneic_llc1&#39;</span>]] <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb16-49"><a href="#cb16-49" tabindex="-1"></a>  <span class="st">&quot;Pcna&quot;</span>,</span>
+<span id="cb16-50"><a href="#cb16-50" tabindex="-1"></a>  <span class="st">&quot;Amh&quot;</span>, <span class="st">&quot;Amhr2&quot;</span>,  <span class="st">&quot;Tgfbr2&quot;</span>, <span class="st">&quot;Acvr2b&quot;</span>, <span class="st">&quot;Gdf15&quot;</span>, <span class="st">&quot;Tgfb3&quot;</span>, <span class="st">&quot;Tgfbr1&quot;</span>,</span>
+<span id="cb16-51"><a href="#cb16-51" tabindex="-1"></a>  <span class="st">&quot;Mertk&quot;</span>, <span class="st">&quot;Igf2r&quot;</span>, <span class="st">&quot;Angpt2&quot;</span>, <span class="st">&quot;Igf1r&quot;</span>, <span class="st">&quot;Egfr&quot;</span>, <span class="st">&quot;Axl&quot;</span>, <span class="st">&quot;Gas6&quot;</span>,</span>
+<span id="cb16-52"><a href="#cb16-52" tabindex="-1"></a>  <span class="st">&quot;Plk1&quot;</span>,<span class="st">&quot;Trim72&quot;</span>,</span>
+<span id="cb16-53"><a href="#cb16-53" tabindex="-1"></a>  <span class="st">&quot;Cd30&quot;</span>,<span class="st">&quot;Ifnlr1&quot;</span>,<span class="st">&quot;Ifnar1&quot;</span>,<span class="st">&quot;Trail&quot;</span>,<span class="st">&quot;Ifne&quot;</span>,<span class="st">&quot;Lta&quot;</span>,<span class="st">&quot;Ltbr&quot;</span>,<span class="st">&quot;Tnfr2&quot;</span>,<span class="st">&quot;Light&quot;</span>, </span>
+<span id="cb16-54"><a href="#cb16-54" tabindex="-1"></a>  <span class="st">&quot;Ccl25&quot;</span>,<span class="st">&quot;Cxcl9&quot;</span>,<span class="st">&quot;Ccrl2&quot;</span>,<span class="st">&quot;Cxcr5&quot;</span>,<span class="st">&quot;Ccr6&quot;</span>,<span class="st">&quot;Ccr4&quot;</span>,<span class="st">&quot;Relt&quot;</span>, <span class="st">&quot;Il18ra1&quot;</span>, <span class="st">&quot;Il13ra2&quot;</span>, <span class="st">&quot;Il13ra1&quot;</span>, <span class="st">&quot;Il18&quot;</span>,<span class="st">&quot;Cxcl4&quot;</span>,<span class="st">&quot;Ccl4&quot;</span>,<span class="st">&quot;Cxcl14&quot;</span></span>
+<span id="cb16-55"><a href="#cb16-55" tabindex="-1"></a>  )</span>
+<span id="cb16-56"><a href="#cb16-56" tabindex="-1"></a></span>
+<span id="cb16-57"><a href="#cb16-57" tabindex="-1"></a>gene_levels_list[[<span class="st">&#39;stealthy_ko_syngeneic_ct26&#39;</span>]] <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb16-58"><a href="#cb16-58" tabindex="-1"></a>  <span class="st">&quot;Pcna&quot;</span>,</span>
+<span id="cb16-59"><a href="#cb16-59" tabindex="-1"></a>  <span class="st">&#39;Amhr2&#39;</span>, <span class="st">&#39;Amh&#39;</span>, <span class="st">&#39;Gdf15&#39;</span>, <span class="st">&#39;Tgfbr2&#39;</span>, <span class="st">&#39;Gdf9&#39;</span>, <span class="st">&#39;Acvr1b&#39;</span>, <span class="st">&#39;Tgfbr1&#39;</span>,</span>
+<span id="cb16-60"><a href="#cb16-60" tabindex="-1"></a>  <span class="st">&#39;Axl&#39;</span>, <span class="st">&#39;Egfr&#39;</span>, <span class="st">&#39;Erbb3&#39;</span>, <span class="st">&#39;Igf2r&#39;</span>, <span class="st">&#39;Mertk&#39;</span>, <span class="st">&#39;Gas6&#39;</span>, <span class="st">&#39;Met&#39;</span>,</span>
+<span id="cb16-61"><a href="#cb16-61" tabindex="-1"></a>  <span class="st">&quot;Plk1&quot;</span>,<span class="st">&quot;Trim72&quot;</span>,</span>
+<span id="cb16-62"><a href="#cb16-62" tabindex="-1"></a>  <span class="st">&quot;Cd30&quot;</span>,<span class="st">&quot;Ifnlr1&quot;</span>,<span class="st">&quot;Ifnar1&quot;</span>,<span class="st">&quot;Trail&quot;</span>,<span class="st">&quot;Ifne&quot;</span>,<span class="st">&quot;Lta&quot;</span>,<span class="st">&quot;Ltbr&quot;</span>,<span class="st">&quot;Tnfr2&quot;</span>,<span class="st">&quot;Light&quot;</span>, </span>
+<span id="cb16-63"><a href="#cb16-63" tabindex="-1"></a>  <span class="st">&quot;Ccl25&quot;</span>,<span class="st">&quot;Cxcl9&quot;</span>,<span class="st">&quot;Ccrl2&quot;</span>,<span class="st">&quot;Cxcr5&quot;</span>,<span class="st">&quot;Ccr6&quot;</span>,<span class="st">&quot;Ccr4&quot;</span>,<span class="st">&quot;Relt&quot;</span>, <span class="st">&quot;Il18ra1&quot;</span>, <span class="st">&quot;Il13ra2&quot;</span>, <span class="st">&quot;Il13ra1&quot;</span>, <span class="st">&quot;Il18&quot;</span>,<span class="st">&quot;Cxcl4&quot;</span>,<span class="st">&quot;Ccl4&quot;</span>,<span class="st">&quot;Cxcl14&quot;</span></span>
+<span id="cb16-64"><a href="#cb16-64" tabindex="-1"></a>  )</span>
+<span id="cb16-65"><a href="#cb16-65" tabindex="-1"></a></span>
+<span id="cb16-66"><a href="#cb16-66" tabindex="-1"></a>gene_levels_list[[<span class="st">&#39;stealthy_ko_syngeneic_cmt167&#39;</span>]]  <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb16-67"><a href="#cb16-67" tabindex="-1"></a>  <span class="st">&quot;Pcna&quot;</span>,</span>
+<span id="cb16-68"><a href="#cb16-68" tabindex="-1"></a>  <span class="st">&#39;Amhr2&#39;</span>, <span class="st">&#39;Amh&#39;</span>, <span class="st">&#39;Gdf9&#39;</span>, <span class="st">&#39;Acvr1b&#39;</span>, <span class="st">&#39;Acvr1&#39;</span>, <span class="st">&#39;Tgfbr2&#39;</span>, <span class="st">&#39;Tgfbr1&#39;</span>,</span>
+<span id="cb16-69"><a href="#cb16-69" tabindex="-1"></a>  <span class="st">&#39;Met&#39;</span>, <span class="st">&#39;Igf1r&#39;</span>, <span class="st">&#39;Igf2r&#39;</span>, <span class="st">&#39;Egfr&#39;</span>, <span class="st">&#39;Mertk&#39;</span>, <span class="st">&#39;Axl&#39;</span>, <span class="st">&#39;Angpt2&#39;</span>,</span>
+<span id="cb16-70"><a href="#cb16-70" tabindex="-1"></a>  <span class="st">&quot;Plk1&quot;</span>,<span class="st">&quot;Trim72&quot;</span>,</span>
+<span id="cb16-71"><a href="#cb16-71" tabindex="-1"></a>  <span class="st">&quot;Cd30&quot;</span>,<span class="st">&quot;Ifnlr1&quot;</span>,<span class="st">&quot;Ifnar1&quot;</span>,<span class="st">&quot;Trail&quot;</span>,<span class="st">&quot;Ifne&quot;</span>,<span class="st">&quot;Lta&quot;</span>,<span class="st">&quot;Ltbr&quot;</span>,<span class="st">&quot;Tnfr2&quot;</span>,<span class="st">&quot;Light&quot;</span>,</span>
+<span id="cb16-72"><a href="#cb16-72" tabindex="-1"></a>  <span class="st">&quot;Ccl25&quot;</span>,<span class="st">&quot;Cxcl9&quot;</span>,<span class="st">&quot;Ccrl2&quot;</span>,<span class="st">&quot;Cxcr5&quot;</span>,<span class="st">&quot;Ccr6&quot;</span>,<span class="st">&quot;Ccr4&quot;</span>,<span class="st">&quot;Relt&quot;</span>, <span class="st">&quot;Il18ra1&quot;</span>, <span class="st">&quot;Il13ra2&quot;</span>, <span class="st">&quot;Il13ra1&quot;</span>, <span class="st">&quot;Il18&quot;</span>,<span class="st">&quot;Cxcl4&quot;</span>,<span class="st">&quot;Ccl4&quot;</span>,<span class="st">&quot;Cxcl14&quot;</span></span>
+<span id="cb16-73"><a href="#cb16-73" tabindex="-1"></a>  )</span></code></pre></div>
 <div
 id="supplementary-figure-4m-differential-abundance-of-selected-genes"
-class="section level3" number="4.1">
-<h3><span class="header-section-number">4.1</span> Supplementary figure
-4M: Differential abundance of selected genes</h3>
-<p>Differential abundance of selected genes in carcinoma cells subjected
-to StealTHY KO or Cas9+Puro</p>
-<pre class="r"><code>use_comp &lt;- names(gene_summ)
-
-# FDR limits
-xfdr &lt;- foreach(i=gene_summ[use_comp], .combine = rbind) %do% {
-  i %&gt;% 
-    ReadRRA(score = &#39;lfc&#39;) %&gt;% 
-    dplyr::rename(LFC = Score) %&gt;% 
-    left_join(gene_info, by = c(&#39;id&#39; = &#39;id&#39;)) %&gt;% 
-    filter(!is.na(gene_set)) %&gt;% 
-    pull(FDR) %&gt;% 
-    min
-}
-maxFDR &lt;- -log10(xfdr[,1]) %&gt;% max
- 
-# Set LFC (x-axis) for comparable plots to &quot;stealthy_ko_syngeneic&quot;: &quot;stealthy_ko_nsg&quot;
-# stealthy_comp &lt;- c(&quot;stealthy_ko_syngeneic&quot;, &quot;stealthy_ko_nsg&quot;)
-# xlfc &lt;- foreach(i=gene_summ_5C[stealthy_comp], .combine = rbind) %do% {
-#   i %&gt;% 
-#     ReadRRA(score = &#39;lfc&#39;) %&gt;% 
-#     dplyr::rename(LFC = Score) %&gt;% 
-#     left_join(gene_info, by = c(&#39;id&#39; = &#39;id&#39;)) %&gt;% 
-#     filter(!is.na(gene_set)) %&gt;% 
-#     pull(LFC) %&gt;% 
-#     abs %&gt;% max
-# }
-# stealthy_maxLFC &lt;- max(xlfc[,1])
-# stealthy_xlim &lt;- c(-stealthy_maxLFC, stealthy_maxLFC)
-# stealthy_breaks &lt;- c(-2.5, -1, 0, 1, 2.5)
-# stealthy_labels &lt;- c(&#39;-2.5&#39;, &#39;-1&#39;, &#39;0&#39;, &#39;1&#39;, &#39;2.5&#39;)
-
-xlfc &lt;- foreach(i=gene_summ, .combine = rbind) %do% {
-  i %&gt;%
-    ReadRRA(score = &#39;lfc&#39;) %&gt;%
-    dplyr::rename(LFC = Score) %&gt;%
-    left_join(gene_info, by = c(&#39;id&#39; = &#39;id&#39;)) %&gt;%
-    filter(!is.na(gene_set)) %&gt;%
-    pull(LFC) %&gt;%
-    abs %&gt;% max
-}
-# maxLFC &lt;- ceiling(max(xlfc[,1]))
-# xlim &lt;- c(-maxLFC, maxLFC)
-# xbreaks &lt;- c(-6, -2.5, 0, 2.5, 6)
-# xlabels &lt;- c(&#39;-6&#39;, &#39;-2.5&#39;, &#39;0&#39;, &#39;2.5&#39;, &#39;6&#39;)
-
-i &lt;- use_comp[1]
-for(i in use_comp)  {
-  cat(&quot;####&quot;, mageck_comp_list_names[i], &quot;\n\n&quot;)
-  
-  gene_levels &lt;-  gene_levels_list[[i]]
-  
-  x &lt;- gene_summ[[i]] %&gt;% 
-    ReadRRA(score = &#39;lfc&#39;) %&gt;% 
-    dplyr::rename(LFC = Score) %&gt;% 
-    left_join(gene_info, by = c(&#39;id&#39; = &#39;id&#39;)) %&gt;% 
-    filter(!is.na(gene_set)) %&gt;% 
-    filter(gene_name %in% gene_levels) %&gt;% 
-    mutate(
-      gene_name = factor(gene_name, levels = gene_levels),
-      gene_set = ifelse(
-        gene_set == &#39;Immune system cytokines and chemokines&#39;,
-        &#39;Immune system cytokines\nand chemokines&#39;,
-        gene_set
-      ),
-      gene_set = ifelse(
-        gene_set == &#39;Interferone, TNF and danger/death-inducing signals&#39;,
-        &#39;Interferon, TNF and\ndanger/death-inducing\nsignals&#39;,
-        gene_set
-      ),
-      gene_set = factor(gene_set, names(use_colors))
-      )
-  xlim &lt;- c(-ceiling(max(abs(x$LFC), na.rm = TRUE)),
-            ceiling(max(abs(x$LFC), na.rm = TRUE)))
-  # size_breaks &lt;- c(0, 0.25, 0.5, 1, 2, ceiling(maxFDR))
-  size_breaks &lt;- c(0, 0.25, 0.5, ceiling(maxFDR))
-  res &lt;- x %&gt;% 
-    ggplot(aes(LFC, gene_name, color = gene_set, size = -log10(FDR))) +
-    geom_point(aes(shape = gene_set)) +
-    geom_vline(xintercept = 0, linetype = 3, linewidth = one_pt/2) +
-    scale_y_discrete(expand = expansion(add = c(1, 1))) + # add fixed units around each facet to avoid lines over points
-    # scale_x_continuous(
-    #   expand = expansion(add = c(1, 1))
-    #   ) + # add fixed units around each facet to avoid lines over points
-    scale_color_manual(values = use_colors) +
-    scale_size(range = c(0.5, 2.5), 
-               limits = c(0, ceiling(maxFDR)), 
-               breaks = size_breaks,
-               labels = size_breaks %&gt;% as.character # remove trailing 0 from decimals
-               ) +
-    scale_shape_manual(values = use_shape) +
-    scale_x_continuous(
-        expand = expansion(add = c(1, 1))
-        ) +
-    facet_grid(rows = vars(gene_set), scales = &#39;free_y&#39;, space = &#39;free_y&#39;) +
-    theme_facet +
-    theme(
-      # axis.line = element_line(linewidth = one_pt/2, color = &#39;black&#39;),
-      axis.ticks = element_line(linewidth = one_pt/2, color = &#39;black&#39;),
-      panel.border = element_rect(linewidth = one_pt/2, color = &#39;black&#39;),
-      axis.text = element_text(size=8), 
-      axis.title = element_text(size = 8),
-      legend.title = element_text(size=8),
-      legend.text = element_text(size=8),
-      strip.text = element_text(size = 4)
-    ) +
-    labs(
-      x = expression(paste(&quot;lo&quot;, g[2],&quot;(Fold change)&quot;)),
-      y = NULL,
-      size = expression(paste(&quot;-lo&quot;, g[10],&quot;(FDR)&quot;)),
-      title = 
-    ) +
-    guides(color = &#39;none&#39;, shape = &#39;none&#39;)
-  
-  res &lt;- res +
-    scale_x_continuous(
-      expand = expansion(add = c(1, 1)), 
-      limits = xlim
-      # breaks = xbreaks,
-      # labels = xlabels
-    )
-  
-  print(res)
-  cat(&#39;\n\n&#39;)
-}</code></pre>
-<div id="stealthy-ko-syngeneic-cmt167" class="section level4"
-number="4.1.1">
-<h4><span class="header-section-number">4.1.1</span> StealTHY KO
-Syngeneic CMT167</h4>
-<p><img src="figure/crispr-mm_2215_sgRNA-CMT167-LLC1-CT26.Rmd/da-selected-genes-dotplot-1.png" width="1422" style="display: block; margin: auto;" /></p>
+class="section level3">
+<h3>Supplementary figure 4M: Differential abundance of selected
+genes</h3>
+<p>Dot plots highlighting hits identified following the strategy
+depicted in Fig. 4A upon transplantation in immunocompetent hosts of
+metastatic lung carcinoma cells (LLC1, C167) and colon carcinoma cells
+(CT26) previously subjected to StealTHY KO; representative genes from
+two recurrently identified categories are shown in comparison across
+screening methods. The fold-change values indicate differential sgRNA
+abundance between primary tumors and lung metastases; n=5 each; RTK,
+receptor tyrosine kinase; Ca, carcinoma; FDR, false discovery rate; Tnf,
+tumor necrosis factor; Ifn, interferon.</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a>use_comp <span class="ot">&lt;-</span> <span class="fu">names</span>(gene_summ)</span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a></span>
+<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a><span class="co"># FDR limits</span></span>
+<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a>xfdr <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">i=</span>gene_summ[use_comp], <span class="at">.combine =</span> rbind) <span class="sc">%do%</span> {</span>
+<span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a>  i <span class="sc">%&gt;%</span> </span>
+<span id="cb17-6"><a href="#cb17-6" tabindex="-1"></a>    <span class="fu">ReadRRA</span>(<span class="at">score =</span> <span class="st">&#39;lfc&#39;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">rename</span>(<span class="at">LFC =</span> Score) <span class="sc">%&gt;%</span> </span>
+<span id="cb17-8"><a href="#cb17-8" tabindex="-1"></a>    <span class="fu">left_join</span>(gene_info, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&#39;id&#39;</span> <span class="ot">=</span> <span class="st">&#39;id&#39;</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb17-9"><a href="#cb17-9" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(gene_set)) <span class="sc">%&gt;%</span> </span>
+<span id="cb17-10"><a href="#cb17-10" tabindex="-1"></a>    <span class="fu">pull</span>(FDR) <span class="sc">%&gt;%</span> </span>
+<span id="cb17-11"><a href="#cb17-11" tabindex="-1"></a>    min</span>
+<span id="cb17-12"><a href="#cb17-12" tabindex="-1"></a>}</span>
+<span id="cb17-13"><a href="#cb17-13" tabindex="-1"></a>maxFDR <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fu">log10</span>(xfdr[,<span class="dv">1</span>]) <span class="sc">%&gt;%</span> max</span>
+<span id="cb17-14"><a href="#cb17-14" tabindex="-1"></a></span>
+<span id="cb17-15"><a href="#cb17-15" tabindex="-1"></a>xlfc <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">i=</span>gene_summ, <span class="at">.combine =</span> rbind) <span class="sc">%do%</span> {</span>
+<span id="cb17-16"><a href="#cb17-16" tabindex="-1"></a>  i <span class="sc">%&gt;%</span></span>
+<span id="cb17-17"><a href="#cb17-17" tabindex="-1"></a>    <span class="fu">ReadRRA</span>(<span class="at">score =</span> <span class="st">&#39;lfc&#39;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb17-18"><a href="#cb17-18" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">rename</span>(<span class="at">LFC =</span> Score) <span class="sc">%&gt;%</span></span>
+<span id="cb17-19"><a href="#cb17-19" tabindex="-1"></a>    <span class="fu">left_join</span>(gene_info, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&#39;id&#39;</span> <span class="ot">=</span> <span class="st">&#39;id&#39;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb17-20"><a href="#cb17-20" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(gene_set)) <span class="sc">%&gt;%</span></span>
+<span id="cb17-21"><a href="#cb17-21" tabindex="-1"></a>    <span class="fu">pull</span>(LFC) <span class="sc">%&gt;%</span></span>
+<span id="cb17-22"><a href="#cb17-22" tabindex="-1"></a>    abs <span class="sc">%&gt;%</span> max</span>
+<span id="cb17-23"><a href="#cb17-23" tabindex="-1"></a>}</span>
+<span id="cb17-24"><a href="#cb17-24" tabindex="-1"></a></span>
+<span id="cb17-25"><a href="#cb17-25" tabindex="-1"></a>i <span class="ot">&lt;-</span> use_comp[<span class="dv">1</span>]</span>
+<span id="cb17-26"><a href="#cb17-26" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> use_comp)  {</span>
+<span id="cb17-27"><a href="#cb17-27" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">&quot;####&quot;</span>, mageck_comp_list_names[i], <span class="st">&quot;</span><span class="sc">\n\n</span><span class="st">&quot;</span>)</span>
+<span id="cb17-28"><a href="#cb17-28" tabindex="-1"></a>  </span>
+<span id="cb17-29"><a href="#cb17-29" tabindex="-1"></a>  gene_levels <span class="ot">&lt;-</span>  gene_levels_list[[i]]</span>
+<span id="cb17-30"><a href="#cb17-30" tabindex="-1"></a>  </span>
+<span id="cb17-31"><a href="#cb17-31" tabindex="-1"></a>  x <span class="ot">&lt;-</span> gene_summ[[i]] <span class="sc">%&gt;%</span> </span>
+<span id="cb17-32"><a href="#cb17-32" tabindex="-1"></a>    <span class="fu">ReadRRA</span>(<span class="at">score =</span> <span class="st">&#39;lfc&#39;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb17-33"><a href="#cb17-33" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">rename</span>(<span class="at">LFC =</span> Score) <span class="sc">%&gt;%</span> </span>
+<span id="cb17-34"><a href="#cb17-34" tabindex="-1"></a>    <span class="fu">left_join</span>(gene_info, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&#39;id&#39;</span> <span class="ot">=</span> <span class="st">&#39;id&#39;</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb17-35"><a href="#cb17-35" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(gene_set)) <span class="sc">%&gt;%</span> </span>
+<span id="cb17-36"><a href="#cb17-36" tabindex="-1"></a>    <span class="fu">filter</span>(gene_name <span class="sc">%in%</span> gene_levels) <span class="sc">%&gt;%</span> </span>
+<span id="cb17-37"><a href="#cb17-37" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb17-38"><a href="#cb17-38" tabindex="-1"></a>      <span class="at">gene_name =</span> <span class="fu">factor</span>(gene_name, <span class="at">levels =</span> gene_levels),</span>
+<span id="cb17-39"><a href="#cb17-39" tabindex="-1"></a>      <span class="at">gene_set =</span> <span class="fu">ifelse</span>(</span>
+<span id="cb17-40"><a href="#cb17-40" tabindex="-1"></a>        gene_set <span class="sc">==</span> <span class="st">&#39;Immune system cytokines and chemokines&#39;</span>,</span>
+<span id="cb17-41"><a href="#cb17-41" tabindex="-1"></a>        <span class="st">&#39;Immune system cytokines</span><span class="sc">\n</span><span class="st">and chemokines&#39;</span>,</span>
+<span id="cb17-42"><a href="#cb17-42" tabindex="-1"></a>        gene_set</span>
+<span id="cb17-43"><a href="#cb17-43" tabindex="-1"></a>      ),</span>
+<span id="cb17-44"><a href="#cb17-44" tabindex="-1"></a>      <span class="at">gene_set =</span> <span class="fu">ifelse</span>(</span>
+<span id="cb17-45"><a href="#cb17-45" tabindex="-1"></a>        gene_set <span class="sc">==</span> <span class="st">&#39;Interferone, TNF and danger/death-inducing signals&#39;</span>,</span>
+<span id="cb17-46"><a href="#cb17-46" tabindex="-1"></a>        <span class="st">&#39;Interferon, TNF and</span><span class="sc">\n</span><span class="st">danger/death-inducing</span><span class="sc">\n</span><span class="st">signals&#39;</span>,</span>
+<span id="cb17-47"><a href="#cb17-47" tabindex="-1"></a>        gene_set</span>
+<span id="cb17-48"><a href="#cb17-48" tabindex="-1"></a>      ),</span>
+<span id="cb17-49"><a href="#cb17-49" tabindex="-1"></a>      <span class="at">gene_set =</span> <span class="fu">factor</span>(gene_set, <span class="fu">names</span>(use_colors))</span>
+<span id="cb17-50"><a href="#cb17-50" tabindex="-1"></a>      )</span>
+<span id="cb17-51"><a href="#cb17-51" tabindex="-1"></a>  xlim <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fu">ceiling</span>(<span class="fu">max</span>(<span class="fu">abs</span>(x<span class="sc">$</span>LFC), <span class="at">na.rm =</span> <span class="cn">TRUE</span>)),</span>
+<span id="cb17-52"><a href="#cb17-52" tabindex="-1"></a>            <span class="fu">ceiling</span>(<span class="fu">max</span>(<span class="fu">abs</span>(x<span class="sc">$</span>LFC), <span class="at">na.rm =</span> <span class="cn">TRUE</span>)))</span>
+<span id="cb17-53"><a href="#cb17-53" tabindex="-1"></a>  size_breaks <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.25</span>, <span class="fl">0.5</span>, <span class="fu">ceiling</span>(maxFDR))</span>
+<span id="cb17-54"><a href="#cb17-54" tabindex="-1"></a>  res <span class="ot">&lt;-</span> x <span class="sc">%&gt;%</span> </span>
+<span id="cb17-55"><a href="#cb17-55" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(LFC, gene_name, <span class="at">color =</span> gene_set, <span class="at">size =</span> <span class="sc">-</span><span class="fu">log10</span>(FDR))) <span class="sc">+</span></span>
+<span id="cb17-56"><a href="#cb17-56" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">shape =</span> gene_set)) <span class="sc">+</span></span>
+<span id="cb17-57"><a href="#cb17-57" tabindex="-1"></a>    <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="dv">3</span>, <span class="at">linewidth =</span> one_pt<span class="sc">/</span><span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb17-58"><a href="#cb17-58" tabindex="-1"></a>    <span class="fu">scale_y_discrete</span>(<span class="at">expand =</span> <span class="fu">expansion</span>(<span class="at">add =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>))) <span class="sc">+</span> <span class="co"># add fixed units around each facet to avoid lines over points</span></span>
+<span id="cb17-59"><a href="#cb17-59" tabindex="-1"></a>    <span class="fu">scale_color_manual</span>(<span class="at">values =</span> use_colors) <span class="sc">+</span></span>
+<span id="cb17-60"><a href="#cb17-60" tabindex="-1"></a>    <span class="fu">scale_size</span>(<span class="at">range =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">2.5</span>), </span>
+<span id="cb17-61"><a href="#cb17-61" tabindex="-1"></a>               <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fu">ceiling</span>(maxFDR)), </span>
+<span id="cb17-62"><a href="#cb17-62" tabindex="-1"></a>               <span class="at">breaks =</span> size_breaks,</span>
+<span id="cb17-63"><a href="#cb17-63" tabindex="-1"></a>               <span class="at">labels =</span> size_breaks <span class="sc">%&gt;%</span> as.character <span class="co"># remove trailing 0 from decimals</span></span>
+<span id="cb17-64"><a href="#cb17-64" tabindex="-1"></a>               ) <span class="sc">+</span></span>
+<span id="cb17-65"><a href="#cb17-65" tabindex="-1"></a>    <span class="fu">scale_shape_manual</span>(<span class="at">values =</span> use_shape) <span class="sc">+</span></span>
+<span id="cb17-66"><a href="#cb17-66" tabindex="-1"></a>    <span class="fu">scale_x_continuous</span>(</span>
+<span id="cb17-67"><a href="#cb17-67" tabindex="-1"></a>        <span class="at">expand =</span> <span class="fu">expansion</span>(<span class="at">add =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>))</span>
+<span id="cb17-68"><a href="#cb17-68" tabindex="-1"></a>        ) <span class="sc">+</span></span>
+<span id="cb17-69"><a href="#cb17-69" tabindex="-1"></a>    <span class="fu">facet_grid</span>(<span class="at">rows =</span> <span class="fu">vars</span>(gene_set), <span class="at">scales =</span> <span class="st">&#39;free_y&#39;</span>, <span class="at">space =</span> <span class="st">&#39;free_y&#39;</span>) <span class="sc">+</span></span>
+<span id="cb17-70"><a href="#cb17-70" tabindex="-1"></a>    theme_facet <span class="sc">+</span></span>
+<span id="cb17-71"><a href="#cb17-71" tabindex="-1"></a>    <span class="fu">theme</span>(</span>
+<span id="cb17-72"><a href="#cb17-72" tabindex="-1"></a>      <span class="at">axis.ticks =</span> <span class="fu">element_line</span>(<span class="at">linewidth =</span> one_pt<span class="sc">/</span><span class="dv">2</span>, <span class="at">color =</span> <span class="st">&#39;black&#39;</span>),</span>
+<span id="cb17-73"><a href="#cb17-73" tabindex="-1"></a>      <span class="at">panel.border =</span> <span class="fu">element_rect</span>(<span class="at">linewidth =</span> one_pt<span class="sc">/</span><span class="dv">2</span>, <span class="at">color =</span> <span class="st">&#39;black&#39;</span>),</span>
+<span id="cb17-74"><a href="#cb17-74" tabindex="-1"></a>      <span class="at">axis.text =</span> <span class="fu">element_text</span>(<span class="at">size=</span><span class="dv">8</span>), </span>
+<span id="cb17-75"><a href="#cb17-75" tabindex="-1"></a>      <span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">8</span>),</span>
+<span id="cb17-76"><a href="#cb17-76" tabindex="-1"></a>      <span class="at">legend.title =</span> <span class="fu">element_text</span>(<span class="at">size=</span><span class="dv">8</span>),</span>
+<span id="cb17-77"><a href="#cb17-77" tabindex="-1"></a>      <span class="at">legend.text =</span> <span class="fu">element_text</span>(<span class="at">size=</span><span class="dv">8</span>),</span>
+<span id="cb17-78"><a href="#cb17-78" tabindex="-1"></a>      <span class="at">strip.text =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">4</span>)</span>
+<span id="cb17-79"><a href="#cb17-79" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb17-80"><a href="#cb17-80" tabindex="-1"></a>    <span class="fu">labs</span>(</span>
+<span id="cb17-81"><a href="#cb17-81" tabindex="-1"></a>      <span class="at">x =</span> <span class="fu">expression</span>(<span class="fu">paste</span>(<span class="st">&quot;lo&quot;</span>, g[<span class="dv">2</span>],<span class="st">&quot;(Fold change)&quot;</span>)),</span>
+<span id="cb17-82"><a href="#cb17-82" tabindex="-1"></a>      <span class="at">y =</span> <span class="cn">NULL</span>,</span>
+<span id="cb17-83"><a href="#cb17-83" tabindex="-1"></a>      <span class="at">size =</span> <span class="fu">expression</span>(<span class="fu">paste</span>(<span class="st">&quot;-lo&quot;</span>, g[<span class="dv">10</span>],<span class="st">&quot;(FDR)&quot;</span>)),</span>
+<span id="cb17-84"><a href="#cb17-84" tabindex="-1"></a>      <span class="at">title =</span> </span>
+<span id="cb17-85"><a href="#cb17-85" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb17-86"><a href="#cb17-86" tabindex="-1"></a>    <span class="fu">guides</span>(<span class="at">color =</span> <span class="st">&#39;none&#39;</span>, <span class="at">shape =</span> <span class="st">&#39;none&#39;</span>)</span>
+<span id="cb17-87"><a href="#cb17-87" tabindex="-1"></a>  </span>
+<span id="cb17-88"><a href="#cb17-88" tabindex="-1"></a>  res <span class="ot">&lt;-</span> res <span class="sc">+</span></span>
+<span id="cb17-89"><a href="#cb17-89" tabindex="-1"></a>    <span class="fu">scale_x_continuous</span>(</span>
+<span id="cb17-90"><a href="#cb17-90" tabindex="-1"></a>      <span class="at">expand =</span> <span class="fu">expansion</span>(<span class="at">add =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>)), </span>
+<span id="cb17-91"><a href="#cb17-91" tabindex="-1"></a>      <span class="at">limits =</span> xlim</span>
+<span id="cb17-92"><a href="#cb17-92" tabindex="-1"></a>    )</span>
+<span id="cb17-93"><a href="#cb17-93" tabindex="-1"></a>  </span>
+<span id="cb17-94"><a href="#cb17-94" tabindex="-1"></a>  <span class="fu">print</span>(res)</span>
+<span id="cb17-95"><a href="#cb17-95" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">&#39;</span><span class="sc">\n\n</span><span class="st">&#39;</span>)</span>
+<span id="cb17-96"><a href="#cb17-96" tabindex="-1"></a>}</span></code></pre></div>
+<div id="stealthy-ko-syngeneic-cmt167" class="section level4">
+<h4>StealTHY KO Syngeneic CMT167</h4>
+<p><img src="figure/crispr-mm_2215_sgRNA-CMT167-LLC1-CT26.Rmd/da-selected-genes-dotplot-1.png" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-da-selected-genes-dotplot-1">
+Past versions of da-selected-genes-dotplot-1.png
+</button>
+</p>
+<div id="fig-da-selected-genes-dotplot-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/a6972e9baca3624749a8db52f17092d7d2e8c2e2/docs/figure/crispr-mm_2215_sgRNA-CMT167-LLC1-CT26.Rmd/da-selected-genes-dotplot-1.png" target="_blank">a6972e9</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-07-01
+</td>
+</tr>
+</tbody>
+</table>
 </div>
-<div id="stealthy-ko-syngeneic-ct26" class="section level4"
-number="4.1.2">
-<h4><span class="header-section-number">4.1.2</span> StealTHY KO
-Syngeneic CT26</h4>
-<p><img src="figure/crispr-mm_2215_sgRNA-CMT167-LLC1-CT26.Rmd/da-selected-genes-dotplot-2.png" width="1422" style="display: block; margin: auto;" /></p>
-</div>
-<div id="stealthy-ko-syngeneic-llc1" class="section level4"
-number="4.1.3">
-<h4><span class="header-section-number">4.1.3</span> StealTHY KO
-Syngeneic LLC1</h4>
-<p><img src="figure/crispr-mm_2215_sgRNA-CMT167-LLC1-CT26.Rmd/da-selected-genes-dotplot-3.png" width="1422" style="display: block; margin: auto;" /></p>
 </div>
 </div>
+<div id="stealthy-ko-syngeneic-ct26" class="section level4">
+<h4>StealTHY KO Syngeneic CT26</h4>
+<p><img src="figure/crispr-mm_2215_sgRNA-CMT167-LLC1-CT26.Rmd/da-selected-genes-dotplot-2.png" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-da-selected-genes-dotplot-2">
+Past versions of da-selected-genes-dotplot-2.png
+</button>
+</p>
+<div id="fig-da-selected-genes-dotplot-2" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/a6972e9baca3624749a8db52f17092d7d2e8c2e2/docs/figure/crispr-mm_2215_sgRNA-CMT167-LLC1-CT26.Rmd/da-selected-genes-dotplot-2.png" target="_blank">a6972e9</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-07-01
+</td>
+</tr>
+</tbody>
+</table>
 </div>
-<div id="supplementary-figure-4m-muller-plots-of-selected-genes"
-class="section level2" number="5">
-<h2><span class="header-section-number">5</span> Supplementary figure
-4M: Muller plots of selected genes</h2>
-<p>Define selected comparisons for muller plots</p>
-<pre class="r"><code>x &lt;- colData(se) %&gt;% data.frame
-
-mageck_comp_list &lt;- list(
-  `StealTHY KO Syngeneic CMT167` = list(
-    `Primary tumor` = x %&gt;% filter(vector_mmodel == &#39;CMT167-KO-Thy1-C57BL6&#39; &amp; sample_type == &#39;Primary tumor&#39; ) %&gt;% pull(sample_alias),
-    `Liver mets` = x %&gt;% filter(vector_mmodel == &#39;CMT167-KO-Thy1-C57BL6&#39; &amp; sample_type == &#39;Liver mets&#39; ) %&gt;% pull(sample_alias)
-    ),
-  `StealTHY KO Syngeneic LLC1` = list(
-    `Primary tumor` = x %&gt;% filter(vector_mmodel == &#39;LLC1-KO-Thy1-C57BL6&#39; &amp; sample_type == &#39;Primary tumor&#39; ) %&gt;% pull(sample_alias),
-    `Liver mets` = x %&gt;% filter(vector_mmodel == &#39;LLC1-KO-Thy1-C57BL6&#39; &amp; sample_type == &#39;Liver mets&#39; ) %&gt;% pull(sample_alias)
-    ),
-  `StealTHY KO Syngeneic CT26` = list(
-    `Primary tumor` = x %&gt;% filter(vector_mmodel == &#39;CT26-KO-Thy1-BALB&#39; &amp; sample_type == &#39;Primary tumor&#39; ) %&gt;% pull(sample_alias),
-    `Liver mets` = x %&gt;% filter(vector_mmodel == &#39;CT26-KO-Thy1-BALB&#39; &amp; sample_type == &#39;Lung mets&#39; ) %&gt;% pull(sample_alias)
-    )
-)
-
-
-comp_list_muller &lt;- list(
-  `Comparison 1` = list(
-    `CMT167 Syngeneic Thy1.1 4` = c(&#39;C167_StealTHY_Tum_4&#39;,  &#39;C167_StealTHY_Met_4&#39;),
-    `CMT167 Syngeneic Thy1.1 5` = c(&#39;C167_StealTHY_Tum_5&#39;,  &#39;C167_StealTHY_Met_5&#39;)
-  )
-)
-genes_list_1 &lt;- gene_info %&gt;% 
-  filter(gene_set %in% c(&quot;TGF-β family related&quot;, &quot;RTK signaling&quot;, &quot;Positive controls&quot;)) %&gt;% 
-  pull(id)
-genes_list_2 &lt;- gene_info %&gt;% 
-  filter(!gene_set %in% c(&quot;TGF-β family related&quot;, &quot;RTK signaling&quot;, &quot;Positive controls&quot;)) %&gt;% 
-  pull(id)</code></pre>
-<p>Generate Muller plots for genes in main figure 5C</p>
-<pre class="r"><code>cpm_threshold &lt;- 10000
-comp_list &lt;- comp_list_muller
-# use_genes &lt;- genes_list_1
-use_genes &lt;- c(
-  &quot;Egfr&quot;,
-  &#39;Met&#39;,
-  &#39;Igf1r&#39;,
-  &#39;Igf2r&#39;,
-  &#39;Amhr2&#39;,
-  &#39;Tgfbr1&#39;,
-  &#39;Tgfb2&#39;,
-  &#39;Tgfb3&#39;,
-  &#39;Gdf9&#39;,
-  &#39;Mertk&#39;,
-  &#39;Gas9&#39;,
-  &#39;Axl&#39;,
-  &#39;Trim72&#39;
-)
-
-
-# Create DF
-use_df &lt;- assay(se, &#39;cpm&#39;) %&gt;% data.frame(check.names = FALSE) %&gt;% 
-  rownames_to_column(&#39;guide&#39;) %&gt;% 
-  mutate(
-    gene = rowData(se)$Gene,
-    gene = ifelse(grepl(&#39;Non_Target&#39;, gene), &#39;Non_Target&#39;, gene)
-  ) %&gt;%
-  filter(gene %in% use_genes) %&gt;% 
-  pivot_longer(-c(guide, gene), names_to = &#39;sample_alias&#39;, values_to = &#39;cpm&#39;)
-
-
-j &lt;-  names(comp_list)[1]
-muller_plots &lt;- foreach(j = names(comp_list)) %do% {
-  i &lt;- comp_list[[j]][[1]]
-  iname &lt;-  names(comp_list[[j]])[1]
-  res &lt;- foreach(iname = names(comp_list[[j]])) %do% {
-    i &lt;- comp_list[[j]][[iname]]
-    x &lt;- use_df %&gt;% 
-      filter(sample_alias %in% i) %&gt;% 
-      mutate(
-        sample_type = ifelse(sample_alias == i[1], &#39;Primary tumor&#39;, &#39;Metastasis&#39;),
-        sample_type = factor(sample_type, levels = c(&#39;Primary tumor&#39;, &#39;Metastasis&#39;))
-      )
-    
-    # Group CPM by gene
-    x %&lt;&gt;% 
-      group_by(gene, sample_alias, sample_type) %&gt;% 
-      summarise(cpm = sum(cpm)) %&gt;% 
-      mutate(
-        # gene = fct_reorder(gene, cpm)
-        gene = factor(gene, levels = use_genes)
-      )
-
-    # # Select guides with cpm &gt; cpm_threshold
-    # x_guides_keep &lt;- x %&gt;%
-    #   group_by(sample_type, guide) %&gt;%
-    #   summarise(cpm = max(cpm)) %&gt;%
-    #   filter(cpm &gt; cpm_threshold) %&gt;%
-    #   pull(guide)
-
-    # # Group guides with cpm &lt; cpm_threshold into the low abundant category, and sum counts for low abundant
-    # x %&lt;&gt;%
-    #   mutate(
-    #     guide = ifelse(guide %in%  x_guides_keep, guide, &#39;low abundant&#39;)
-    #   ) %&gt;%
-    #   group_by(sample_type, guide) %&gt;%
-    #   summarise(cpm = sum(cpm)) %&gt;%
-    #   ungroup() %&gt;%
-    #   mutate(
-    #     guide = fct_reorder(guide, cpm),
-    #     guide = relevel(guide, ref = &#39;low abundant&#39;)
-    #   )
-    
-    use_cols &lt;- c(
-      &#39;low abundant&#39; = &#39;grey80&#39;,
-      colorRampPalette(palette_OkabeIto)(nlevels(x$gene)) %&gt;% set_names(levels(x$gene))
-    )
-    
-    x %&gt;% 
-      ggplot( aes(x = sample_type, y = cpm/10000, group = gene, fill = gene)) + 
-      geom_area(colour = alpha(&quot;white&quot;, 0.1), linewidth = 0.08, alpha = 0.8) +
-      scale_fill_manual(values = use_cols, guide = guide_legend(ncol = 3)) +
-      labs(
-        x = &#39;&#39;,
-        y = expression(&quot;CPM x 10&quot;^-4),
-        title = iname,
-        fill = &#39;&#39;
-      ) +
-      scale_x_discrete(expand = c(0, 0)) +
-      # scale_y_continuous(expand = c(0, 0), limits = c(0, 1000000/10000)) +
-      scale_y_continuous(expand = c(0, 0)) +
-      # guides(fill = &#39;none&#39;) +
-      theme(
-        panel.background = element_rect(fill = &quot;grey90&quot;),
-        # plot.margin = margin(0.5, 1.5, 0.5, 0, &quot;cm&quot;),
-        plot.margin = margin(0, 0.5, 0, 0, &quot;cm&quot;),
-        axis.text =  element_text(size=3),
-        axis.title =  element_text(size=3),
-        plot.title = element_text(size=3, hjust = 0.5),
-        legend.text = element_text(size=3)
-      )
-  }
-  names(res) &lt;- names(comp_list[[j]])
-  return(res)
-
-}
-names(muller_plots) &lt;- names(comp_list)
-# muller_syngeneic_representative &lt;- muller_plots</code></pre>
-<pre class="r"><code>for (i in names(muller_plots)) {
-  cat(&#39;###&#39;, i, &#39;\n\n&#39;)
-  wrap_plots(muller_plots[[i]], ncol = 1) %&gt;% print
-  cat(&#39;\n\n&#39;)
-}</code></pre>
-<div id="comparison-1" class="section level3" number="5.1">
-<h3><span class="header-section-number">5.1</span> Comparison 1</h3>
-<p><img src="figure/crispr-mm_2215_sgRNA-CMT167-LLC1-CT26.Rmd/muller-plots-1.png" width="1500" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="stealthy-ko-syngeneic-llc1" class="section level4">
+<h4>StealTHY KO Syngeneic LLC1</h4>
+<p><img src="figure/crispr-mm_2215_sgRNA-CMT167-LLC1-CT26.Rmd/da-selected-genes-dotplot-3.png" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-da-selected-genes-dotplot-3">
+Past versions of da-selected-genes-dotplot-3.png
+</button>
+</p>
+<div id="fig-da-selected-genes-dotplot-3" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/a6972e9baca3624749a8db52f17092d7d2e8c2e2/docs/figure/crispr-mm_2215_sgRNA-CMT167-LLC1-CT26.Rmd/da-selected-genes-dotplot-3.png" target="_blank">a6972e9</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-07-01
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="supplementary-figure-4n-muller-plots-of-selected-genes"
+class="section level2">
+<h2>Supplementary figure 4N: Muller plots of selected genes</h2>
+<p>Muller plots depicting the relative frequency of unique gene KOs in
+matched primary lung tumors versus synchronous liver metastasis samples
+from syngeneic recipients transplanted with C167 lung carcinoma cells,
+previously transduced with the mouse interactome library; n=5 (two
+representative samples are shown).</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">colData</span>(se) <span class="sc">%&gt;%</span> data.frame</span>
+<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a></span>
+<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a>mageck_comp_list <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a>  <span class="st">`</span><span class="at">StealTHY KO Syngeneic CMT167</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">list</span>(</span>
+<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a>    <span class="st">`</span><span class="at">Primary tumor</span><span class="st">`</span> <span class="ot">=</span> x <span class="sc">%&gt;%</span> <span class="fu">filter</span>(vector_mmodel <span class="sc">==</span> <span class="st">&#39;CMT167-KO-Thy1-C57BL6&#39;</span> <span class="sc">&amp;</span> sample_type <span class="sc">==</span> <span class="st">&#39;Primary tumor&#39;</span> ) <span class="sc">%&gt;%</span> <span class="fu">pull</span>(sample_alias),</span>
+<span id="cb18-6"><a href="#cb18-6" tabindex="-1"></a>    <span class="st">`</span><span class="at">Liver mets</span><span class="st">`</span> <span class="ot">=</span> x <span class="sc">%&gt;%</span> <span class="fu">filter</span>(vector_mmodel <span class="sc">==</span> <span class="st">&#39;CMT167-KO-Thy1-C57BL6&#39;</span> <span class="sc">&amp;</span> sample_type <span class="sc">==</span> <span class="st">&#39;Liver mets&#39;</span> ) <span class="sc">%&gt;%</span> <span class="fu">pull</span>(sample_alias)</span>
+<span id="cb18-7"><a href="#cb18-7" tabindex="-1"></a>    ),</span>
+<span id="cb18-8"><a href="#cb18-8" tabindex="-1"></a>  <span class="st">`</span><span class="at">StealTHY KO Syngeneic LLC1</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">list</span>(</span>
+<span id="cb18-9"><a href="#cb18-9" tabindex="-1"></a>    <span class="st">`</span><span class="at">Primary tumor</span><span class="st">`</span> <span class="ot">=</span> x <span class="sc">%&gt;%</span> <span class="fu">filter</span>(vector_mmodel <span class="sc">==</span> <span class="st">&#39;LLC1-KO-Thy1-C57BL6&#39;</span> <span class="sc">&amp;</span> sample_type <span class="sc">==</span> <span class="st">&#39;Primary tumor&#39;</span> ) <span class="sc">%&gt;%</span> <span class="fu">pull</span>(sample_alias),</span>
+<span id="cb18-10"><a href="#cb18-10" tabindex="-1"></a>    <span class="st">`</span><span class="at">Liver mets</span><span class="st">`</span> <span class="ot">=</span> x <span class="sc">%&gt;%</span> <span class="fu">filter</span>(vector_mmodel <span class="sc">==</span> <span class="st">&#39;LLC1-KO-Thy1-C57BL6&#39;</span> <span class="sc">&amp;</span> sample_type <span class="sc">==</span> <span class="st">&#39;Liver mets&#39;</span> ) <span class="sc">%&gt;%</span> <span class="fu">pull</span>(sample_alias)</span>
+<span id="cb18-11"><a href="#cb18-11" tabindex="-1"></a>    ),</span>
+<span id="cb18-12"><a href="#cb18-12" tabindex="-1"></a>  <span class="st">`</span><span class="at">StealTHY KO Syngeneic CT26</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">list</span>(</span>
+<span id="cb18-13"><a href="#cb18-13" tabindex="-1"></a>    <span class="st">`</span><span class="at">Primary tumor</span><span class="st">`</span> <span class="ot">=</span> x <span class="sc">%&gt;%</span> <span class="fu">filter</span>(vector_mmodel <span class="sc">==</span> <span class="st">&#39;CT26-KO-Thy1-BALB&#39;</span> <span class="sc">&amp;</span> sample_type <span class="sc">==</span> <span class="st">&#39;Primary tumor&#39;</span> ) <span class="sc">%&gt;%</span> <span class="fu">pull</span>(sample_alias),</span>
+<span id="cb18-14"><a href="#cb18-14" tabindex="-1"></a>    <span class="st">`</span><span class="at">Liver mets</span><span class="st">`</span> <span class="ot">=</span> x <span class="sc">%&gt;%</span> <span class="fu">filter</span>(vector_mmodel <span class="sc">==</span> <span class="st">&#39;CT26-KO-Thy1-BALB&#39;</span> <span class="sc">&amp;</span> sample_type <span class="sc">==</span> <span class="st">&#39;Lung mets&#39;</span> ) <span class="sc">%&gt;%</span> <span class="fu">pull</span>(sample_alias)</span>
+<span id="cb18-15"><a href="#cb18-15" tabindex="-1"></a>    )</span>
+<span id="cb18-16"><a href="#cb18-16" tabindex="-1"></a>)</span>
+<span id="cb18-17"><a href="#cb18-17" tabindex="-1"></a></span>
+<span id="cb18-18"><a href="#cb18-18" tabindex="-1"></a></span>
+<span id="cb18-19"><a href="#cb18-19" tabindex="-1"></a>comp_list_muller <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb18-20"><a href="#cb18-20" tabindex="-1"></a>  <span class="st">`</span><span class="at">Comparison 1</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">list</span>(</span>
+<span id="cb18-21"><a href="#cb18-21" tabindex="-1"></a>    <span class="st">`</span><span class="at">CMT167 Syngeneic Thy1.1 4</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&#39;C167_StealTHY_Tum_4&#39;</span>,  <span class="st">&#39;C167_StealTHY_Met_4&#39;</span>),</span>
+<span id="cb18-22"><a href="#cb18-22" tabindex="-1"></a>    <span class="st">`</span><span class="at">CMT167 Syngeneic Thy1.1 5</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&#39;C167_StealTHY_Tum_5&#39;</span>,  <span class="st">&#39;C167_StealTHY_Met_5&#39;</span>)</span>
+<span id="cb18-23"><a href="#cb18-23" tabindex="-1"></a>  )</span>
+<span id="cb18-24"><a href="#cb18-24" tabindex="-1"></a>)</span>
+<span id="cb18-25"><a href="#cb18-25" tabindex="-1"></a>genes_list_1 <span class="ot">&lt;-</span> gene_info <span class="sc">%&gt;%</span> </span>
+<span id="cb18-26"><a href="#cb18-26" tabindex="-1"></a>  <span class="fu">filter</span>(gene_set <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;TGF-β family related&quot;</span>, <span class="st">&quot;RTK signaling&quot;</span>, <span class="st">&quot;Positive controls&quot;</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb18-27"><a href="#cb18-27" tabindex="-1"></a>  <span class="fu">pull</span>(id)</span>
+<span id="cb18-28"><a href="#cb18-28" tabindex="-1"></a>genes_list_2 <span class="ot">&lt;-</span> gene_info <span class="sc">%&gt;%</span> </span>
+<span id="cb18-29"><a href="#cb18-29" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span>gene_set <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;TGF-β family related&quot;</span>, <span class="st">&quot;RTK signaling&quot;</span>, <span class="st">&quot;Positive controls&quot;</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb18-30"><a href="#cb18-30" tabindex="-1"></a>  <span class="fu">pull</span>(id)</span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a>cpm_threshold <span class="ot">&lt;-</span> <span class="dv">10000</span></span>
+<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a>comp_list <span class="ot">&lt;-</span> comp_list_muller</span>
+<span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a>use_genes <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb19-4"><a href="#cb19-4" tabindex="-1"></a>  <span class="st">&quot;Egfr&quot;</span>,</span>
+<span id="cb19-5"><a href="#cb19-5" tabindex="-1"></a>  <span class="st">&#39;Met&#39;</span>,</span>
+<span id="cb19-6"><a href="#cb19-6" tabindex="-1"></a>  <span class="st">&#39;Igf1r&#39;</span>,</span>
+<span id="cb19-7"><a href="#cb19-7" tabindex="-1"></a>  <span class="st">&#39;Igf2r&#39;</span>,</span>
+<span id="cb19-8"><a href="#cb19-8" tabindex="-1"></a>  <span class="st">&#39;Amhr2&#39;</span>,</span>
+<span id="cb19-9"><a href="#cb19-9" tabindex="-1"></a>  <span class="st">&#39;Tgfbr1&#39;</span>,</span>
+<span id="cb19-10"><a href="#cb19-10" tabindex="-1"></a>  <span class="st">&#39;Tgfb2&#39;</span>,</span>
+<span id="cb19-11"><a href="#cb19-11" tabindex="-1"></a>  <span class="st">&#39;Tgfb3&#39;</span>,</span>
+<span id="cb19-12"><a href="#cb19-12" tabindex="-1"></a>  <span class="st">&#39;Gdf9&#39;</span>,</span>
+<span id="cb19-13"><a href="#cb19-13" tabindex="-1"></a>  <span class="st">&#39;Mertk&#39;</span>,</span>
+<span id="cb19-14"><a href="#cb19-14" tabindex="-1"></a>  <span class="st">&#39;Gas9&#39;</span>,</span>
+<span id="cb19-15"><a href="#cb19-15" tabindex="-1"></a>  <span class="st">&#39;Axl&#39;</span>,</span>
+<span id="cb19-16"><a href="#cb19-16" tabindex="-1"></a>  <span class="st">&#39;Trim72&#39;</span></span>
+<span id="cb19-17"><a href="#cb19-17" tabindex="-1"></a>)</span>
+<span id="cb19-18"><a href="#cb19-18" tabindex="-1"></a></span>
+<span id="cb19-19"><a href="#cb19-19" tabindex="-1"></a></span>
+<span id="cb19-20"><a href="#cb19-20" tabindex="-1"></a><span class="co"># Create DF</span></span>
+<span id="cb19-21"><a href="#cb19-21" tabindex="-1"></a>use_df <span class="ot">&lt;-</span> <span class="fu">assay</span>(se, <span class="st">&#39;cpm&#39;</span>) <span class="sc">%&gt;%</span> <span class="fu">data.frame</span>(<span class="at">check.names =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb19-22"><a href="#cb19-22" tabindex="-1"></a>  <span class="fu">rownames_to_column</span>(<span class="st">&#39;guide&#39;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb19-23"><a href="#cb19-23" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb19-24"><a href="#cb19-24" tabindex="-1"></a>    <span class="at">gene =</span> <span class="fu">rowData</span>(se)<span class="sc">$</span>Gene,</span>
+<span id="cb19-25"><a href="#cb19-25" tabindex="-1"></a>    <span class="at">gene =</span> <span class="fu">ifelse</span>(<span class="fu">grepl</span>(<span class="st">&#39;Non_Target&#39;</span>, gene), <span class="st">&#39;Non_Target&#39;</span>, gene)</span>
+<span id="cb19-26"><a href="#cb19-26" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb19-27"><a href="#cb19-27" tabindex="-1"></a>  <span class="fu">filter</span>(gene <span class="sc">%in%</span> use_genes) <span class="sc">%&gt;%</span> </span>
+<span id="cb19-28"><a href="#cb19-28" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span><span class="fu">c</span>(guide, gene), <span class="at">names_to =</span> <span class="st">&#39;sample_alias&#39;</span>, <span class="at">values_to =</span> <span class="st">&#39;cpm&#39;</span>)</span>
+<span id="cb19-29"><a href="#cb19-29" tabindex="-1"></a></span>
+<span id="cb19-30"><a href="#cb19-30" tabindex="-1"></a></span>
+<span id="cb19-31"><a href="#cb19-31" tabindex="-1"></a>j <span class="ot">&lt;-</span>  <span class="fu">names</span>(comp_list)[<span class="dv">1</span>]</span>
+<span id="cb19-32"><a href="#cb19-32" tabindex="-1"></a>muller_plots <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">j =</span> <span class="fu">names</span>(comp_list)) <span class="sc">%do%</span> {</span>
+<span id="cb19-33"><a href="#cb19-33" tabindex="-1"></a>  i <span class="ot">&lt;-</span> comp_list[[j]][[<span class="dv">1</span>]]</span>
+<span id="cb19-34"><a href="#cb19-34" tabindex="-1"></a>  iname <span class="ot">&lt;-</span>  <span class="fu">names</span>(comp_list[[j]])[<span class="dv">1</span>]</span>
+<span id="cb19-35"><a href="#cb19-35" tabindex="-1"></a>  res <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">iname =</span> <span class="fu">names</span>(comp_list[[j]])) <span class="sc">%do%</span> {</span>
+<span id="cb19-36"><a href="#cb19-36" tabindex="-1"></a>    i <span class="ot">&lt;-</span> comp_list[[j]][[iname]]</span>
+<span id="cb19-37"><a href="#cb19-37" tabindex="-1"></a>    x <span class="ot">&lt;-</span> use_df <span class="sc">%&gt;%</span> </span>
+<span id="cb19-38"><a href="#cb19-38" tabindex="-1"></a>      <span class="fu">filter</span>(sample_alias <span class="sc">%in%</span> i) <span class="sc">%&gt;%</span> </span>
+<span id="cb19-39"><a href="#cb19-39" tabindex="-1"></a>      <span class="fu">mutate</span>(</span>
+<span id="cb19-40"><a href="#cb19-40" tabindex="-1"></a>        <span class="at">sample_type =</span> <span class="fu">ifelse</span>(sample_alias <span class="sc">==</span> i[<span class="dv">1</span>], <span class="st">&#39;Primary tumor&#39;</span>, <span class="st">&#39;Metastasis&#39;</span>),</span>
+<span id="cb19-41"><a href="#cb19-41" tabindex="-1"></a>        <span class="at">sample_type =</span> <span class="fu">factor</span>(sample_type, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&#39;Primary tumor&#39;</span>, <span class="st">&#39;Metastasis&#39;</span>))</span>
+<span id="cb19-42"><a href="#cb19-42" tabindex="-1"></a>      )</span>
+<span id="cb19-43"><a href="#cb19-43" tabindex="-1"></a>    </span>
+<span id="cb19-44"><a href="#cb19-44" tabindex="-1"></a>    <span class="co"># Group CPM by gene</span></span>
+<span id="cb19-45"><a href="#cb19-45" tabindex="-1"></a>    x <span class="sc">%&lt;&gt;%</span> </span>
+<span id="cb19-46"><a href="#cb19-46" tabindex="-1"></a>      <span class="fu">group_by</span>(gene, sample_alias, sample_type) <span class="sc">%&gt;%</span> </span>
+<span id="cb19-47"><a href="#cb19-47" tabindex="-1"></a>      <span class="fu">summarise</span>(<span class="at">cpm =</span> <span class="fu">sum</span>(cpm)) <span class="sc">%&gt;%</span> </span>
+<span id="cb19-48"><a href="#cb19-48" tabindex="-1"></a>      <span class="fu">mutate</span>(</span>
+<span id="cb19-49"><a href="#cb19-49" tabindex="-1"></a>        <span class="at">gene =</span> <span class="fu">factor</span>(gene, <span class="at">levels =</span> use_genes)</span>
+<span id="cb19-50"><a href="#cb19-50" tabindex="-1"></a>      )</span>
+<span id="cb19-51"><a href="#cb19-51" tabindex="-1"></a>    use_cols <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb19-52"><a href="#cb19-52" tabindex="-1"></a>      <span class="st">&#39;low abundant&#39;</span> <span class="ot">=</span> <span class="st">&#39;grey80&#39;</span>,</span>
+<span id="cb19-53"><a href="#cb19-53" tabindex="-1"></a>      <span class="fu">colorRampPalette</span>(palette_OkabeIto)(<span class="fu">nlevels</span>(x<span class="sc">$</span>gene)) <span class="sc">%&gt;%</span> <span class="fu">set_names</span>(<span class="fu">levels</span>(x<span class="sc">$</span>gene))</span>
+<span id="cb19-54"><a href="#cb19-54" tabindex="-1"></a>    )</span>
+<span id="cb19-55"><a href="#cb19-55" tabindex="-1"></a>    </span>
+<span id="cb19-56"><a href="#cb19-56" tabindex="-1"></a>    x <span class="sc">%&gt;%</span> </span>
+<span id="cb19-57"><a href="#cb19-57" tabindex="-1"></a>      <span class="fu">ggplot</span>( <span class="fu">aes</span>(<span class="at">x =</span> sample_type, <span class="at">y =</span> cpm<span class="sc">/</span><span class="dv">10000</span>, <span class="at">group =</span> gene, <span class="at">fill =</span> gene)) <span class="sc">+</span> </span>
+<span id="cb19-58"><a href="#cb19-58" tabindex="-1"></a>      <span class="fu">geom_area</span>(<span class="at">colour =</span> <span class="fu">alpha</span>(<span class="st">&quot;white&quot;</span>, <span class="fl">0.1</span>), <span class="at">linewidth =</span> <span class="fl">0.08</span>, <span class="at">alpha =</span> <span class="fl">0.8</span>) <span class="sc">+</span></span>
+<span id="cb19-59"><a href="#cb19-59" tabindex="-1"></a>      <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> use_cols, <span class="at">guide =</span> <span class="fu">guide_legend</span>(<span class="at">ncol =</span> <span class="dv">3</span>)) <span class="sc">+</span></span>
+<span id="cb19-60"><a href="#cb19-60" tabindex="-1"></a>      <span class="fu">labs</span>(</span>
+<span id="cb19-61"><a href="#cb19-61" tabindex="-1"></a>        <span class="at">x =</span> <span class="st">&#39;&#39;</span>,</span>
+<span id="cb19-62"><a href="#cb19-62" tabindex="-1"></a>        <span class="at">y =</span> <span class="fu">expression</span>(<span class="st">&quot;CPM x 10&quot;</span><span class="sc">^-</span><span class="dv">4</span>),</span>
+<span id="cb19-63"><a href="#cb19-63" tabindex="-1"></a>        <span class="at">title =</span> iname,</span>
+<span id="cb19-64"><a href="#cb19-64" tabindex="-1"></a>        <span class="at">fill =</span> <span class="st">&#39;&#39;</span></span>
+<span id="cb19-65"><a href="#cb19-65" tabindex="-1"></a>      ) <span class="sc">+</span></span>
+<span id="cb19-66"><a href="#cb19-66" tabindex="-1"></a>      <span class="fu">scale_x_discrete</span>(<span class="at">expand =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>)) <span class="sc">+</span></span>
+<span id="cb19-67"><a href="#cb19-67" tabindex="-1"></a>      <span class="fu">scale_y_continuous</span>(<span class="at">expand =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">0</span>)) <span class="sc">+</span></span>
+<span id="cb19-68"><a href="#cb19-68" tabindex="-1"></a>      <span class="co"># guides(fill = &#39;none&#39;) +</span></span>
+<span id="cb19-69"><a href="#cb19-69" tabindex="-1"></a>      <span class="fu">theme</span>(</span>
+<span id="cb19-70"><a href="#cb19-70" tabindex="-1"></a>        <span class="at">panel.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">&quot;grey90&quot;</span>),</span>
+<span id="cb19-71"><a href="#cb19-71" tabindex="-1"></a>        <span class="at">plot.margin =</span> <span class="fu">margin</span>(<span class="dv">0</span>, <span class="fl">0.5</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="st">&quot;cm&quot;</span>),</span>
+<span id="cb19-72"><a href="#cb19-72" tabindex="-1"></a>        <span class="at">axis.text =</span>  <span class="fu">element_text</span>(<span class="at">size=</span><span class="dv">3</span>),</span>
+<span id="cb19-73"><a href="#cb19-73" tabindex="-1"></a>        <span class="at">axis.title =</span>  <span class="fu">element_text</span>(<span class="at">size=</span><span class="dv">3</span>),</span>
+<span id="cb19-74"><a href="#cb19-74" tabindex="-1"></a>        <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size=</span><span class="dv">3</span>, <span class="at">hjust =</span> <span class="fl">0.5</span>),</span>
+<span id="cb19-75"><a href="#cb19-75" tabindex="-1"></a>        <span class="at">legend.text =</span> <span class="fu">element_text</span>(<span class="at">size=</span><span class="dv">3</span>)</span>
+<span id="cb19-76"><a href="#cb19-76" tabindex="-1"></a>      )</span>
+<span id="cb19-77"><a href="#cb19-77" tabindex="-1"></a>  }</span>
+<span id="cb19-78"><a href="#cb19-78" tabindex="-1"></a>  <span class="fu">names</span>(res) <span class="ot">&lt;-</span> <span class="fu">names</span>(comp_list[[j]])</span>
+<span id="cb19-79"><a href="#cb19-79" tabindex="-1"></a>  <span class="fu">return</span>(res)</span>
+<span id="cb19-80"><a href="#cb19-80" tabindex="-1"></a></span>
+<span id="cb19-81"><a href="#cb19-81" tabindex="-1"></a>}</span>
+<span id="cb19-82"><a href="#cb19-82" tabindex="-1"></a><span class="fu">names</span>(muller_plots) <span class="ot">&lt;-</span> <span class="fu">names</span>(comp_list)</span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">names</span>(muller_plots)) {</span>
+<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">&#39;###&#39;</span>, i, <span class="st">&#39;</span><span class="sc">\n\n</span><span class="st">&#39;</span>)</span>
+<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a>  <span class="fu">wrap_plots</span>(muller_plots[[i]], <span class="at">ncol =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span> print</span>
+<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">&#39;</span><span class="sc">\n\n</span><span class="st">&#39;</span>)</span>
+<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a>}</span></code></pre></div>
+<div id="comparison-1" class="section level3">
+<h3>Comparison 1</h3>
+<p><img src="figure/crispr-mm_2215_sgRNA-CMT167-LLC1-CT26.Rmd/muller-plots-1.png" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-muller-plots-1">
+Past versions of muller-plots-1.png
+</button>
+</p>
+<div id="fig-muller-plots-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/a6972e9baca3624749a8db52f17092d7d2e8c2e2/docs/figure/crispr-mm_2215_sgRNA-CMT167-LLC1-CT26.Rmd/muller-plots-1.png" target="_blank">a6972e9</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-07-01
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
@@ -1368,9 +1645,9 @@ Session information
 </button>
 </p>
 <div id="workflowr-sessioninfo" class="collapse">
-<pre class="r"><code>sessionInfo()</code></pre>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span></code></pre></div>
 <p>R version 4.4.3 (2025-02-28) Platform: aarch64-apple-darwin20 Running
-under: macOS Sequoia 15.5</p>
+under: macOS 26.0.1</p>
 <p>Matrix products: default BLAS:
 /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib
 LAPACK:
@@ -1382,63 +1659,62 @@ en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8</p>
 <p>attached base packages: [1] stats4 stats graphics grDevices utils
 datasets methods<br />
 [8] base</p>
-<p>other attached packages: [1] cowplot_1.1.3.9000
-MAGeCKFlute_2.9.0<br />
-[3] ggpubr_0.6.0 ggbeeswarm_0.7.2<br />
+<p>other attached packages: [1] cowplot_1.2.0 MAGeCKFlute_2.9.0<br />
+[3] ggpubr_0.6.1 ggbeeswarm_0.7.2<br />
 [5] colorblindr_0.1.0 colorspace_2.1-1<br />
-[7] patchwork_1.3.0 ggh4x_0.3.0<br />
+[7] patchwork_1.3.1 ggh4x_0.3.1<br />
 [9] ggridges_0.5.6 openxlsx_4.2.8<br />
 [11] SummarizedExperiment_1.36.0 Biobase_2.66.0<br />
 [13] GenomicRanges_1.58.0 GenomeInfoDb_1.42.3<br />
 [15] IRanges_2.40.1 S4Vectors_0.44.0<br />
 [17] BiocGenerics_0.52.0 MatrixGenerics_1.18.1<br />
 [19] matrixStats_1.5.0 diptest_0.77-1<br />
-[21] kableExtra_1.4.0 DT_0.33<br />
+[21] kableExtra_1.4.0 DT_0.34.0<br />
 [23] magrittr_2.0.3 foreach_1.5.2<br />
 [25] knitr_1.50 lubridate_1.9.4<br />
 [27] forcats_1.0.0 stringr_1.5.1<br />
-[29] dplyr_1.1.4 purrr_1.0.4<br />
+[29] dplyr_1.1.4 purrr_1.1.0<br />
 [31] readr_2.1.5 tidyr_1.3.1<br />
-[33] tibble_3.2.1 ggplot2_3.5.2<br />
+[33] tibble_3.3.0 ggplot2_3.5.2<br />
 [35] tidyverse_2.0.0 workflowr_1.7.1</p>
 <p>loaded via a namespace (and not attached): [1] splines_4.4.3
-later_1.4.2 ggplotify_0.1.2<br />
+later_1.4.4 ggplotify_0.1.2<br />
 [4] bitops_1.0-9 filelock_1.0.3 cellranger_1.1.0<br />
-[7] R.oo_1.27.1 graph_1.84.1 XML_3.99-0.18<br />
-[10] lifecycle_1.0.4 httr2_1.1.2 rstatix_0.7.2<br />
-[13] rprojroot_2.0.4 processx_3.8.6 lattice_0.22-7<br />
-[16] crosstalk_1.2.1 backports_1.5.0 sass_0.4.10<br />
+[7] R.oo_1.27.1 graph_1.84.1 XML_3.99-0.19<br />
+[10] lifecycle_1.0.4 httr2_1.2.1 rstatix_0.7.2<br />
+[13] rprojroot_2.1.0 processx_3.8.6 lattice_0.22-7<br />
+[16] crosstalk_1.2.2 backports_1.5.0 sass_0.4.10<br />
 [19] rmarkdown_2.29 jquerylib_0.1.4 yaml_2.3.10<br />
-[22] ggtangle_0.0.6 httpuv_1.6.16 zip_2.3.3<br />
+[22] ggtangle_0.0.7 httpuv_1.6.16 zip_2.3.3<br />
 [25] depmap_1.20.0 DBI_1.2.3 RColorBrewer_1.1-3<br />
 [28] abind_1.4-8 zlibbioc_1.52.0 R.utils_2.13.0<br />
 [31] RCurl_1.98-1.17 yulab.utils_0.2.0 rappdirs_0.3.3<br />
 [34] git2r_0.36.2 GenomeInfoDbData_1.2.13 enrichplot_1.26.6<br />
 [37] ggrepel_0.9.6 tidytree_0.4.6 svglite_2.2.1<br />
 [40] codetools_0.2-20 DelayedArray_0.32.0 DOSE_4.0.1<br />
-[43] xml2_1.3.8 tidyselect_1.2.1 aplot_0.2.5<br />
+[43] xml2_1.3.8 tidyselect_1.2.1 aplot_0.2.8<br />
 [46] UCSC.utils_1.2.0 farver_2.1.2 BiocFileCache_2.14.0<br />
 [49] pathview_1.46.0 jsonlite_2.0.0 Formula_1.2-5<br />
 [52] iterators_1.0.14 systemfonts_1.2.3 tools_4.4.3<br />
-[55] treeio_1.30.0 Rcpp_1.0.14 glue_1.8.0<br />
-[58] gridExtra_2.3 SparseArray_1.6.2 xfun_0.52<br />
-[61] qvalue_2.38.0 withr_3.0.2 BiocManager_1.30.25<br />
+[55] treeio_1.30.0 Rcpp_1.1.0 glue_1.8.0<br />
+[58] gridExtra_2.3 SparseArray_1.6.2 xfun_0.53<br />
+[61] qvalue_2.38.0 withr_3.0.2 BiocManager_1.30.26<br />
 [64] fastmap_1.2.0 callr_3.7.6 digest_0.6.37<br />
 [67] gridGraphics_0.5-1 timechange_0.3.0 R6_2.6.1<br />
 [70] textshaping_1.0.1 GO.db_3.20.0 dichromat_2.0-0.1<br />
-[73] RSQLite_2.3.11 R.methodsS3_1.8.2 generics_0.1.4<br />
-[76] data.table_1.17.2 httr_1.4.7 htmlwidgets_1.6.4<br />
+[73] RSQLite_2.4.3 R.methodsS3_1.8.2 generics_0.1.4<br />
+[76] data.table_1.17.8 httr_1.4.7 htmlwidgets_1.6.4<br />
 [79] S4Arrays_1.6.0 whisker_0.4.1 pkgconfig_2.0.3<br />
 [82] gtable_0.3.6 blob_1.2.4 XVector_0.46.0<br />
 [85] clusterProfiler_4.14.6 htmltools_0.5.8.1 carData_3.0-5<br />
 [88] fgsea_1.32.4 scales_1.4.0 png_0.1-8<br />
-[91] ggfun_0.1.8 rstudioapi_0.17.1 tzdb_0.5.0<br />
-[94] reshape2_1.4.4 nlme_3.1-168 curl_6.2.2<br />
+[91] ggfun_0.2.0 rstudioapi_0.17.1 tzdb_0.5.0<br />
+[94] reshape2_1.4.4 nlme_3.1-168 curl_7.0.0<br />
 [97] org.Hs.eg.db_3.20.0 cachem_1.1.0 BiocVersion_3.20.0<br />
 [100] parallel_4.4.3 vipor_0.4.7 AnnotationDbi_1.68.0<br />
-[103] pillar_1.10.2 grid_4.4.3 vctrs_0.6.5<br />
-[106] promises_1.3.2 car_3.1-3 dbplyr_2.5.0<br />
-[109] beeswarm_0.4.0 Rgraphviz_2.50.0 evaluate_1.0.3<br />
+[103] pillar_1.11.0 grid_4.4.3 vctrs_0.6.5<br />
+[106] promises_1.3.3 car_3.1-3 dbplyr_2.5.0<br />
+[109] beeswarm_0.4.0 Rgraphviz_2.50.0 evaluate_1.0.5<br />
 [112] KEGGgraph_1.66.0 cli_3.6.5 compiler_4.4.3<br />
 [115] rlang_1.1.6 crayon_1.5.3 ggsignif_0.6.4<br />
 [118] labeling_0.4.3 ps_1.9.1 getPass_0.2-4<br />
@@ -1447,7 +1723,7 @@ later_1.4.2 ggplotify_0.1.2<br />
 [127] lazyeval_0.2.2 GOSemSim_2.32.0 Matrix_1.7-3<br />
 [130] ExperimentHub_2.14.0 hms_1.1.3 bit64_4.6.0-1<br />
 [133] KEGGREST_1.46.0 AnnotationHub_3.14.0 igraph_2.1.4<br />
-[136] broom_1.0.8 memoise_2.0.1 bslib_0.9.0<br />
+[136] broom_1.0.9 memoise_2.0.1 bslib_0.9.0<br />
 [139] ggtree_3.14.0 fastmatch_1.1-6 bit_4.6.0<br />
 [142] readxl_1.4.5 gson_0.1.0 ape_5.8-1</p>
 </div>
@@ -1527,7 +1803,7 @@ $(document).ready(function ()  {
 
     // establish options
     var options = {
-      selectors: "h1,h2,h3,h4,h5",
+      selectors: "h1,h2,h3,h4",
       theme: "bootstrap3",
       context: '.toc-content',
       hashGenerator: function (text) {

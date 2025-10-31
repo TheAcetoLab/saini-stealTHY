@@ -9,14 +9,15 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
+<meta name="author" content="Francesc Castro-Giner" />
 
 
-<title>Home</title>
+<title>StealTHY eludes CRISPR immunogenicity to expose concealed metastatic regulators</title>
 
-<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<link href="site_libs/bootstrap-3.3.5/css/journal.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
@@ -29,12 +30,13 @@
        h6 {font-size: 12px;}
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <script src="site_libs/navigation-1.1/codefolding.js"></script>
-<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
-<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
-<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
-<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.5.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet" />
 
 <link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
 <!-- Add a small amount of space between sections. -->
@@ -55,22 +57,13 @@ div.section {
   ul.task-list{list-style: none;}
     </style>
 
-<style type="text/css">code{white-space: pre;}</style>
-<script type="text/javascript">
-if (window.hljs) {
-  hljs.configure({languages: []});
-  hljs.initHighlightingOnLoad();
-  if (document.readyState && document.readyState === "complete") {
-    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
-  }
-}
-</script>
 
 
 
 
 
 
+<link rel="stylesheet" href="style.css" type="text/css" />
 
 
 
@@ -235,6 +228,69 @@ $(document).ready(function () {
 
 
 
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
 
 </head>
 
@@ -242,6 +298,16 @@ $(document).ready(function () {
 
 
 <div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
 
 
 
@@ -254,26 +320,72 @@ $(document).ready(function () {
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="index.html">crispr-immunorejection</a>
+      <a class="navbar-brand" href="index.html">StealTHY</a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
+        
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
         <li>
-  <a href="index.html">Home</a>
+  <a href="index.html">
+    <span class="fa fa-home"></span>
+     
+    Home
+  </a>
 </li>
 <li>
-  <a href="about.html">About</a>
+  <a href="about.html">
+    <span class="fa fa-info"></span>
+     
+    About
+  </a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-bar-chart"></span>
+     
+    Analyses
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li class="dropdown-header">Data generation</li>
+    <li>
+      <a href="0_differential_expression_gsea_gsva.html">Run differential gene expression analysis, GSEA and GSVA</a>
+    </li>
+    <li class="divider"></li>
+    <li class="dropdown-header">Main results</li>
+    <li>
+      <a href="patients_ctc_counts_distribution.html">CTC counts distribution in breast cancer patients</a>
+    </li>
+    <li>
+      <a href="br16_pca.html">PCA analysis of CTC gene expression in NSG-CDX-BR16 mice</a>
+    </li>
+    <li>
+      <a href="br16_dge.html">Differential gene expression report for NSG-CDX-BR16 data</a>
+    </li>
+    <li>
+      <a href="gsea_across_models.html">Report of GSEA and GSVA analysis in NSG-CDX-BR16, NSG-LM2, Patient and NSG-LM2 time kinetics</a>
+    </li>
+    <li>
+      <a href="core_gene_sets.html">Analysis of genes from candidate pathways</a>
+    </li>
+  </ul>
 </li>
 <li>
   <a href="license.html">License</a>
 </li>
-      </ul>
-      <ul class="nav navbar-nav navbar-right">
-        <li>
-  <a href="https://github.com/fcg-bio/crispr-immunorejection">
-    <span class="fab fa-github"></span>
+<li>
+  <a href="https://github.com/TheAcetoLab/saini-stealTHY">
+    <span class="fa fa-github"></span>
      
-    Source code
+  </a>
+</li>
+<li>
+  <a href="https://www.theacetolab.com">
+    <span class="fa fa-flask"></span>
+     
   </a>
 </li>
       </ul>
@@ -293,7 +405,9 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Home</h1>
+<h1 class="title toc-ignore">StealTHY eludes CRISPR immunogenicity to
+expose concealed metastatic regulators</h1>
+<h4 class="author">Francesc Castro-Giner</h4>
 
 </div>
 
@@ -322,7 +436,7 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2024-05-17
+<strong>Last updated:</strong> 2025-10-31
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -369,13 +483,15 @@ results.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrong5c3fb91">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtree455fa9121fcca51363cf639f7ee170fb108e34c1targetblank455fa91a">
 <span class="glyphicon glyphicon-ok text-success"
-aria-hidden="true"></span> <strong>Repository version:</strong> 5c3fb91
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/455fa9121fcca51363cf639f7ee170fb108e34c1" target="_blank">455fa91</a>
 </a>
 </p>
 </div>
-<div id="strongRepositoryversionstrong5c3fb91"
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtree455fa9121fcca51363cf639f7ee170fb108e34c1targetblank455fa91a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -384,7 +500,8 @@ and connecting the code version to the results is critical for
 reproducibility.
 </p>
 <p>
-The results in this page were generated with repository version 5c3fb91.
+The results in this page were generated with repository version
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/455fa9121fcca51363cf639f7ee170fb108e34c1" target="_blank">455fa91</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -399,11 +516,58 @@ were generated:
 </p>
 <pre><code>
 Ignored files:
+    Ignored:    .DS_Store
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
+    Ignored:    analysis/.DS_Store
+    Ignored:    analysis/templates/.DS_Store
+    Ignored:    code/.DS_Store
+    Ignored:    code/raw_data_processing/rnaseq/p27851_o32062/pipelines/
+    Ignored:    configuration/.DS_Store
+    Ignored:    data/.DS_Store
+    Ignored:    data/crispr/
+    Ignored:    data/resources/
+    Ignored:    data/rnaseq/
+    Ignored:    output/.DS_Store
+    Ignored:    output/clinical/
+    Ignored:    output/crispr/
+    Ignored:    output/rnaseq/
+
+Untracked files:
+    Untracked:  analysis/style.css
+    Untracked:  code/R-functions/subchunkify.R
 
 Unstaged changes:
+    Modified:   .gitignore
     Modified:   analysis/_site.yml
+    Deleted:    analysis/crispr-hsapiens_2180_sgRNA_r1.Rmd
+    Deleted:    analysis/crispr-mm_2215_sgRNA-clonality_r1.Rmd
+    Deleted:    analysis/crispr-mm_2215_sgRNA-r2oC.Rmd
+    Deleted:    analysis/crispr-mm_2215_sgRNA-r2oD.Rmd
+    Deleted:    analysis/crispr-mm_2215_sgRNA-r2oD_r1.Rmd
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_ko_culture--over--amhr2_control_culture_GSEA_msigdb.h-1.pdf
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_ko_culture--over--amhr2_control_culture_GSEA_msigdb.h-1.png
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_ko_notgfbeta--over--amhr2_ko_culture_GSEA_msigdb.h-1.pdf
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_ko_notgfbeta--over--amhr2_ko_culture_GSEA_msigdb.h-1.png
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_overexpression--over--amhr2_control_culture_GSEA_msigdb.h-1.pdf
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_overexpression--over--amhr2_control_culture_GSEA_msigdb.h-1.png
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_overexpression--over--amhr2_ko_culture_GSEA_msigdb.h-1.pdf
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_overexpression--over--amhr2_ko_culture_GSEA_msigdb.h-1.png
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_overexpression--over--amhr2_ko_notgfbeta_GSEA_msigdb.h-1.pdf
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_overexpression--over--amhr2_ko_notgfbeta_GSEA_msigdb.h-1.png
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-invivo_amhr2_ko-+-amhr2_ko_culture--over--invivo_control_sgrna-+-amhr2_control_culture_GSEA_msigdb.h-1.pdf
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-invivo_amhr2_ko-+-amhr2_ko_culture--over--invivo_control_sgrna-+-amhr2_control_culture_GSEA_msigdb.h-1.png
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-invivo_amhr2_ko--over--invivo_control_sgrna_GSEA_msigdb.h-1.pdf
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-invivo_amhr2_ko--over--invivo_control_sgrna_GSEA_msigdb.h-1.png
+    Deleted:    analysis/templates/docs/file/tmp/dge.xlsx
+    Deleted:    analysis/templates/docs/file/tmp/gse_gsea_msigdb.h.xlsx
+    Deleted:    analysis/templates/docs/file/tmp/gse_gsego_bp.xlsx
+    Deleted:    analysis/templates/docs/file/tmp/gse_gsego_mf.xlsx
+    Modified:   analysis/templates/rnaseq-deg-edger.Rmd
+    Modified:   code/R-functions/gse_report.r
+    Modified:   configuration/rmarkdown/color_palettes.R
+    Modified:   configuration/rmarkdown/ggplot_theme.R
+    Modified:   update_workflowr.R
 
 </code></pre>
 <p>
@@ -418,7 +582,6 @@ have uncommitted changes.
 <hr>
 </div>
 <div id="versions" class="tab-pane fade">
-
 <p>
 These are the previous versions of the repository in which changes were
 made to the R Markdown (<code>analysis/index.Rmd</code>) and HTML
@@ -453,7 +616,41 @@ Message
 Rmd
 </td>
 <td>
-5c3fb91
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/455fa9121fcca51363cf639f7ee170fb108e34c1/analysis/index.Rmd" target="_blank">455fa91</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-10-31
+</td>
+<td>
+Prepare files for publication
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/TheAcetoLab/saini-stealTHY/13b89b011934eb3bd6ea30828c0fe8a0c0cd5a92/docs/index.html" target="_blank">13b89b0</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2024-05-17
+</td>
+<td>
+Build site.
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/5c3fb91479e6eb57971b4b2e04b5d7c95d632e4a/analysis/index.Rmd" target="_blank">5c3fb91</a>
 </td>
 <td>
 Francesc Castro-Giner
@@ -472,7 +669,225 @@ Start workflowr project.
 </div>
 </div>
 </div>
-<p>Welcome to my research website.</p>
+<div id="publication" class="section level2">
+<h2>Publication</h2>
+<p>Saini, M., Castro-Giner, F., Hotz, A., Sznurkowska, M.K., Nüesch, M.,
+Cuenot, F.M., Budinjas, S., Bilfeld, G., Ildız, E.S., Strittmatter, K.,
+Krol, I., Diamantopoulou, Z., Paasinen-Sohns, A., Waldmeier, M., Cássio,
+R., Kreutzer, S., Kontarakis, Z., Gvozdenovic, A., Aceto, N. StealTHY
+eludes CRISPR immunogenicity to expose concealed metastatic regulators
+(2025)</p>
+</div>
+<div id="abstract" class="section level2">
+<h2>Abstract</h2>
+<p>CRISPR screens have become standard gene discovery platforms in
+various contexts, including cancer. Yet, commonly available CRISPR-Cas9
+tools are increasingly recognized as unfit for in vivo investigations in
+immunocompetent contexts, due to broad immunogenicity of bacterial
+nucleases and reporters. Here, we show how conventional CRISPR screens
+in tumor grafts are systematically jeopardized by immunoediting in
+syngeneic and humanized immunocompetent hosts, resulting in iatrogenic
+clonal dropouts and ultimately compromising target identification. To
+resolve this, we present StealTHY, an immunogen-free CRISPR platform
+compatible with virtually all immunocompetent designs, enabling
+preservation of clonal architecture and exposing previously concealed
+cancer vulnerabilities. Among these, we identify the AMH-AMHR2 axis as a
+formerly unappreciated metastasis target. Thus, with StealTHY, we
+provide a new resource to expand the applicability of CRISPR screens to
+immunocompetent models including humanized tumor grafts, revealing
+metastasis regulators of therapeutic relevance.</p>
+</div>
+<div id="data-pre-processing" class="section level2">
+<h2>Data pre-processing</h2>
+<p>Raw data is available at Gene Expression Omnibus (GEO, NCBI), under
+the accession codes <a
+href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE268044">GSE268044</a>,
+<a
+href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE268045">GSE268045</a>
+and <a
+href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE268588">GSE268588</a>.
+Data processing is computationally expensive and is not covered in this
+repository. We provide description of the data pre-processing workflow
+together with software version in the original publication. Processed
+data, large result files, additional functions, references and metadata
+are were archived at <a
+href="https://doi.org/10.5281/zenodo.11208099"><img
+src="https://zenodo.org/doi/10.5281/zenodo.11208099.svg"
+alt="DOI" /></a></p>
+</div>
+<div id="data-and-code-availability" class="section level2">
+<h2>Data and code availability</h2>
+<p>To reproduce our analysis, first clone source code from the <a
+href="https://github.com/TheAcetoLab/saini-stealTHY">GitHub
+repository</a>. This repository is also archived at <a
+href="https://doi.org/10.5281/11288553"><img
+src="https://zenodo.org/badge/DOI/10.5281/zenodo.11288553.svg"
+alt="DOI" /></a></p>
+<pre><code>git clone https://github.com/TheAcetoLab/saini-stealTHY</code></pre>
+<p>Next, download processed data and output data deposited in <a
+href="https://doi.org/10.5281/zenodo.11374563">Zenodo</a> into the
+cloned project folder and untar the files.</p>
+<pre><code>for file in *.tar.gz; do tar xzvf &quot;${file}&quot; &amp;&amp; rm &quot;${file}&quot;; done</code></pre>
+</div>
+<div id="reproducibility" class="section level2">
+<h2>Reproducibility</h2>
+<p>The results form our analyses are listed below in webpage format.
+They were generated from R Markdown documents deposited in the <a
+href="https://github.com/TheAcetoLab/saini-stealTHY">GitHub
+repository</a>. The workflow of the analysis was created using the <a
+href="https://cran.r-project.org/web/packages/workflowr/index.html">workflowr</a>
+R package and can be reproduced in its totality using <a
+href="https://cran.r-project.org/web/packages/workflowr/index.html">workflowr</a>
+<a
+href="https://jdblischak.github.io/workflowrBeta/reference/wflow_build.html">wflow_build</a>
+command after the installation of the proper R packages. Session info,
+including R and package versions, was automatically included at the end
+of each analysis file.</p>
+<p>Files containing pre-computed results from differential expression or
+gene-set enrichment analyses were deposited in <a
+href="https://doi.org/10.5281/zenodo.11374563"><img
+src="https://zenodo.org/badge/DOI/10.5281/zenodo.11374563.svg"
+alt="DOI" /></a>. In order to generate those files again change the
+option <code>eval = FALSE</code> to <code>eval = TRUE</code> in the
+specific code chunk from the R Markdown file.</p>
+</div>
+<div id="analyses" class="section level2">
+<h2>Analyses</h2>
+<ul>
+<li><a href="crispr-mm_2215_sgRNA-clonality.html">In-vivo CRISPR
+screening in mouse: sgRNA distribution</a></li>
+<li><a href="rnaseq-tumor-bulk.html">RNA-seq of primary tumor
+transcriptomes from syngeneic hosts based on Cas9 delivery TrCD8a
+status</a></li>
+<li><a href="crispr-mm_2215_sgRNA-StealTHY.html">Restoration of
+metastatic gene discovery by StealTHY CRISPR screening</a></li>
+<li><a href="crispr-mm_2215_sgRNA-CMT167-LLC1-CT26.html">CRISPR
+screening transplantation in immunocompetent hosts of metastatic lung
+carcinoma cells (LLC1, C167) and colon carcinoma cells (CT26) previously
+subjected to StealTHY KO</a></li>
+<li><a href="crispr-hsapiens_2180_sgRNA.html">CRISPR screening in
+humanized mice by StealTHY</a></li>
+<li><a href="tcga_survival_crispr_hits_signatures.html">Survival
+analysis of gene-signatures identified in the CRISPR screening in
+humanized mice by StealTHY</a></li>
+<li><a href="rnaseq-amhr2_ko-deg.html">RNA-sequencing of primary tumors
+from syngeneic FVB/N orthotopically transplanted with Py2T carrying
+StealTHY KO of Amhr2 or a non-targeting sgRNA</a></li>
+<li><a href="rnaseq-tumor-facs-immune.html">RNA-seq of FACs sorted CD3+
+TIL cells comparing Cas9-Thy1(A) versus Thy1(A) transduction</a></li>
+<li><a href="rnaseq-tumor-facs-cancer.html">RNA-seq of FACs sorted
+carcinoma cells comparing Cas9-Thy1(A) versus Thy1(A)
+transduction</a></li>
+<li><a
+href="tcga_immune_infiltrate_amhr2_ko_signatures.html">Correlation of
+<em>AMH</em> signatures with immune cell fractions in TCGA</a></li>
+<li><a href="tcga_survival_amhr2_ko_signatures.html">Survival analysis
+of <em>AMH</em> signatures in TCGA cohorts</a></li>
+<li><a href="tcga_survival_crispr_hits_genes.html">Survival analysis of
+<em>AMH</em>, <em>AMHR2</em> and <em>GDF9</em> expression in TCGA
+cohorts</a></li>
+</ul>
+</div>
+<div id="paper-figures-and-tables" class="section level2">
+<h2>Paper figures and tables</h2>
+<div id="main-figures" class="section level3">
+<h3>Main figures</h3>
+<div id="figure-2" class="section level4">
+<h4>Figure 2</h4>
+<pre><code>-   [Figure 2B](crispr-mm_2215_sgRNA-clonality.html#31_Figure_2B:_sgRNA_distribution_in_mice_transplanted_with_4T1_cells)
+-   [Figure 2C](crispr-mm_2215_sgRNA-clonality.html#5_Figure_2C:_Representative_Müller_plots_of_4T1_in_syngeneic_recipients)</code></pre>
+</div>
+<div id="figure-3" class="section level4">
+<h4>Figure 3</h4>
+<pre><code>-   [Figure 3D](rnaseq-tumor-bulk.html#Figure_3D_:_qRT-PCR_in_TrCD8a+_and_TrCD8a-)
+-   [Figure 3H](rnaseq-tumor-bulk.html#Figure_3H:_Sample_distances_in_MVT1_models)</code></pre>
+</div>
+<div id="figure-4" class="section level4">
+<h4>Figure 4</h4>
+<pre><code>-   [Figure 4D](crispr-mm_2215_sgRNA-StealTHY.html#sgRNA_distribution2)
+-   [Figure 4C](crispr-mm_2215_sgRNA-StealTHY.html#Figure_4C_and_Supplementary_Figure_4F)
+-   [Figure 4D](crispr-mm_2215_sgRNA-StealTHY.html#Figure_4D:_Proportion_of_non-expressed_hits)</code></pre>
+</div>
+<div id="figure-5" class="section level4">
+<h4>Figure 5</h4>
+<pre><code>-   [Figure 5H](crispr-hsapiens_2180_sgRNA.html#31_Figure_5H:_Muller_plots_for_huNSGs)</code></pre>
+</div>
+<div id="figure-6" class="section level4">
+<h4>Figure 6</h4>
+<pre><code>-   [Figure 6B](crispr-hsapiens_2180_sgRNA.html#sgRNA_distribution_by_condition_Primary_tumor)
+-   [Figure 6C](crispr-hsapiens_2180_sgRNA.html#Figure_6C:_Volcano_plots_showing_genes_Lungs_over_Primary_Tumor_in_StealTHY_KO)
+-   [Figure 6D](crispr-hsapiens_2180_sgRNA.html#Figure_6D:_Distribution_of_the_fold-change_of_Lungs_over_Primary_Tumor_in_huNSG_and_NSG_host)
+-   [Figure 6E](tcga_survival_crispr_hits_signatures.html#Figure_6F:_Forest_plot_by_study)
+-   [Figure 6F](tcga_survival_crispr_hits_signatures.html#Figure_6E:_Kaplan-Meier_plots)</code></pre>
+</div>
+<div id="figure-7" class="section level4">
+<h4>Figure 7</h4>
+<pre><code>-   [Figure 7F](rnaseq-amhr2_ko-deg.html#__531_Comparison_InVivo_AMHR2_KO_+_AMHR2_KO_culture–over–InVivo_Control_sgRNA_+_AMHR2_Control_culture_)
+-   [Figure 7G](tcga_immune_infiltrate_amhr2_ko_signatures.html#4_Figure_7G:_Correlation_of_AMH_signatures_with_immune_cell_fractions_across_TCGA_cohorts_(Heatmaps))
+-   [Figure 7H: Left panel](tcga_survival_amhr2_ko_signatures.html#Figure_7H_Right:_Pooled_Kaplan-Meier_plots_-_Optimal_cut-off)
+-   [Figure 7H: Right panel](tcga_survival_amhr2_ko_signatures.html#Figure_7H_Left:_Forest_plot_by_study)
+  </code></pre>
+</div>
+</div>
+<div id="supplementary-figures" class="section level3">
+<h3>Supplementary figures</h3>
+<div id="supplementary-figure-2" class="section level4">
+<h4>Supplementary Figure 2</h4>
+<pre><code>-   [Supplementary Figure 2B](crispr-mm_2215_sgRNA-clonality.html#32_Supplementary_Figure_2B:_sgRNA_distribution_in_mice_transplanted_with_Py2T_and_MVT1_cells)
+-   [Supplementary Figure 2C-left](crispr-mm_2215_sgRNA-clonality.html#41_Supplementary_Figure_2C_left_:_K-S_test_table)
+-   [Supplementary Figure 2C-right](crispr-mm_2215_sgRNA-clonality.html#42_Supplementary_Figure_2C_right_:_Empirical_Cumulative_Density_Function_(ECDF)_plots)
+-   [Supplementary Figure 2D: Lung cancer in dCas9 + Puro (left-upper panel)](crispr-mm_2215_sgRNA-clonality.html#21_Supplementary_Figure_2D_(left_upper))
+-   [Supplementary Figure 2D: Lung cancer in Thy1 (right-upper panel)](crispr-mm_2215_sgRNA-clonality.html#22_Supplementary_Figure_2D_(right_upper))
+-   [Supplementary Figure 2D: Mammary cancer in Puro (left-lower panel)](crispr-mm_2215_sgRNA-clonality.html#Supplementary_Figure_2D:_Metastasis_-_Puro_(left_lower))
+-   [Supplementary Figure 2D: Mammary cancer in Thy1 (right-lower panel)](crispr-mm_2215_sgRNA-clonality.html#Supplementary_Figure_2D:_Metastasis_-_Thy1_(right_lower))
+-   [Supplementary Figure 2F: Right panel](crispr-mm_2215_sgRNA-clonality.html#23_Supplementary_Figure_2F)
+-   [Supplementary Figure 2G: Upper panel](rnaseq-tumor-bulk.html#Supplementary_Figure_2G_top:_Differential_expressed_genes_in_dCas9-Thy1_over_Thy1_transduction)
+-   [Supplementary Figure 2G: Lower panel](rnaseq-tumor-bulk.html#Supplementary_Figure_2G_bottom:_Representative_gene-sets_enriched_in_dCas9-Thy1_over_Thy1_transduction)
+-   [Supplementary Figure 2H: CD3+ TIL upper panel](rnaseq-tumor-facs-immune.html#41_Supplementary_Figure_2H_top_left:_Differential_expressed_genes_in_dCas9-Thy1_over_Thy1_transduction_in_sorted_CD3-positive_TILs)
+-   [Supplementary Figure 2H: CD3+ TIL lower panel](rnaseq-tumor-facs-immune.html#51_Supplementary_Figure_2H_bottom_left:_Representative_gene-sets_enriched_in_dCas9-Thy1_over_Thy1_transduction) 
+-   [Supplementary Figure 2H: Carcinoma cells upper panel](rnaseq-tumor-facs-cancer.html#41_Supplementary_Figure_2H_top_right:_Differential_expressed_genes_in_dCas9-Thy1_over_Thy1_transduction_in_sorted_carcinoma_cells)
+-   [Supplementary Figure 2H: Carcinoma cells lower panel](rnaseq-tumor-facs-cancer.html#51_Supplementary_Figure_2H_bottom_right:_Representative_gene-sets_enriched_in_dCas9-Thy1_over_Thy1_transduction)  </code></pre>
+</div>
+<div id="supplementary-figure-3" class="section level4">
+<h4>Supplementary Figure 3</h4>
+<pre><code>-   [Supplementary Figure 3E: Py2T1 (left panel)](rnaseq-tumor-bulk.html#Supplementary_figure_3E_left:_Sample_distances_in_Py2T_model)
+-   [Supplementary Figure 3E: 4T1 (right panel)](rnaseq-tumor-bulk.html#Supplementary_figure_3E_right:_Sample_distances_in_4T1_model)</code></pre>
+</div>
+<div id="supplementary-figure-4" class="section level4">
+<h4>Supplementary Figure 4</h4>
+<pre><code>-   [Supplementary Figure 4B](crispr-mm_2215_sgRNA-StealTHY.html#Supplementary_figure_4B:_sgRNA_distribution_in_mice_transplanted_with_4T1_cells_previously_subjected_to_StealTHY_KO)
+-   [Supplementary Figure 4C](crispr-mm_2215_sgRNA-clonality.html#7_Supplementary_Figure_4C)
+-   [Supplementary Figure 4D](crispr-mm_2215_sgRNA-StealTHY.html#Supplementary_Figure_4D_:_K-S_test_table)
+-   [Supplementary Figure 4E](crispr-mm_2215_sgRNA-StealTHY.html#Supplementary_Figure_4E)
+-   [Supplementary Figure 4F](crispr-mm_2215_sgRNA-StealTHY.html#Figure_4C_and_Supplementary_Figure_4F)
+-   [Supplementary Figure 4G](crispr-mm_2215_sgRNA-StealTHY.html#Supplementary_figure_4G:_Proportion_of_non-expressed_hits)
+-   [Supplementary Figure 4L](crispr-mm_2215_sgRNA-clonality.html#24_Supplementary_Figure_4L)
+-   [Supplementary Figure 4M](crispr-mm_2215_sgRNA-CMT167-LLC1-CT26.html#Supplementary_figure_4M:_Differential_abundance_of_selected_genes)
+-   [Supplementary Figure 4N](crispr-mm_2215_sgRNA-CMT167-LLC1-CT26.html#Supplementary_figure_4N:_Muller_plots_of_selected_genes)</code></pre>
+</div>
+<div id="supplementary-figure-6" class="section level4">
+<h4>Supplementary Figure 6</h4>
+<pre><code>-   [Supplementary Figure 6D](crispr-hsapiens_2180_sgRNA.html#Supplementary_Figure_6D:_Fold-change_of_Lungs_over_Primary_Tumor_in_huNSG_and_NSG_host)
+-   [Supplementary Figure 6L](tcga_survival_crispr_hits_genes.html#Supplementary_Figure_6L:_Forest_plot_by_study)
+-   [Supplementary Figure 6E](tcga_survival_crispr_hits_genes.html#Supplementary_Figure_6E:_Kaplan-Meier_plots)</code></pre>
+</div>
+<div id="supplementary-figure-7" class="section level4">
+<h4>Supplementary Figure 7</h4>
+<pre><code>-   [Supplementary Figure 7L](rnaseq-amhr2_ko-deg.html#Supplementary_Figure_7L)
+-   [Supplementary Figure 7M: Positive Galunisertib](rnaseq-amhr2_ko-deg.html#Supplementary_Figure_7M_(Galunisertib_positive))
+-   [Supplementary Figure 7M: Negative Galunisertib](rnaseq-amhr2_ko-deg.html#Mammary_epithelium_proliferation30)
+-   [Supplementary Figure 7P: Epithelial genes](rnaseq-amhr2_ko-deg.html#EMT_regulators_and_targets)
+-   [Supplementary Figure 7P: Proliferative genes](rnaseq-amhr2_ko-deg.html#Mammary_epithelium_proliferation)
+-   [Supplementary Figure 7U: Negative Galunisertib](rnaseq-amhr2_ko-deg.html#Supplementary_Figure_7U_left)
+-   [Supplementary Figure 7U: Positive Galunisertib](rnaseq-amhr2_ko-deg.html#Supplementary_Figure_7U_right_(Galunisertib_positive))</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
 
 
 <!-- Adjust MathJax settings so that all math formulae are shown using
@@ -490,6 +905,8 @@ footer is added to webpages before the MathJax javascript. -->
 
 
 
+</div>
+</div>
 
 </div>
 
@@ -527,6 +944,35 @@ $(document).ready(function () {
 });
 </script>
 
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3,h4",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>

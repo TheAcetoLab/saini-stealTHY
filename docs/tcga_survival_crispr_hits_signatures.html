@@ -11,14 +11,14 @@
 
 <meta name="author" content="Francesc Castro-Giner" />
 
-<meta name="date" content="2025-07-01" />
+<meta name="date" content="2025-10-31" />
 
 <title>Survival analysis in TCGA</title>
 
 <script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<link href="site_libs/bootstrap-3.3.5/css/journal.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
@@ -36,8 +36,6 @@
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <script src="site_libs/navigation-1.1/codefolding.js"></script>
-<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
-<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
 <link href="site_libs/font-awesome-6.5.2/css/all.min.css" rel="stylesheet" />
 <link href="site_libs/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet" />
 
@@ -60,22 +58,125 @@ div.section {
   ul.task-list{list-style: none;}
     </style>
 
-<style type="text/css">code{white-space: pre;}</style>
-<script type="text/javascript">
-if (window.hljs) {
-  hljs.configure({languages: []});
-  hljs.initHighlightingOnLoad();
-  if (document.readyState && document.readyState === "complete") {
-    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+
+
+<style type="text/css">
+  code {
+    white-space: pre;
   }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
 }
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+.sourceCode .row {
+  width: 100%;
+}
+.sourceCode {
+  overflow-x: auto;
+}
+.code-folding-btn {
+  margin-right: -30px;
+}
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
 </script>
 
 
 
 
-
-
+<link rel="stylesheet" href="style.css" type="text/css" />
 
 
 
@@ -336,22 +437,68 @@ div.tocify {
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
+        
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
         <li>
-  <a href="index.html">Home</a>
+  <a href="index.html">
+    <span class="fa fa-home"></span>
+     
+    Home
+  </a>
 </li>
 <li>
-  <a href="about.html">About</a>
+  <a href="about.html">
+    <span class="fa fa-info"></span>
+     
+    About
+  </a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-bar-chart"></span>
+     
+    Analyses
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li class="dropdown-header">Data generation</li>
+    <li>
+      <a href="0_differential_expression_gsea_gsva.html">Run differential gene expression analysis, GSEA and GSVA</a>
+    </li>
+    <li class="divider"></li>
+    <li class="dropdown-header">Main results</li>
+    <li>
+      <a href="patients_ctc_counts_distribution.html">CTC counts distribution in breast cancer patients</a>
+    </li>
+    <li>
+      <a href="br16_pca.html">PCA analysis of CTC gene expression in NSG-CDX-BR16 mice</a>
+    </li>
+    <li>
+      <a href="br16_dge.html">Differential gene expression report for NSG-CDX-BR16 data</a>
+    </li>
+    <li>
+      <a href="gsea_across_models.html">Report of GSEA and GSVA analysis in NSG-CDX-BR16, NSG-LM2, Patient and NSG-LM2 time kinetics</a>
+    </li>
+    <li>
+      <a href="core_gene_sets.html">Analysis of genes from candidate pathways</a>
+    </li>
+  </ul>
 </li>
 <li>
   <a href="license.html">License</a>
 </li>
-      </ul>
-      <ul class="nav navbar-nav navbar-right">
-        <li>
+<li>
   <a href="https://github.com/TheAcetoLab/saini-stealTHY">
-    <span class="fab fa-github"></span>
+    <span class="fa fa-github"></span>
      
-    Source code
+  </a>
+</li>
+<li>
+  <a href="https://www.theacetolab.com">
+    <span class="fa fa-flask"></span>
+     
   </a>
 </li>
       </ul>
@@ -374,7 +521,7 @@ div.tocify {
 <h1 class="title toc-ignore">Survival analysis in TCGA</h1>
 <h3 class="subtitle">CRISPR hits signatures</h3>
 <h4 class="author">Francesc Castro-Giner</h4>
-<h4 class="date">July 01, 2025</h4>
+<h4 class="date">October 31, 2025</h4>
 
 </div>
 
@@ -403,7 +550,7 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2025-07-01
+<strong>Last updated:</strong> 2025-10-31
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -534,15 +681,15 @@ project makes it easier to run your code on other machines.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtree2d1b5a6827bac6db4bf98f99c9267fd81f37ecc9targetblank2d1b5a6a">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtree455fa9121fcca51363cf639f7ee170fb108e34c1targetblank455fa91a">
 <span class="glyphicon glyphicon-ok text-success"
 aria-hidden="true"></span> <strong>Repository version:</strong>
-<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/2d1b5a6827bac6db4bf98f99c9267fd81f37ecc9" target="_blank">2d1b5a6</a>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/455fa9121fcca51363cf639f7ee170fb108e34c1" target="_blank">455fa91</a>
 </a>
 </p>
 </div>
 <div
-id="strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtree2d1b5a6827bac6db4bf98f99c9267fd81f37ecc9targetblank2d1b5a6a"
+id="strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtree455fa9121fcca51363cf639f7ee170fb108e34c1targetblank455fa91a"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -552,7 +699,7 @@ reproducibility.
 </p>
 <p>
 The results in this page were generated with repository version
-<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/2d1b5a6827bac6db4bf98f99c9267fd81f37ecc9" target="_blank">2d1b5a6</a>.
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/455fa9121fcca51363cf639f7ee170fb108e34c1" target="_blank">455fa91</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -571,6 +718,7 @@ Ignored files:
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
     Ignored:    analysis/.DS_Store
+    Ignored:    analysis/templates/.DS_Store
     Ignored:    code/.DS_Store
     Ignored:    code/raw_data_processing/rnaseq/p27851_o32062/pipelines/
     Ignored:    configuration/.DS_Store
@@ -584,25 +732,44 @@ Ignored files:
     Ignored:    output/rnaseq/
 
 Untracked files:
-    Untracked:  analysis/crispr-hsapiens_2180_sgRNA_r1.Rmd
-    Untracked:  analysis/crispr-mm_2215_sgRNA-CMT167-LLC1-CT26.Rmd
-    Untracked:  analysis/crispr-mm_2215_sgRNA-clonality_r1.Rmd
-    Untracked:  analysis/crispr-mm_2215_sgRNA-r2oD_r1.Rmd
-    Untracked:  analysis/crispr-muller-mm_2215_sgRNA.Rmd
-    Untracked:  analysis/rnaseq-amhr2_ko-deg.Rmd
-    Untracked:  analysis/templates/
+    Untracked:  analysis/crispr-hsapiens_2180_sgRNA.md
+    Untracked:  analysis/crispr-mm_2215_sgRNA-CMT167-LLC1-CT26.md
+    Untracked:  analysis/crispr-mm_2215_sgRNA-StealTHY.md
+    Untracked:  analysis/crispr-mm_2215_sgRNA-clonality.md
+    Untracked:  analysis/index.md
+    Untracked:  analysis/rnaseq-tumor-bulk.md
+    Untracked:  analysis/style.css
     Untracked:  code/R-functions/subchunkify.R
 
 Unstaged changes:
     Modified:   .gitignore
-    Modified:   analysis/crispr-hsapiens_2180_sgRNA.Rmd
-    Modified:   analysis/crispr-mm_2215_sgRNA-StealTHY.Rmd
-    Modified:   analysis/crispr-mm_2215_sgRNA-clonality.Rmd
-    Modified:   analysis/crispr-mm_2215_sgRNA-r2oC.Rmd
-    Modified:   analysis/rnaseq-tumor-bulk.Rmd
-    Modified:   analysis/rnaseq-tumor-facs-cancer.Rmd
-    Modified:   analysis/rnaseq-tumor-facs-immune.Rmd
+    Modified:   analysis/_site.yml
+    Deleted:    analysis/crispr-hsapiens_2180_sgRNA_r1.Rmd
+    Deleted:    analysis/crispr-mm_2215_sgRNA-clonality_r1.Rmd
+    Deleted:    analysis/crispr-mm_2215_sgRNA-r2oC.Rmd
+    Deleted:    analysis/crispr-mm_2215_sgRNA-r2oD.Rmd
+    Deleted:    analysis/crispr-mm_2215_sgRNA-r2oD_r1.Rmd
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_ko_culture--over--amhr2_control_culture_GSEA_msigdb.h-1.pdf
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_ko_culture--over--amhr2_control_culture_GSEA_msigdb.h-1.png
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_ko_notgfbeta--over--amhr2_ko_culture_GSEA_msigdb.h-1.pdf
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_ko_notgfbeta--over--amhr2_ko_culture_GSEA_msigdb.h-1.png
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_overexpression--over--amhr2_control_culture_GSEA_msigdb.h-1.pdf
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_overexpression--over--amhr2_control_culture_GSEA_msigdb.h-1.png
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_overexpression--over--amhr2_ko_culture_GSEA_msigdb.h-1.pdf
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_overexpression--over--amhr2_ko_culture_GSEA_msigdb.h-1.png
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_overexpression--over--amhr2_ko_notgfbeta_GSEA_msigdb.h-1.pdf
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_overexpression--over--amhr2_ko_notgfbeta_GSEA_msigdb.h-1.png
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-invivo_amhr2_ko-+-amhr2_ko_culture--over--invivo_control_sgrna-+-amhr2_control_culture_GSEA_msigdb.h-1.pdf
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-invivo_amhr2_ko-+-amhr2_ko_culture--over--invivo_control_sgrna-+-amhr2_control_culture_GSEA_msigdb.h-1.png
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-invivo_amhr2_ko--over--invivo_control_sgrna_GSEA_msigdb.h-1.pdf
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-invivo_amhr2_ko--over--invivo_control_sgrna_GSEA_msigdb.h-1.png
+    Deleted:    analysis/templates/docs/file/tmp/dge.xlsx
+    Deleted:    analysis/templates/docs/file/tmp/gse_gsea_msigdb.h.xlsx
+    Deleted:    analysis/templates/docs/file/tmp/gse_gsego_bp.xlsx
+    Deleted:    analysis/templates/docs/file/tmp/gse_gsego_mf.xlsx
+    Modified:   analysis/templates/rnaseq-deg-edger.Rmd
     Modified:   code/R-functions/gse_report.r
+    Modified:   configuration/rmarkdown/color_palettes.R
     Modified:   configuration/rmarkdown/ggplot_theme.R
     Modified:   update_workflowr.R
 
@@ -655,6 +822,40 @@ Message
 Rmd
 </td>
 <td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/455fa9121fcca51363cf639f7ee170fb108e34c1/analysis/tcga_survival_crispr_hits_signatures.Rmd" target="_blank">455fa91</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-10-31
+</td>
+<td>
+Prepare files for publication
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/TheAcetoLab/saini-stealTHY/7190d2fb979857cc47654867e91194f92fbb7c17/docs/tcga_survival_crispr_hits_signatures.html" target="_blank">7190d2f</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-07-01
+</td>
+<td>
+Build site.
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
 <a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/2d1b5a6827bac6db4bf98f99c9267fd81f37ecc9/analysis/tcga_survival_crispr_hits_signatures.Rmd" target="_blank">2d1b5a6</a>
 </td>
 <td>
@@ -675,385 +876,349 @@ add tcga analysis
 </div>
 </div>
 <div id="load-libraries-additional-functions-and-data"
-class="section level2" number="1">
-<h2><span class="header-section-number">1</span> Load libraries,
-additional functions and data</h2>
+class="section level2">
+<h2>Load libraries, additional functions and data</h2>
 <p>Setup environment</p>
-<pre class="r"><code>knitr::opts_chunk$set(results=&#39;asis&#39;, echo=TRUE, message=FALSE, warning=FALSE, error=FALSE, fig.align = &#39;center&#39;, fig.width = 3.5, fig.asp = 0.618, dpi = 600, dev = c(&quot;png&quot;, &quot;pdf&quot;), engine.opts = list(bash = &quot;-l&quot;))
-
-options(stringsAsFactors = FALSE)
-
-use_seed &lt;- 1100101
-
-set.seed(use_seed)
-
-dir.create(params$output_dir, recursive = TRUE, showWarnings = FALSE)</code></pre>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">results=</span><span class="st">&#39;asis&#39;</span>, <span class="at">echo=</span><span class="cn">TRUE</span>, <span class="at">message=</span><span class="cn">FALSE</span>, <span class="at">warning=</span><span class="cn">FALSE</span>, <span class="at">error=</span><span class="cn">FALSE</span>, <span class="at">fig.align =</span> <span class="st">&#39;center&#39;</span>, <span class="at">fig.width =</span> <span class="fl">3.5</span>, <span class="at">fig.asp =</span> <span class="fl">0.618</span>, <span class="at">dpi =</span> <span class="dv">600</span>, <span class="at">dev =</span> <span class="fu">c</span>(<span class="st">&quot;png&quot;</span>, <span class="st">&quot;pdf&quot;</span>), <span class="at">engine.opts =</span> <span class="fu">list</span>(<span class="at">bash =</span> <span class="st">&quot;-l&quot;</span>))</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">options</span>(<span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>use_seed <span class="ot">&lt;-</span> <span class="dv">1100101</span></span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a><span class="fu">set.seed</span>(use_seed)</span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a><span class="fu">dir.create</span>(params<span class="sc">$</span>output_dir, <span class="at">recursive =</span> <span class="cn">TRUE</span>, <span class="at">showWarnings =</span> <span class="cn">FALSE</span>)</span></code></pre></div>
 <p>Load packages</p>
-<pre class="r"><code>library(tidyverse)
-library(knitr)
-# library(showtext)
-library(foreach)
-library(SummarizedExperiment)
-library(survival)
-library(gtsummary)
-library(ggsurvfit)
-library(survminer)
-library(meta)
-library(magrittr)
-# library(DT)
-# library(colorblindr)
-# library(ggdendro)
-# library(RColorBrewer)
-# library(circlize)
-# library(Hmisc)
-# library(ComplexHeatmap)
-# library(ineq)
-library(kableExtra)
-library(openxlsx)
-# library(magrittr)
-# library(ggrepel)
-# library(ggpubr)
-# library(ggbeeswarm)
-# library(ggridges)
-# library(openxlsx)
-# library(MAGeCKFlute)
-library(GSVA)</code></pre>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="fu">library</span>(foreach)</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="fu">library</span>(SummarizedExperiment)</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="fu">library</span>(survival)</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="fu">library</span>(gtsummary)</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="fu">library</span>(ggsurvfit)</span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a><span class="fu">library</span>(survminer)</span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="fu">library</span>(meta)</span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a><span class="fu">library</span>(magrittr)</span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a><span class="fu">library</span>(kableExtra)</span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a><span class="fu">library</span>(openxlsx)</span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a><span class="fu">library</span>(GSVA)</span></code></pre></div>
 <p>Load ggplot theme</p>
-<pre class="r"><code>source(&quot;./configuration/rmarkdown/ggplot_theme.R&quot;)</code></pre>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;./configuration/rmarkdown/ggplot_theme.R&quot;</span>)</span></code></pre></div>
 <p>Clean files generated in previous runs</p>
-<pre class="r"><code>rmd_file &lt;- current_input()
-if(!is.null(rmd_file)) {
-  figures_dir &lt;- file.path(&#39;./docs/figure&#39;,rmd_file)
-  if(dir.exists(figures_dir)) {
-    unlink(file.path(figures_dir, &quot;*&quot;))
-  }
-}</code></pre>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>rmd_file <span class="ot">&lt;-</span> <span class="fu">current_input</span>()</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="cf">if</span>(<span class="sc">!</span><span class="fu">is.null</span>(rmd_file)) {</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>  figures_dir <span class="ot">&lt;-</span> <span class="fu">file.path</span>(<span class="st">&#39;./docs/figure&#39;</span>,rmd_file)</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">dir.exists</span>(figures_dir)) {</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>    <span class="fu">unlink</span>(<span class="fu">file.path</span>(figures_dir, <span class="st">&quot;*&quot;</span>))</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>  }</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>}</span></code></pre></div>
 </div>
-<div id="generate-signatures" class="section level2" number="2">
-<h2><span class="header-section-number">2</span> Generate
-signatures</h2>
-<div id="generate-signature-for-crispr-hits" class="section level3"
-number="2.1">
-<h3><span class="header-section-number">2.1</span> Generate Signature
-for CRISPR Hits</h3>
-<pre class="r"><code>dge_signatures &lt;- list(
-  down_crispr_hits = c(&#39;CCR10&#39;, `TRAIL-R2` = &#39;TNFRSF10B&#39;, &#39;CCL27&#39;, &#39;IGFBP1&#39;, 
-                     &#39;ANGPT2&#39;, &#39;AMH&#39;, &#39;IL34&#39;),
-  up_crispr_hits = c(&#39;IFNA8&#39;, &#39;TGFB2&#39;, &#39;IL13RA2&#39;, &#39;IFNAR1&#39;, &#39;IL24&#39;, &#39;IFNLR1&#39;,
-                     &#39;PTEN&#39;, &#39;GDF9&#39;)
-)</code></pre>
-</div>
-</div>
-<div id="run-survival-analysis" class="section level2" number="3">
-<h2><span class="header-section-number">3</span> Run survival
-analysis</h2>
-<pre class="r"><code>project_id &lt;- list.files(
-  path = params$data_dir, 
-  pattern = &#39;TCGA-[A-Z]+.rds$&#39;
-  ) %&gt;%
-  gsub(&quot;.rds&quot;, &quot;&quot;, .)
-
-tcga_selected &lt;- c(&#39;BRCA&#39;, &#39;LUAD&#39;, &#39;COAD&#39;) %&gt;% 
-  paste(&#39;TCGA&#39;, ., sep = &#39;-&#39;)
-
-project_id &lt;- intersect(project_id, tcga_selected)
-
-
-surv_endpoints &lt;- list(
-  DSS = list(
-    time_var = &#39;DSS.time&#39;,
-    event_var = &#39;DSS&#39;
-  ),
-  DFI = list(
-    time_var = &#39;DFI.time&#39;,
-    event_var = &#39;DFI&#39;
-  )
-)</code></pre>
+<div id="run-survival-analysis-for-signatures" class="section level2">
+<h2>Run survival analysis for signatures</h2>
+<p>Generate Signature for CRISPR Hits</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>dge_signatures <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  <span class="at">down_crispr_hits =</span> <span class="fu">c</span>(<span class="st">&#39;CCR10&#39;</span>, <span class="st">`</span><span class="at">TRAIL-R2</span><span class="st">`</span> <span class="ot">=</span> <span class="st">&#39;TNFRSF10B&#39;</span>, <span class="st">&#39;CCL27&#39;</span>, <span class="st">&#39;IGFBP1&#39;</span>, </span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>                     <span class="st">&#39;ANGPT2&#39;</span>, <span class="st">&#39;AMH&#39;</span>, <span class="st">&#39;IL34&#39;</span>),</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>  <span class="at">up_crispr_hits =</span> <span class="fu">c</span>(<span class="st">&#39;IFNA8&#39;</span>, <span class="st">&#39;TGFB2&#39;</span>, <span class="st">&#39;IL13RA2&#39;</span>, <span class="st">&#39;IFNAR1&#39;</span>, <span class="st">&#39;IL24&#39;</span>, <span class="st">&#39;IFNLR1&#39;</span>,</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>                     <span class="st">&#39;PTEN&#39;</span>, <span class="st">&#39;GDF9&#39;</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>)</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>project_id <span class="ot">&lt;-</span> <span class="fu">list.files</span>(</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>  <span class="at">path =</span> params<span class="sc">$</span>data_dir, </span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>  <span class="at">pattern =</span> <span class="st">&#39;TCGA-[A-Z]+.rds$&#39;</span></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>  <span class="fu">gsub</span>(<span class="st">&quot;.rds&quot;</span>, <span class="st">&quot;&quot;</span>, .)</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>tcga_selected <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&#39;BRCA&#39;</span>, <span class="st">&#39;LUAD&#39;</span>, <span class="st">&#39;COAD&#39;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>  <span class="fu">paste</span>(<span class="st">&#39;TCGA&#39;</span>, ., <span class="at">sep =</span> <span class="st">&#39;-&#39;</span>)</span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>project_id <span class="ot">&lt;-</span> <span class="fu">intersect</span>(project_id, tcga_selected)</span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a></span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a></span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a>surv_endpoints <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a>  <span class="at">DSS =</span> <span class="fu">list</span>(</span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a>    <span class="at">time_var =</span> <span class="st">&#39;DSS.time&#39;</span>,</span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a>    <span class="at">event_var =</span> <span class="st">&#39;DSS&#39;</span></span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a>  ),</span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a>  <span class="at">DFI =</span> <span class="fu">list</span>(</span>
+<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a>    <span class="at">time_var =</span> <span class="st">&#39;DFI.time&#39;</span>,</span>
+<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a>    <span class="at">event_var =</span> <span class="st">&#39;DFI&#39;</span></span>
+<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a>  )</span>
+<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a>)</span></code></pre></div>
 <p>Load raw data, and create SummarizedExperiments with signatures for
 each project.</p>
-<pre class="r"><code>i &lt;- project_id[1]
-data_se &lt;- foreach(i = project_id) %do% {
-  cat(&quot;### &quot;, i, &quot;\n\n&quot;)
-  se &lt;- readRDS(file.path(params$data_dir, paste0(i, &#39;.rds&#39;)))
-  
-  # Remove duplicated samples: https://ucsc-xena.gitbook.io/project/how-do-i/how-do-i-remove-duplicate-samples-from-a-km-plot
-  sample_annot &lt;- colData(se) %&gt;% data.frame %&gt;% 
-    filter(sample_type == &#39;Primary Tumor&#39;)
-  
-  # Filter samples
-  se &lt;- se[, rownames(sample_annot)]
-  
-  # Run GSVA
-  use_assay &lt;- edgeR::cpm(assay(se, &#39;normcounts&#39;), log = TRUE)
-  gsvapar &lt;- gsvaParam(
-    use_assay,
-    dge_signatures,
-    kcdf = &quot;Gaussian&quot;,
-    maxDiff = TRUE
-  )
-  gsva_res &lt;- gsva(gsvapar, 
-       verbose = FALSE)
-
-  # Generate SummarizedExperiment object using GSVA matrix
-  se &lt;- SummarizedExperiment(
-    assays = list(gsva = gsva_res), 
-    colData = colData(se)
-    )
-  
-  se
-}
-names(data_se) &lt;- project_id
-
-# Remove NULL elements
-data_se &lt;- compact(data_se)
-data_se &lt;- data_se[!sapply(data_se, is.null)]
-
-saveRDS(data_se, file = file.path(params$output_dir, &#39;data_se_signatures.rds&#39;))</code></pre>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>i <span class="ot">&lt;-</span> project_id[<span class="dv">1</span>]</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>data_se <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">i =</span> project_id) <span class="sc">%do%</span> {</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">&quot;### &quot;</span>, i, <span class="st">&quot;</span><span class="sc">\n\n</span><span class="st">&quot;</span>)</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>  se <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="fu">file.path</span>(params<span class="sc">$</span>data_dir, <span class="fu">paste0</span>(i, <span class="st">&#39;.rds&#39;</span>)))</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>  </span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>  <span class="co"># Remove duplicated samples: https://ucsc-xena.gitbook.io/project/how-do-i/how-do-i-remove-duplicate-samples-from-a-km-plot</span></span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>  sample_annot <span class="ot">&lt;-</span> <span class="fu">colData</span>(se) <span class="sc">%&gt;%</span> data.frame <span class="sc">%&gt;%</span> </span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>    <span class="fu">filter</span>(sample_type <span class="sc">==</span> <span class="st">&#39;Primary Tumor&#39;</span>)</span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>  </span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a>  <span class="co"># Filter samples</span></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a>  se <span class="ot">&lt;-</span> se[, <span class="fu">rownames</span>(sample_annot)]</span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a>  </span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a>  <span class="co"># Run GSVA</span></span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a>  use_assay <span class="ot">&lt;-</span> edgeR<span class="sc">::</span><span class="fu">cpm</span>(<span class="fu">assay</span>(se, <span class="st">&#39;normcounts&#39;</span>), <span class="at">log =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a>  gsvapar <span class="ot">&lt;-</span> <span class="fu">gsvaParam</span>(</span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a>    use_assay,</span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a>    dge_signatures,</span>
+<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a>    <span class="at">kcdf =</span> <span class="st">&quot;Gaussian&quot;</span>,</span>
+<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a>    <span class="at">maxDiff =</span> <span class="cn">TRUE</span></span>
+<span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a>  )</span>
+<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a>  gsva_res <span class="ot">&lt;-</span> <span class="fu">gsva</span>(gsvapar, </span>
+<span id="cb7-22"><a href="#cb7-22" tabindex="-1"></a>       <span class="at">verbose =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb7-23"><a href="#cb7-23" tabindex="-1"></a></span>
+<span id="cb7-24"><a href="#cb7-24" tabindex="-1"></a>  <span class="co"># Generate SummarizedExperiment object using GSVA matrix</span></span>
+<span id="cb7-25"><a href="#cb7-25" tabindex="-1"></a>  se <span class="ot">&lt;-</span> <span class="fu">SummarizedExperiment</span>(</span>
+<span id="cb7-26"><a href="#cb7-26" tabindex="-1"></a>    <span class="at">assays =</span> <span class="fu">list</span>(<span class="at">gsva =</span> gsva_res), </span>
+<span id="cb7-27"><a href="#cb7-27" tabindex="-1"></a>    <span class="at">colData =</span> <span class="fu">colData</span>(se)</span>
+<span id="cb7-28"><a href="#cb7-28" tabindex="-1"></a>    )</span>
+<span id="cb7-29"><a href="#cb7-29" tabindex="-1"></a>  </span>
+<span id="cb7-30"><a href="#cb7-30" tabindex="-1"></a>  se</span>
+<span id="cb7-31"><a href="#cb7-31" tabindex="-1"></a>}</span>
+<span id="cb7-32"><a href="#cb7-32" tabindex="-1"></a><span class="fu">names</span>(data_se) <span class="ot">&lt;-</span> project_id</span>
+<span id="cb7-33"><a href="#cb7-33" tabindex="-1"></a></span>
+<span id="cb7-34"><a href="#cb7-34" tabindex="-1"></a><span class="co"># Remove NULL elements</span></span>
+<span id="cb7-35"><a href="#cb7-35" tabindex="-1"></a>data_se <span class="ot">&lt;-</span> <span class="fu">compact</span>(data_se)</span>
+<span id="cb7-36"><a href="#cb7-36" tabindex="-1"></a>data_se <span class="ot">&lt;-</span> data_se[<span class="sc">!</span><span class="fu">sapply</span>(data_se, is.null)]</span>
+<span id="cb7-37"><a href="#cb7-37" tabindex="-1"></a></span>
+<span id="cb7-38"><a href="#cb7-38" tabindex="-1"></a><span class="fu">saveRDS</span>(data_se, <span class="at">file =</span> <span class="fu">file.path</span>(params<span class="sc">$</span>output_dir, <span class="st">&#39;data_se_signatures.rds&#39;</span>))</span></code></pre></div>
 <p>For each SummarizedExperiments, we set up the follow-up limit and
 configure survival variable. Remove studies with less than 3 events and
 20 patients with survival data</p>
-<pre class="r"><code>data_se_signatures &lt;- readRDS(file.path(params$output_dir, &#39;data_se_signatures.rds&#39;))
-
-data_se &lt;- foreach(surv_i = surv_endpoints) %do% {
-  res &lt;- foreach(se = data_se_signatures) %do% {
-    # Set survival variables and follow up limit
-    sample_annot &lt;- colData(se) %&gt;% data.frame()
-    sample_annot$status &lt;- sample_annot[[surv_i$event_var]]
-    sample_annot$time &lt;- sample_annot[[surv_i$time_var]]/365.25
-    
-    sample_annot &lt;- sample_annot %&gt;% 
-      mutate(
-        status = ifelse(time &gt;= params$max_time_years, 0, status),
-        time = ifelse(time &gt;= params$max_time_years, params$max_time_years, time)
-      )
-    
-    colData(se) &lt;- DataFrame(sample_annot)
-    
-    # Number of events
-    n_surv_data &lt;- sum(!is.na(se$status))
-    n_events &lt;- sum(se$status, na.rm = TRUE)
-    
-    if(ncol(se) &gt; 0 &amp; n_events &gt;= params$min_event_n &amp; n_surv_data &gt;= params$min_surv_n) {
-      se
-    } else {
-      NULL
-    }
-  }
-  names(res) &lt;- names(data_se_signatures)
-  res
-}
-names(data_se) &lt;- names(surv_endpoints)
-
-# Remove NULL elements
-data_se &lt;- compact(data_se)
-data_se &lt;- data_se[!sapply(data_se, is.null)]
-
-
-saveRDS(data_se, file = file.path(params$output_dir, &#39;data_se_surv.rds&#39;))</code></pre>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>data_se_signatures <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="fu">file.path</span>(params<span class="sc">$</span>output_dir, <span class="st">&#39;data_se_signatures.rds&#39;</span>))</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>data_se <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">surv_i =</span> surv_endpoints) <span class="sc">%do%</span> {</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>  res <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">se =</span> data_se_signatures) <span class="sc">%do%</span> {</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>    <span class="co"># Set survival variables and follow up limit</span></span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>    sample_annot <span class="ot">&lt;-</span> <span class="fu">colData</span>(se) <span class="sc">%&gt;%</span> <span class="fu">data.frame</span>()</span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>    sample_annot<span class="sc">$</span>status <span class="ot">&lt;-</span> sample_annot[[surv_i<span class="sc">$</span>event_var]]</span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>    sample_annot<span class="sc">$</span>time <span class="ot">&lt;-</span> sample_annot[[surv_i<span class="sc">$</span>time_var]]<span class="sc">/</span><span class="fl">365.25</span></span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>    </span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>    sample_annot <span class="ot">&lt;-</span> sample_annot <span class="sc">%&gt;%</span> </span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a>      <span class="fu">mutate</span>(</span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a>        <span class="at">status =</span> <span class="fu">ifelse</span>(time <span class="sc">&gt;=</span> params<span class="sc">$</span>max_time_years, <span class="dv">0</span>, status),</span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a>        <span class="at">time =</span> <span class="fu">ifelse</span>(time <span class="sc">&gt;=</span> params<span class="sc">$</span>max_time_years, params<span class="sc">$</span>max_time_years, time)</span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a>      )</span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a>    </span>
+<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a>    <span class="fu">colData</span>(se) <span class="ot">&lt;-</span> <span class="fu">DataFrame</span>(sample_annot)</span>
+<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a>    </span>
+<span id="cb8-18"><a href="#cb8-18" tabindex="-1"></a>    <span class="co"># Number of events</span></span>
+<span id="cb8-19"><a href="#cb8-19" tabindex="-1"></a>    n_surv_data <span class="ot">&lt;-</span> <span class="fu">sum</span>(<span class="sc">!</span><span class="fu">is.na</span>(se<span class="sc">$</span>status))</span>
+<span id="cb8-20"><a href="#cb8-20" tabindex="-1"></a>    n_events <span class="ot">&lt;-</span> <span class="fu">sum</span>(se<span class="sc">$</span>status, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb8-21"><a href="#cb8-21" tabindex="-1"></a>    </span>
+<span id="cb8-22"><a href="#cb8-22" tabindex="-1"></a>    <span class="cf">if</span>(<span class="fu">ncol</span>(se) <span class="sc">&gt;</span> <span class="dv">0</span> <span class="sc">&amp;</span> n_events <span class="sc">&gt;=</span> params<span class="sc">$</span>min_event_n <span class="sc">&amp;</span> n_surv_data <span class="sc">&gt;=</span> params<span class="sc">$</span>min_surv_n) {</span>
+<span id="cb8-23"><a href="#cb8-23" tabindex="-1"></a>      se</span>
+<span id="cb8-24"><a href="#cb8-24" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb8-25"><a href="#cb8-25" tabindex="-1"></a>      <span class="cn">NULL</span></span>
+<span id="cb8-26"><a href="#cb8-26" tabindex="-1"></a>    }</span>
+<span id="cb8-27"><a href="#cb8-27" tabindex="-1"></a>  }</span>
+<span id="cb8-28"><a href="#cb8-28" tabindex="-1"></a>  <span class="fu">names</span>(res) <span class="ot">&lt;-</span> <span class="fu">names</span>(data_se_signatures)</span>
+<span id="cb8-29"><a href="#cb8-29" tabindex="-1"></a>  res</span>
+<span id="cb8-30"><a href="#cb8-30" tabindex="-1"></a>}</span>
+<span id="cb8-31"><a href="#cb8-31" tabindex="-1"></a><span class="fu">names</span>(data_se) <span class="ot">&lt;-</span> <span class="fu">names</span>(surv_endpoints)</span>
+<span id="cb8-32"><a href="#cb8-32" tabindex="-1"></a></span>
+<span id="cb8-33"><a href="#cb8-33" tabindex="-1"></a><span class="co"># Remove NULL elements</span></span>
+<span id="cb8-34"><a href="#cb8-34" tabindex="-1"></a>data_se <span class="ot">&lt;-</span> <span class="fu">compact</span>(data_se)</span>
+<span id="cb8-35"><a href="#cb8-35" tabindex="-1"></a>data_se <span class="ot">&lt;-</span> data_se[<span class="sc">!</span><span class="fu">sapply</span>(data_se, is.null)]</span>
+<span id="cb8-36"><a href="#cb8-36" tabindex="-1"></a></span>
+<span id="cb8-37"><a href="#cb8-37" tabindex="-1"></a></span>
+<span id="cb8-38"><a href="#cb8-38" tabindex="-1"></a><span class="fu">saveRDS</span>(data_se, <span class="at">file =</span> <span class="fu">file.path</span>(params<span class="sc">$</span>output_dir, <span class="st">&#39;data_se_surv.rds&#39;</span>))</span></code></pre></div>
 <p>Generate data using optimal cutoff point. Cutoff determined using the
 maximally selected rank statistics from the ‘maxstat’ R package. This is
 an outcome-oriented methods providing a value of a cutpoint that
 correspond to the most significant relation with outcome (here,
 survival).</p>
-<pre class="r"><code>i &lt;- names(data_se)[12]
-surv_maxstat &lt;- foreach(surv_i = names(data_se), .combine = rbind) %do% {
-  res &lt;- foreach(i = names(data_se[[surv_i]]), .combine = rbind) %do% {
-    se &lt;- data_se[[surv_i]][[i]]
-    gene_exp &lt;- assay(se, &#39;gsva&#39;) %&gt;% t()
-    
-    colnames(gene_exp) &lt;-rownames(se)
-    
-    sample_annot &lt;- colData(se) %&gt;% data.frame()
-    # sample_annot$status &lt;- sample_annot[[params$event_var]]
-    # sample_annot$time &lt;- sample_annot[[params$time_var]]/365.25
-    
-    # Set follow up limit
-    # sample_annot &lt;- sample_annot %&gt;% 
-    #   mutate(
-    #     status = ifelse(time &gt;= params$max_time_years, 0, status),
-    #     time = ifelse(time &gt;= params$max_time_years, params$max_time_years, time)
-    #   )
-    # # Keep only genes with expression in at least 20% of samples
-    # gene_exp_prop &lt;- colSums(gene_exp &gt; 0) / nrow(gene_exp)
-    # gene_exp &lt;- gene_exp[,gene_exp_prop &gt;= 0.2]
-    # 
-    
-    res_cut &lt;- surv_cutpoint(cbind(sample_annot, gene_exp),
-                             time = &quot;time&quot;, event = &quot;status&quot;,
-                             variables = colnames(gene_exp))
-    res_cat &lt;- surv_categorize(res_cut, labels = c(&#39;Low&#39;, &#39;High&#39;))
-    sample_annot &lt;- cbind(sample_annot, res_cat)
-    
-    g &lt;- colnames(gene_exp)[1]
-    foreach(g = colnames(gene_exp), .combine = rbind) %do% {
-      use_formula &lt;- as.formula(paste0(&quot;Surv(time, status) ~ &quot;, g))
-      cox.res &lt;- coxph(use_formula, data = sample_annot) %&gt;%
-        tbl_regression(exp = TRUE)
-      data.frame(
-        surv_var = surv_i,
-        project_id = i,
-        gene_name = g,
-        HR = cox.res$table_body$estimate[3],
-        p.value = cox.res$table_body$p.value[3],
-        std.error = cox.res$table_body$std.error[3],
-        conf.low = cox.res$table_body$conf.low[3],
-        conf.high = cox.res$table_body$conf.high[3],
-        n.low = sum(sample_annot[[g]] == &quot;Low&quot;),
-        n.high = sum(sample_annot[[g]] == &quot;High&quot;)
-      )
-    }
-  }
-  res
-}
-saveRDS(surv_maxstat, file = file.path(params$output_dir, &#39;surv_maxstat.rds&#39;))
-
-survfit_km_maxstat &lt;- foreach(surv_i = names(data_se)) %do% {
-  res &lt;- foreach(i = names(data_se[[surv_i]])) %do% {
-    se &lt;- data_se[[surv_i]][[i]]
-    gene_exp &lt;- assay(se, &#39;gsva&#39;) %&gt;% t()
-    
-    sample_annot &lt;- colData(se) %&gt;% data.frame()
-    # sample_annot$status &lt;- sample_annot[[params$event_var]]
-    # sample_annot$time &lt;- sample_annot[[params$time_var]]/365.25
-    
-    # Set follow up limit
-    # sample_annot &lt;- sample_annot %&gt;% 
-    #   mutate(
-    #     status = ifelse(time &gt;= params$max_time_years, 0, status),
-    #     time = ifelse(time &gt;= params$max_time_years, params$max_time_years, time)
-    #   )
-    # # Keep only genes with expression in at least 10% of samples
-    # gene_exp_prop &lt;- colSums(gene_exp &gt; 0) / nrow(gene_exp)
-    # gene_exp &lt;- gene_exp[,gene_exp_prop &gt;= 0.2]
-    
-    res_cut &lt;- surv_cutpoint(cbind(sample_annot, gene_exp),
-                             time = &quot;time&quot;, event = &quot;status&quot;,
-                             variables = colnames(gene_exp))
-    res_cat &lt;- surv_categorize(res_cut, labels = c(&#39;Low&#39;, &#39;High&#39;))
-    sample_annot &lt;- cbind(sample_annot, res_cat)
-    
-    g &lt;- colnames(gene_exp)[1]
-    res_by_genes &lt;- foreach(g = colnames(gene_exp)) %do% {
-      use_formula &lt;- as.formula(paste0(&quot;Surv(time, status) ~ &quot;, g))
-      # KM plot
-      survfit2(use_formula, data = sample_annot) %&gt;% 
-        ggsurvfit() +
-        add_risktable() +
-        labs(
-          x = &quot;Time (years)&quot;,
-          title = i
-        ) +
-        theme_project + 
-        theme(legend.position=&quot;bottom&quot;)
-      
-    }
-    names(res_by_genes) &lt;- colnames(gene_exp)
-    res_by_genes
-  }
-  names(res) &lt;- names(data_se[[surv_i]])
-  res
-}
-
-names(survfit_km_maxstat) &lt;- names(data_se)
-saveRDS(survfit_km_maxstat, file = file.path(params$output_dir, &#39;survfit_km_maxstat.rds&#39;))</code></pre>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>x_se <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="fu">file.path</span>(<span class="st">&#39;~/analysis/saini/crispr-immunorejection/output/clinical/tcga_xena_dfi_5y_signatures&#39;</span>, <span class="st">&#39;data_se_surv.rds&#39;</span>))</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>xse <span class="ot">&lt;-</span> x_se[[i]]</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="fu">table</span>(res_cat<span class="sc">$</span>down_crispr_hits)</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a></span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>surv_i <span class="ot">=</span> <span class="st">&#39;DFI&#39;</span></span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>i <span class="ot">=</span> <span class="st">&quot;TCGA-BRCA&quot;</span></span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a>surv_maxstat <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">surv_i =</span> <span class="fu">names</span>(data_se), <span class="at">.combine =</span> rbind) <span class="sc">%do%</span> {</span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>  res <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">i =</span> <span class="fu">names</span>(data_se[[surv_i]]), <span class="at">.combine =</span> rbind) <span class="sc">%do%</span> {</span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>    se <span class="ot">&lt;-</span> data_se[[surv_i]][[i]]</span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a>    gene_exp <span class="ot">&lt;-</span> <span class="fu">assay</span>(se, <span class="st">&#39;gsva&#39;</span>) <span class="sc">%&gt;%</span> <span class="fu">t</span>()</span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a>    </span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a>    <span class="fu">colnames</span>(gene_exp) <span class="ot">&lt;-</span><span class="fu">rownames</span>(se)</span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a>    </span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a>    sample_annot <span class="ot">&lt;-</span> <span class="fu">colData</span>(se) <span class="sc">%&gt;%</span> <span class="fu">data.frame</span>()</span>
+<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a>   </span>
+<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a>    res_cut <span class="ot">&lt;-</span> <span class="fu">surv_cutpoint</span>(<span class="fu">cbind</span>(sample_annot, gene_exp),</span>
+<span id="cb9-18"><a href="#cb9-18" tabindex="-1"></a>                             <span class="at">time =</span> <span class="st">&quot;time&quot;</span>, <span class="at">event =</span> <span class="st">&quot;status&quot;</span>,</span>
+<span id="cb9-19"><a href="#cb9-19" tabindex="-1"></a>                             <span class="at">variables =</span> <span class="fu">colnames</span>(gene_exp))</span>
+<span id="cb9-20"><a href="#cb9-20" tabindex="-1"></a>    res_cat <span class="ot">&lt;-</span> <span class="fu">surv_categorize</span>(res_cut, <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&#39;Low&#39;</span>, <span class="st">&#39;High&#39;</span>))</span>
+<span id="cb9-21"><a href="#cb9-21" tabindex="-1"></a>    sample_annot <span class="ot">&lt;-</span> <span class="fu">cbind</span>(sample_annot, res_cat)</span>
+<span id="cb9-22"><a href="#cb9-22" tabindex="-1"></a>    </span>
+<span id="cb9-23"><a href="#cb9-23" tabindex="-1"></a>    <span class="co"># Categorize risk variables</span></span>
+<span id="cb9-24"><a href="#cb9-24" tabindex="-1"></a>    <span class="cf">for</span>(g <span class="cf">in</span> <span class="fu">colnames</span>(gene_exp)) {</span>
+<span id="cb9-25"><a href="#cb9-25" tabindex="-1"></a>      sample_annot[[g]] <span class="ot">&lt;-</span> <span class="fu">factor</span>(sample_annot[[g]], <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&#39;Low&#39;</span>, <span class="st">&#39;High&#39;</span>))</span>
+<span id="cb9-26"><a href="#cb9-26" tabindex="-1"></a>    }</span>
+<span id="cb9-27"><a href="#cb9-27" tabindex="-1"></a>    </span>
+<span id="cb9-28"><a href="#cb9-28" tabindex="-1"></a>    g <span class="ot">&lt;-</span> <span class="fu">colnames</span>(gene_exp)[<span class="dv">1</span>]</span>
+<span id="cb9-29"><a href="#cb9-29" tabindex="-1"></a>    <span class="fu">foreach</span>(<span class="at">g =</span> <span class="fu">colnames</span>(gene_exp), <span class="at">.combine =</span> rbind) <span class="sc">%do%</span> {</span>
+<span id="cb9-30"><a href="#cb9-30" tabindex="-1"></a>      use_formula <span class="ot">&lt;-</span> <span class="fu">as.formula</span>(<span class="fu">paste0</span>(<span class="st">&quot;Surv(time, status) ~ &quot;</span>, g))</span>
+<span id="cb9-31"><a href="#cb9-31" tabindex="-1"></a>      cox.res <span class="ot">&lt;-</span> <span class="fu">coxph</span>(use_formula, <span class="at">data =</span> sample_annot) <span class="sc">%&gt;%</span></span>
+<span id="cb9-32"><a href="#cb9-32" tabindex="-1"></a>        <span class="fu">tbl_regression</span>(<span class="at">exp =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb9-33"><a href="#cb9-33" tabindex="-1"></a>      <span class="fu">data.frame</span>(</span>
+<span id="cb9-34"><a href="#cb9-34" tabindex="-1"></a>        <span class="at">surv_var =</span> surv_i,</span>
+<span id="cb9-35"><a href="#cb9-35" tabindex="-1"></a>        <span class="at">project_id =</span> i,</span>
+<span id="cb9-36"><a href="#cb9-36" tabindex="-1"></a>        <span class="at">gene_name =</span> g,</span>
+<span id="cb9-37"><a href="#cb9-37" tabindex="-1"></a>        <span class="at">HR =</span> cox.res<span class="sc">$</span>table_body<span class="sc">$</span>estimate[<span class="dv">3</span>],</span>
+<span id="cb9-38"><a href="#cb9-38" tabindex="-1"></a>        <span class="at">p.value =</span> cox.res<span class="sc">$</span>table_body<span class="sc">$</span>p.value[<span class="dv">3</span>],</span>
+<span id="cb9-39"><a href="#cb9-39" tabindex="-1"></a>        <span class="at">std.error =</span> cox.res<span class="sc">$</span>table_body<span class="sc">$</span>std.error[<span class="dv">3</span>],</span>
+<span id="cb9-40"><a href="#cb9-40" tabindex="-1"></a>        <span class="at">conf.low =</span> cox.res<span class="sc">$</span>table_body<span class="sc">$</span>conf.low[<span class="dv">3</span>],</span>
+<span id="cb9-41"><a href="#cb9-41" tabindex="-1"></a>        <span class="at">conf.high =</span> cox.res<span class="sc">$</span>table_body<span class="sc">$</span>conf.high[<span class="dv">3</span>],</span>
+<span id="cb9-42"><a href="#cb9-42" tabindex="-1"></a>        <span class="at">n.low =</span> <span class="fu">sum</span>(sample_annot[[g]] <span class="sc">==</span> <span class="st">&quot;Low&quot;</span>),</span>
+<span id="cb9-43"><a href="#cb9-43" tabindex="-1"></a>        <span class="at">n.high =</span> <span class="fu">sum</span>(sample_annot[[g]] <span class="sc">==</span> <span class="st">&quot;High&quot;</span>)</span>
+<span id="cb9-44"><a href="#cb9-44" tabindex="-1"></a>      )</span>
+<span id="cb9-45"><a href="#cb9-45" tabindex="-1"></a>    }</span>
+<span id="cb9-46"><a href="#cb9-46" tabindex="-1"></a>  }</span>
+<span id="cb9-47"><a href="#cb9-47" tabindex="-1"></a>  res</span>
+<span id="cb9-48"><a href="#cb9-48" tabindex="-1"></a>}</span>
+<span id="cb9-49"><a href="#cb9-49" tabindex="-1"></a><span class="fu">saveRDS</span>(surv_maxstat, <span class="at">file =</span> <span class="fu">file.path</span>(params<span class="sc">$</span>output_dir, <span class="st">&#39;surv_maxstat.rds&#39;</span>))</span>
+<span id="cb9-50"><a href="#cb9-50" tabindex="-1"></a></span>
+<span id="cb9-51"><a href="#cb9-51" tabindex="-1"></a>survfit_km_maxstat <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">surv_i =</span> <span class="fu">names</span>(data_se)) <span class="sc">%do%</span> {</span>
+<span id="cb9-52"><a href="#cb9-52" tabindex="-1"></a>  res <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">i =</span> <span class="fu">names</span>(data_se[[surv_i]])) <span class="sc">%do%</span> {</span>
+<span id="cb9-53"><a href="#cb9-53" tabindex="-1"></a>    se <span class="ot">&lt;-</span> data_se[[surv_i]][[i]]</span>
+<span id="cb9-54"><a href="#cb9-54" tabindex="-1"></a>    gene_exp <span class="ot">&lt;-</span> <span class="fu">assay</span>(se, <span class="st">&#39;gsva&#39;</span>) <span class="sc">%&gt;%</span> <span class="fu">t</span>()</span>
+<span id="cb9-55"><a href="#cb9-55" tabindex="-1"></a>    </span>
+<span id="cb9-56"><a href="#cb9-56" tabindex="-1"></a>    sample_annot <span class="ot">&lt;-</span> <span class="fu">colData</span>(se) <span class="sc">%&gt;%</span> <span class="fu">data.frame</span>()</span>
+<span id="cb9-57"><a href="#cb9-57" tabindex="-1"></a></span>
+<span id="cb9-58"><a href="#cb9-58" tabindex="-1"></a>    res_cut <span class="ot">&lt;-</span> <span class="fu">surv_cutpoint</span>(<span class="fu">cbind</span>(sample_annot, gene_exp),</span>
+<span id="cb9-59"><a href="#cb9-59" tabindex="-1"></a>                             <span class="at">time =</span> <span class="st">&quot;time&quot;</span>, <span class="at">event =</span> <span class="st">&quot;status&quot;</span>,</span>
+<span id="cb9-60"><a href="#cb9-60" tabindex="-1"></a>                             <span class="at">variables =</span> <span class="fu">colnames</span>(gene_exp))</span>
+<span id="cb9-61"><a href="#cb9-61" tabindex="-1"></a>    res_cat <span class="ot">&lt;-</span> <span class="fu">surv_categorize</span>(res_cut, <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&#39;Low&#39;</span>, <span class="st">&#39;High&#39;</span>))</span>
+<span id="cb9-62"><a href="#cb9-62" tabindex="-1"></a>    sample_annot <span class="ot">&lt;-</span> <span class="fu">cbind</span>(sample_annot, res_cat)</span>
+<span id="cb9-63"><a href="#cb9-63" tabindex="-1"></a>    </span>
+<span id="cb9-64"><a href="#cb9-64" tabindex="-1"></a>    <span class="co"># Categorize risk variables</span></span>
+<span id="cb9-65"><a href="#cb9-65" tabindex="-1"></a>    <span class="cf">for</span>(g <span class="cf">in</span> <span class="fu">colnames</span>(gene_exp)) {</span>
+<span id="cb9-66"><a href="#cb9-66" tabindex="-1"></a>      sample_annot[[g]] <span class="ot">&lt;-</span> <span class="fu">factor</span>(sample_annot[[g]], <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&#39;Low&#39;</span>, <span class="st">&#39;High&#39;</span>))</span>
+<span id="cb9-67"><a href="#cb9-67" tabindex="-1"></a>    }</span>
+<span id="cb9-68"><a href="#cb9-68" tabindex="-1"></a>    </span>
+<span id="cb9-69"><a href="#cb9-69" tabindex="-1"></a>    g <span class="ot">&lt;-</span> <span class="fu">colnames</span>(gene_exp)[<span class="dv">1</span>]</span>
+<span id="cb9-70"><a href="#cb9-70" tabindex="-1"></a>    res_by_genes <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">g =</span> <span class="fu">colnames</span>(gene_exp)) <span class="sc">%do%</span> {</span>
+<span id="cb9-71"><a href="#cb9-71" tabindex="-1"></a>      use_formula <span class="ot">&lt;-</span> <span class="fu">as.formula</span>(<span class="fu">paste0</span>(<span class="st">&quot;Surv(time, status) ~ &quot;</span>, g))</span>
+<span id="cb9-72"><a href="#cb9-72" tabindex="-1"></a>      <span class="co"># KM plot</span></span>
+<span id="cb9-73"><a href="#cb9-73" tabindex="-1"></a>      <span class="fu">survfit2</span>(use_formula, <span class="at">data =</span> sample_annot) <span class="sc">%&gt;%</span> </span>
+<span id="cb9-74"><a href="#cb9-74" tabindex="-1"></a>        <span class="fu">ggsurvfit</span>() <span class="sc">+</span></span>
+<span id="cb9-75"><a href="#cb9-75" tabindex="-1"></a>        <span class="fu">add_risktable</span>() <span class="sc">+</span></span>
+<span id="cb9-76"><a href="#cb9-76" tabindex="-1"></a>        <span class="fu">labs</span>(</span>
+<span id="cb9-77"><a href="#cb9-77" tabindex="-1"></a>          <span class="at">x =</span> <span class="st">&quot;Time (years)&quot;</span>,</span>
+<span id="cb9-78"><a href="#cb9-78" tabindex="-1"></a>          <span class="at">title =</span> i</span>
+<span id="cb9-79"><a href="#cb9-79" tabindex="-1"></a>        ) <span class="sc">+</span></span>
+<span id="cb9-80"><a href="#cb9-80" tabindex="-1"></a>        theme_project <span class="sc">+</span> </span>
+<span id="cb9-81"><a href="#cb9-81" tabindex="-1"></a>        <span class="fu">theme</span>(<span class="at">legend.position=</span><span class="st">&quot;bottom&quot;</span>)</span>
+<span id="cb9-82"><a href="#cb9-82" tabindex="-1"></a>      </span>
+<span id="cb9-83"><a href="#cb9-83" tabindex="-1"></a>    }</span>
+<span id="cb9-84"><a href="#cb9-84" tabindex="-1"></a>    <span class="fu">names</span>(res_by_genes) <span class="ot">&lt;-</span> <span class="fu">colnames</span>(gene_exp)</span>
+<span id="cb9-85"><a href="#cb9-85" tabindex="-1"></a>    res_by_genes</span>
+<span id="cb9-86"><a href="#cb9-86" tabindex="-1"></a>  }</span>
+<span id="cb9-87"><a href="#cb9-87" tabindex="-1"></a>  <span class="fu">names</span>(res) <span class="ot">&lt;-</span> <span class="fu">names</span>(data_se[[surv_i]])</span>
+<span id="cb9-88"><a href="#cb9-88" tabindex="-1"></a>  res</span>
+<span id="cb9-89"><a href="#cb9-89" tabindex="-1"></a>}</span>
+<span id="cb9-90"><a href="#cb9-90" tabindex="-1"></a></span>
+<span id="cb9-91"><a href="#cb9-91" tabindex="-1"></a><span class="fu">names</span>(survfit_km_maxstat) <span class="ot">&lt;-</span> <span class="fu">names</span>(data_se)</span>
+<span id="cb9-92"><a href="#cb9-92" tabindex="-1"></a><span class="fu">saveRDS</span>(survfit_km_maxstat, <span class="at">file =</span> <span class="fu">file.path</span>(params<span class="sc">$</span>output_dir, <span class="st">&#39;survfit_km_maxstat.rds&#39;</span>))</span></code></pre></div>
 <p>Load survival data</p>
-<pre class="r"><code>data_se &lt;- readRDS(file.path(params$output_dir, &#39;data_se_surv.rds&#39;))
-surv_maxstat &lt;- readRDS(file.path(params$output_dir, &#39;surv_maxstat.rds&#39;))
-survfit_km_maxstat &lt;- readRDS(file.path(params$output_dir, &#39;survfit_km_maxstat.rds&#39;))
-survfit_km_maxstat_list &lt;- survfit_km_maxstat</code></pre>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>data_se <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="fu">file.path</span>(params<span class="sc">$</span>output_dir, <span class="st">&#39;data_se_surv.rds&#39;</span>))</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>surv_maxstat <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="fu">file.path</span>(params<span class="sc">$</span>output_dir, <span class="st">&#39;surv_maxstat.rds&#39;</span>))</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>survfit_km_maxstat <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="fu">file.path</span>(params<span class="sc">$</span>output_dir, <span class="st">&#39;survfit_km_maxstat.rds&#39;</span>))</span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>survfit_km_maxstat_list <span class="ot">&lt;-</span> survfit_km_maxstat</span></code></pre></div>
 <p>Run metanalysis for survival analysis
 <!-- https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/ --></p>
-<pre class="r"><code>## Survival with maxtat
-meta_surv_maxstat &lt;- foreach(sv = names(surv_endpoints)) %do% {
-  res &lt;- foreach(g = unique(surv_maxstat$gene_name)) %do% {
-    use_surv &lt;- surv_maxstat %&gt;% filter(gene_name == g &amp; surv_var == sv)
-    metagen(
-      HR = log(use_surv$HR), 
-      lower = log(use_surv$conf.low), 
-      upper = log(use_surv$conf.high),
-      sm = &quot;HR&quot;, common=F, random=T,
-      studlab = use_surv$project_id,
-      method.tau = &quot;DL&quot;, ## method to calculate Tau
-      method.random.ci = &quot;classic&quot; ## method to calculate estimator&#39;s CI
-    )
-  }
-  names(res) &lt;- unique(surv_maxstat$gene_name)
-  res
-}
-names(meta_surv_maxstat) &lt;- names(surv_endpoints)
-
-meta_surv_maxstat_summary &lt;- foreach(sv = names(surv_endpoints), .combine = rbind) %do% {
-  foreach(g = unique(surv_maxstat$gene_name), .combine = rbind) %do% {
-    x &lt;- summary(meta_surv_maxstat[[sv]][[g]])
-    data.frame(
-      surv_var = sv,
-      project_id = &#39;Summary&#39;,
-      gene_name = g,
-      HR = exp(x$random$TE),
-      p.value = x$random$p,
-      std.error = x$random$seTE,
-      conf.low = exp(x$random$lower),
-      conf.high = exp(x$random$upper)#,
-      # w.random = round(100*x$w.random / sum(x$w.random), 1)
-    )
-  }
-}
-
-meta_surv_maxstat_weight &lt;- foreach(sv = names(surv_endpoints), .combine = rbind) %do% {
-  foreach(g = unique(surv_maxstat$gene_name), .combine = rbind) %do% {
-    x &lt;- summary(meta_surv_maxstat[[sv]][[g]])
-    data.frame(
-      surv_var = sv,
-      project_id = x$studlab,
-      gene_name = g,
-      w.random = round(100*x$w.random / sum(x$w.random), 1)
-    )
-  }
-}
-
-use_meta_surv &lt;- meta_surv_maxstat</code></pre>
-<pre class="r"><code>use_surv &lt;- surv_maxstat
-use_meta_surv &lt;- meta_surv_maxstat</code></pre>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="do">## Survival with maxtat</span></span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>meta_surv_maxstat <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">sv =</span> <span class="fu">names</span>(surv_endpoints)) <span class="sc">%do%</span> {</span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>  res <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">g =</span> <span class="fu">unique</span>(surv_maxstat<span class="sc">$</span>gene_name)) <span class="sc">%do%</span> {</span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>    use_surv <span class="ot">&lt;-</span> surv_maxstat <span class="sc">%&gt;%</span> <span class="fu">filter</span>(gene_name <span class="sc">==</span> g <span class="sc">&amp;</span> surv_var <span class="sc">==</span> sv)</span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>    <span class="fu">metagen</span>(</span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a>      <span class="at">HR =</span> <span class="fu">log</span>(use_surv<span class="sc">$</span>HR), </span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a>      <span class="at">lower =</span> <span class="fu">log</span>(use_surv<span class="sc">$</span>conf.low), </span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a>      <span class="at">upper =</span> <span class="fu">log</span>(use_surv<span class="sc">$</span>conf.high),</span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a>      <span class="at">sm =</span> <span class="st">&quot;HR&quot;</span>, <span class="at">common=</span>F, <span class="at">random=</span>T,</span>
+<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a>      <span class="at">studlab =</span> use_surv<span class="sc">$</span>project_id,</span>
+<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a>      <span class="at">method.tau =</span> <span class="st">&quot;DL&quot;</span>, <span class="do">## method to calculate Tau</span></span>
+<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a>      <span class="at">method.random.ci =</span> <span class="st">&quot;classic&quot;</span> <span class="do">## method to calculate estimator&#39;s CI</span></span>
+<span id="cb11-13"><a href="#cb11-13" tabindex="-1"></a>    )</span>
+<span id="cb11-14"><a href="#cb11-14" tabindex="-1"></a>  }</span>
+<span id="cb11-15"><a href="#cb11-15" tabindex="-1"></a>  <span class="fu">names</span>(res) <span class="ot">&lt;-</span> <span class="fu">unique</span>(surv_maxstat<span class="sc">$</span>gene_name)</span>
+<span id="cb11-16"><a href="#cb11-16" tabindex="-1"></a>  res</span>
+<span id="cb11-17"><a href="#cb11-17" tabindex="-1"></a>}</span>
+<span id="cb11-18"><a href="#cb11-18" tabindex="-1"></a><span class="fu">names</span>(meta_surv_maxstat) <span class="ot">&lt;-</span> <span class="fu">names</span>(surv_endpoints)</span>
+<span id="cb11-19"><a href="#cb11-19" tabindex="-1"></a></span>
+<span id="cb11-20"><a href="#cb11-20" tabindex="-1"></a>meta_surv_maxstat_summary <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">sv =</span> <span class="fu">names</span>(surv_endpoints), <span class="at">.combine =</span> rbind) <span class="sc">%do%</span> {</span>
+<span id="cb11-21"><a href="#cb11-21" tabindex="-1"></a>  <span class="fu">foreach</span>(<span class="at">g =</span> <span class="fu">unique</span>(surv_maxstat<span class="sc">$</span>gene_name), <span class="at">.combine =</span> rbind) <span class="sc">%do%</span> {</span>
+<span id="cb11-22"><a href="#cb11-22" tabindex="-1"></a>    x <span class="ot">&lt;-</span> <span class="fu">summary</span>(meta_surv_maxstat[[sv]][[g]])</span>
+<span id="cb11-23"><a href="#cb11-23" tabindex="-1"></a>    <span class="fu">data.frame</span>(</span>
+<span id="cb11-24"><a href="#cb11-24" tabindex="-1"></a>      <span class="at">surv_var =</span> sv,</span>
+<span id="cb11-25"><a href="#cb11-25" tabindex="-1"></a>      <span class="at">project_id =</span> <span class="st">&#39;Summary&#39;</span>,</span>
+<span id="cb11-26"><a href="#cb11-26" tabindex="-1"></a>      <span class="at">gene_name =</span> g,</span>
+<span id="cb11-27"><a href="#cb11-27" tabindex="-1"></a>      <span class="at">HR =</span> <span class="fu">exp</span>(x<span class="sc">$</span>random<span class="sc">$</span>TE),</span>
+<span id="cb11-28"><a href="#cb11-28" tabindex="-1"></a>      <span class="at">p.value =</span> x<span class="sc">$</span>random<span class="sc">$</span>p,</span>
+<span id="cb11-29"><a href="#cb11-29" tabindex="-1"></a>      <span class="at">std.error =</span> x<span class="sc">$</span>random<span class="sc">$</span>seTE,</span>
+<span id="cb11-30"><a href="#cb11-30" tabindex="-1"></a>      <span class="at">conf.low =</span> <span class="fu">exp</span>(x<span class="sc">$</span>random<span class="sc">$</span>lower),</span>
+<span id="cb11-31"><a href="#cb11-31" tabindex="-1"></a>      <span class="at">conf.high =</span> <span class="fu">exp</span>(x<span class="sc">$</span>random<span class="sc">$</span>upper)</span>
+<span id="cb11-32"><a href="#cb11-32" tabindex="-1"></a>    )</span>
+<span id="cb11-33"><a href="#cb11-33" tabindex="-1"></a>  }</span>
+<span id="cb11-34"><a href="#cb11-34" tabindex="-1"></a>}</span>
+<span id="cb11-35"><a href="#cb11-35" tabindex="-1"></a></span>
+<span id="cb11-36"><a href="#cb11-36" tabindex="-1"></a>meta_surv_maxstat_weight <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">sv =</span> <span class="fu">names</span>(surv_endpoints), <span class="at">.combine =</span> rbind) <span class="sc">%do%</span> {</span>
+<span id="cb11-37"><a href="#cb11-37" tabindex="-1"></a>  <span class="fu">foreach</span>(<span class="at">g =</span> <span class="fu">unique</span>(surv_maxstat<span class="sc">$</span>gene_name), <span class="at">.combine =</span> rbind) <span class="sc">%do%</span> {</span>
+<span id="cb11-38"><a href="#cb11-38" tabindex="-1"></a>    x <span class="ot">&lt;-</span> <span class="fu">summary</span>(meta_surv_maxstat[[sv]][[g]])</span>
+<span id="cb11-39"><a href="#cb11-39" tabindex="-1"></a>    <span class="fu">data.frame</span>(</span>
+<span id="cb11-40"><a href="#cb11-40" tabindex="-1"></a>      <span class="at">surv_var =</span> sv,</span>
+<span id="cb11-41"><a href="#cb11-41" tabindex="-1"></a>      <span class="at">project_id =</span> x<span class="sc">$</span>studlab,</span>
+<span id="cb11-42"><a href="#cb11-42" tabindex="-1"></a>      <span class="at">gene_name =</span> g,</span>
+<span id="cb11-43"><a href="#cb11-43" tabindex="-1"></a>      <span class="at">w.random =</span> <span class="fu">round</span>(<span class="dv">100</span><span class="sc">*</span>x<span class="sc">$</span>w.random <span class="sc">/</span> <span class="fu">sum</span>(x<span class="sc">$</span>w.random), <span class="dv">1</span>)</span>
+<span id="cb11-44"><a href="#cb11-44" tabindex="-1"></a>    )</span>
+<span id="cb11-45"><a href="#cb11-45" tabindex="-1"></a>  }</span>
+<span id="cb11-46"><a href="#cb11-46" tabindex="-1"></a>}</span>
+<span id="cb11-47"><a href="#cb11-47" tabindex="-1"></a></span>
+<span id="cb11-48"><a href="#cb11-48" tabindex="-1"></a>use_meta_surv <span class="ot">&lt;-</span> meta_surv_maxstat</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>use_surv <span class="ot">&lt;-</span> surv_maxstat</span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>use_meta_surv <span class="ot">&lt;-</span> meta_surv_maxstat</span></code></pre></div>
 </div>
-<div id="table-of-results" class="section level2" number="4">
-<h2><span class="header-section-number">4</span> Table of results</h2>
+<div id="table-of-results" class="section level2">
+<h2>Table of results</h2>
 <!-- Write results to xlsx file -->
-<pre class="r"><code># File name summary
-rmd_file &lt;- current_input()
-if(is.null(rmd_file))
-  rmd_file &lt;- &#39;tmp&#39;
-file_xlsx &lt;- file.path(&#39;./docs/file&#39;,rmd_file, &#39;crispr_hits_signature_surv_maxstat.xlsx&#39;)
-
-dir.create(dirname(file_xlsx), recursive = TRUE, showWarnings = FALSE)
-
-# Generate workbook
-wb &lt;- createWorkbook()
-for(i in unique(use_surv$surv_var)) {
-  addWorksheet(wb, i)
-  res &lt;- use_surv %&gt;% 
-    filter(surv_var == i) %&gt;% 
-    dplyr::rename(signature = gene_name) %&gt;%
-    select(surv_var, everything())
-  
-  res_meta &lt;- foreach(g = unique(res$signature), .combine = rbind) %do% {
-    use_meta_sum &lt;- summary(use_meta_surv[[i]][[g]])
-    data.frame(
-      project_id = &#39;Meta&#39;,
-      signature = g,
-      HR = exp(use_meta_sum$random$TE),
-      p.value = use_meta_sum$random$p,
-      std.error = use_meta_sum$random$seTE,
-      conf.low = exp(use_meta_sum$random$lower),
-      conf.high = exp(use_meta_sum$random$upper),
-      surv_var = i
-    )
-  }
-  res &lt;- bind_rows(res, res_meta)
-  writeData(wb, i, res)
-}
-saveWorkbook(wb, file_xlsx, TRUE)
-
-dge_file_xlsx &lt;- file_xlsx</code></pre>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="co"># File name summary</span></span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a>rmd_file <span class="ot">&lt;-</span> <span class="fu">current_input</span>()</span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a><span class="cf">if</span>(<span class="fu">is.null</span>(rmd_file))</span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>  rmd_file <span class="ot">&lt;-</span> <span class="st">&#39;tmp&#39;</span></span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>file_xlsx <span class="ot">&lt;-</span> <span class="fu">file.path</span>(<span class="st">&#39;./docs/file&#39;</span>,rmd_file, <span class="st">&#39;crispr_hits_signature_surv_maxstat.xlsx&#39;</span>)</span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a><span class="fu">dir.create</span>(<span class="fu">dirname</span>(file_xlsx), <span class="at">recursive =</span> <span class="cn">TRUE</span>, <span class="at">showWarnings =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a></span>
+<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a><span class="co"># Generate workbook</span></span>
+<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a>wb <span class="ot">&lt;-</span> <span class="fu">createWorkbook</span>()</span>
+<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="fu">unique</span>(use_surv<span class="sc">$</span>surv_var)) {</span>
+<span id="cb13-12"><a href="#cb13-12" tabindex="-1"></a>  <span class="fu">addWorksheet</span>(wb, i)</span>
+<span id="cb13-13"><a href="#cb13-13" tabindex="-1"></a>  res <span class="ot">&lt;-</span> use_surv <span class="sc">%&gt;%</span> </span>
+<span id="cb13-14"><a href="#cb13-14" tabindex="-1"></a>    <span class="fu">filter</span>(surv_var <span class="sc">==</span> i) <span class="sc">%&gt;%</span> </span>
+<span id="cb13-15"><a href="#cb13-15" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">rename</span>(<span class="at">signature =</span> gene_name) <span class="sc">%&gt;%</span></span>
+<span id="cb13-16"><a href="#cb13-16" tabindex="-1"></a>    <span class="fu">select</span>(surv_var, <span class="fu">everything</span>())</span>
+<span id="cb13-17"><a href="#cb13-17" tabindex="-1"></a>  </span>
+<span id="cb13-18"><a href="#cb13-18" tabindex="-1"></a>  res_meta <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">g =</span> <span class="fu">unique</span>(res<span class="sc">$</span>signature), <span class="at">.combine =</span> rbind) <span class="sc">%do%</span> {</span>
+<span id="cb13-19"><a href="#cb13-19" tabindex="-1"></a>    use_meta_sum <span class="ot">&lt;-</span> <span class="fu">summary</span>(use_meta_surv[[i]][[g]])</span>
+<span id="cb13-20"><a href="#cb13-20" tabindex="-1"></a>    <span class="fu">data.frame</span>(</span>
+<span id="cb13-21"><a href="#cb13-21" tabindex="-1"></a>      <span class="at">project_id =</span> <span class="st">&#39;Meta&#39;</span>,</span>
+<span id="cb13-22"><a href="#cb13-22" tabindex="-1"></a>      <span class="at">signature =</span> g,</span>
+<span id="cb13-23"><a href="#cb13-23" tabindex="-1"></a>      <span class="at">HR =</span> <span class="fu">exp</span>(use_meta_sum<span class="sc">$</span>random<span class="sc">$</span>TE),</span>
+<span id="cb13-24"><a href="#cb13-24" tabindex="-1"></a>      <span class="at">p.value =</span> use_meta_sum<span class="sc">$</span>random<span class="sc">$</span>p,</span>
+<span id="cb13-25"><a href="#cb13-25" tabindex="-1"></a>      <span class="at">std.error =</span> use_meta_sum<span class="sc">$</span>random<span class="sc">$</span>seTE,</span>
+<span id="cb13-26"><a href="#cb13-26" tabindex="-1"></a>      <span class="at">conf.low =</span> <span class="fu">exp</span>(use_meta_sum<span class="sc">$</span>random<span class="sc">$</span>lower),</span>
+<span id="cb13-27"><a href="#cb13-27" tabindex="-1"></a>      <span class="at">conf.high =</span> <span class="fu">exp</span>(use_meta_sum<span class="sc">$</span>random<span class="sc">$</span>upper),</span>
+<span id="cb13-28"><a href="#cb13-28" tabindex="-1"></a>      <span class="at">surv_var =</span> i</span>
+<span id="cb13-29"><a href="#cb13-29" tabindex="-1"></a>    )</span>
+<span id="cb13-30"><a href="#cb13-30" tabindex="-1"></a>  }</span>
+<span id="cb13-31"><a href="#cb13-31" tabindex="-1"></a>  res <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(res, res_meta)</span>
+<span id="cb13-32"><a href="#cb13-32" tabindex="-1"></a>  <span class="fu">writeData</span>(wb, i, res)</span>
+<span id="cb13-33"><a href="#cb13-33" tabindex="-1"></a>}</span>
+<span id="cb13-34"><a href="#cb13-34" tabindex="-1"></a><span class="fu">saveWorkbook</span>(wb, file_xlsx, <span class="cn">TRUE</span>)</span>
+<span id="cb13-35"><a href="#cb13-35" tabindex="-1"></a></span>
+<span id="cb13-36"><a href="#cb13-36" tabindex="-1"></a>dge_file_xlsx <span class="ot">&lt;-</span> file_xlsx</span></code></pre></div>
 <p>You can download the results of the survival analysis using the
 following link:</p>
 <ul>
@@ -1062,219 +1227,296 @@ href="./file/tcga_survival_crispr_hits_signatures.Rmd/crispr_hits_signature_surv
 analysis using optimal cut-off</strong></a></li>
 </ul>
 </div>
-<div id="figure-6f-forest-plot-by-study" class="section level2"
-number="5">
-<h2><span class="header-section-number">5</span> Figure 6F: Forest plot
-by study</h2>
-<p>Forest plot showing HR and 95%CI for each study. The size of the
-circle point is determined by the weight of the effect size in the
-meta-analysis. The diamond shape at the bottom of the plot represents
-the average effect calculated using meta-analysis.</p>
-<pre class="r"><code>chunk_data &lt;- use_surv
-
-meta_weight &lt;- foreach(i = names(use_meta_surv), .combine = rbind) %do% {
-  foreach(j = names(use_meta_surv[[i]]), .combine = rbind) %do% {
-    use_meta_sum &lt;- summary(use_meta_surv[[i]][[j]])
-    data.frame(
-      surv_var = i,
-      gene_name = j,
-      project_id = use_meta_sum$studlab,
-      w.fixed = use_meta_sum$w.fixed,
-      w.pct = 100* use_meta_sum$w.fixed / sum(use_meta_sum$w.fixed)
-    )
-  }
-}
-
-
-# use_meta_sum &lt;- summary(use_meta)
-chunk_data %&lt;&gt;% left_join(meta_weight, by = c(&#39;surv_var&#39;, &#39;gene_name&#39;, &#39;project_id&#39;))
-
-cox_meta_add &lt;- foreach(i = names(use_meta_surv), .combine = rbind) %do% {
-  foreach(g = names(use_meta_surv[[i]]), .combine = rbind) %do% {
-    use_meta_sum &lt;- summary(use_meta_surv[[i]][[g]])
-    cox_meta &lt;- data.frame(
-      project_id = &#39;Meta&#39;,
-      gene_name = g,
-      HR = exp(use_meta_sum$random$TE),
-      p.value = use_meta_sum$random$p,
-      std.error = use_meta_sum$random$seTE,
-      conf.low = exp(use_meta_sum$random$lower),
-      conf.high = exp(use_meta_sum$random$upper),
-      surv_var = i,
-      w.fixed = NA,
-      w.pct = 2*max(chunk_data %&gt;% filter(gene_name == g) %&gt;% pull(w.pct))
-    )
-    cox_empty &lt;- data.frame(
-      project_id = &#39;&#39;,
-      gene_name = g,
-      HR = NA,
-      p.value = 1,
-      std.error = 0,
-      conf.low = 1,
-      conf.high = 1,
-      surv_var = i,
-      w.fixed = NA,
-      w.pct = 0
-    )
-    rbind(cox_meta, cox_empty)
-  }
-}
-
-chunk_data %&lt;&gt;%
-  bind_rows(cox_meta_add) %&gt;%
-  mutate(
-    project_id = factor(project_id, levels= c(&#39;Meta&#39;, &#39;&#39;, rev(tcga_selected))),
-    project_type = ifelse(project_id == &#39;Meta&#39;, &#39;Meta&#39;, &#39;Project&#39;),
-    FDR = p.adjust(p.value, method = &#39;BH&#39;),
-    logP = -log10(p.value),
-    logP = ifelse(logP &gt; 10, 10 , logP),
-    logFDR = -log10(FDR),
-    logFDR = ifelse(logFDR &gt; 10, 10 , logFDR)
-  )
-
-chunk_data %&lt;&gt;%
-  bind_rows(cox_meta_add) %&gt;%
-  mutate(
-    # project_id = factor(project_id, levels= c(&#39;Meta&#39;, &#39;&#39;, gsub(&quot;TCGA-&quot;, &quot;&quot;, rev(tcga_selected)))),
-    project_id = factor(project_id, levels= c(&#39;Meta&#39;, &#39;&#39;, rev(tcga_selected))),
-    project_type = ifelse(project_id == &#39;Meta&#39;, &#39;Meta&#39;, &#39;Project&#39;),
-    FDR = p.adjust(p.value, method = &#39;BH&#39;),
-    logP = -log10(p.value),
-    logP = ifelse(logP &gt; 10, 10 , logP),
-    logFDR = -log10(FDR),
-    logFDR = ifelse(logFDR &gt; 10, 10 , logFDR)
-  )</code></pre>
-<pre class="r"><code>fc_palette &lt;- c(Up = &quot;#e41a1c&quot;, Down = &quot;#377eb8&quot;)
-shape_scale &lt;- c(DSS = 16, DFI = 15, PFI = 0)
-use_postition_dodge &lt;- 0.8
-use_lwd &lt;- (1/2.141959)/4
-
-chunk_data %&gt;%
-  filter(surv_var %in% c(&#39;DSS&#39;, &#39;DFI&#39;)) %&gt;% 
-  filter(!project_id %in% c(&#39;&#39;)) %&gt;% 
-  mutate(
-    gene_name = ifelse(gene_name == &#39;down_crispr_hits&#39;, &#39;Down&#39;, &#39;Up&#39;)
-  ) %&gt;% 
-  filter(std.error &lt;= 10) %&gt;%
-  ggplot(aes(HR, project_id,
-             size = w.pct,
-             color = gene_name,
-             shape = surv_var
-             )
-         ) +
-  geom_point(position = position_dodge(use_postition_dodge)) +
-  geom_linerange(aes(xmin=conf.low, xmax=conf.high), 
-                 linewidth = use_lwd,
-                 show.legend = FALSE,
-                 position = position_dodge(use_postition_dodge)
-                 ) +
-  geom_vline(xintercept = 1, linetype = &#39;dotted&#39;, linewidth = use_lwd) +
-  # facet_grid(rows = vars(gene_name)) +
-  scale_shape_manual(values = shape_scale) +
-  scale_color_manual(values = fc_palette) +
-  scale_size_continuous(range = c(0.6, 2)
-                        # breaks = c(0.1, 0.5, 1, 2, 5, 10),
-  ) +
-  scale_x_continuous(trans = &#39;log2&#39;,
-                     breaks = c(0.1, 0.2, 0.5, 1, 2, 3, 5, 10),
-                     labels = as.character(c(0.1, 0.2, 0.5, 1, 2, 3, 5, 10))
-  ) +
-  theme(
-    axis.line.y = element_blank(),
-    axis.ticks.y = element_blank(),
-    axis.line.x = element_line(linewidth = use_lwd),
-    axis.ticks.x = element_line(linewidth = use_lwd)
-  ) +
-  labs(
-    x = &#39;HR&#39;,
-    y = &#39;&#39;,
-    shape = &#39;&#39;,
-    size = &#39;Weight (%)&#39;,
-    caption = &#39;Estimates with a standard error &gt; 10 were removed from the plot&#39;,
-    color = &#39;&#39;
-    ) #+</code></pre>
-<p><img src="figure/tcga_survival_crispr_hits_signatures.Rmd/signature-maxstat-coxph-ggplot-forestplot-dss-dfi-vertical-1.png" width="1680" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>  # guides(
-  #   shape = &#39;none&#39;
-  # )</code></pre>
-</div>
-<div id="figure-6e-kaplan-meier-plots---optimal-cut-off"
-class="section level2" number="6">
-<h2><span class="header-section-number">6</span> Figure 6E: Kaplan-Meier
-plots - Optimal cut-off</h2>
-<pre class="r"><code>use_survfit_km &lt;- survfit_km_maxstat_list</code></pre>
-<pre class="r"><code>use_lwd &lt;- (1/2.141959)/4
-surv_var_i &lt;- names(use_survfit_km)[1]
-gene_i &lt;- names(use_survfit_km[[1]][[1]])[1]
-p_i &lt;- names(use_survfit_km[[1]])[1]
-for(surv_var_i in names(use_survfit_km)) {
-  cat(&quot;####&quot;, surv_var_i,&quot;\n\n&quot;)
-  for(gene_i in names(use_survfit_km[[surv_var_i]][[1]])) {
-    cat(&quot;#####&quot;, surv_var_i,&quot;-&quot;, gene_i, &quot;\n\n&quot;)
-    for(p_i in names(use_survfit_km[[surv_var_i]])) {
-      top_color &lt;- ifelse(gene_i == &#39;up_crispr_hits&#39;, 
-                            &#39;#e41a1c&#39;, 
-                            &#39;#377eb8&#39;)
-      use_palette &lt;- c(Low = &#39;grey60&#39;, High = top_color)
-      
-      hr_p &lt;- chunk_data %&gt;% 
-        filter(surv_var == surv_var_i) %&gt;% 
-        filter(project_id ==  p_i) %&gt;% 
-        filter(gene_name == gene_i)
-      cox_res &lt;- paste0(&#39;HR(95%CI)=&#39;, round(hr_p$HR, 2), 
-                        &#39;(&#39;, round(hr_p$conf.low,2),&#39;-&#39;,round(hr_p$conf.high,2),&#39;)&#39;,
-                        &#39;;P=&#39;,format.pval(hr_p$p.value,2))
-      
-      res &lt;- use_survfit_km[[surv_var_i]][[p_i]][[gene_i]] +
-        labs(
-          title = paste(surv_var_i, p_i, gene_i),
-          caption = cox_res
-        ) +
-        scale_color_manual(values = use_palette) +
-        theme(
-          axis.line = element_line(linewidth = use_lwd),
-          axis.ticks = element_line(linewidth = use_lwd)
-        )
-      print(res)
-      cat(&quot;\n\n&quot;)
-    } 
-  }
-}</code></pre>
-<div id="dss" class="section level4" number="6.0.1">
-<h4><span class="header-section-number">6.0.1</span> DSS</h4>
-<div id="dss---down_crispr_hits" class="section level5"
-number="6.0.1.1">
-<h5><span class="header-section-number">6.0.1.1</span> DSS -
-down_crispr_hits</h5>
-<p><img src="figure/tcga_survival_crispr_hits_signatures.Rmd/signature-km-1.png" width="1920" style="display: block; margin: auto;" /></p>
-<p><img src="figure/tcga_survival_crispr_hits_signatures.Rmd/signature-km-2.png" width="1920" style="display: block; margin: auto;" /></p>
-<p><img src="figure/tcga_survival_crispr_hits_signatures.Rmd/signature-km-3.png" width="1920" style="display: block; margin: auto;" /></p>
-</div>
-<div id="dss---up_crispr_hits" class="section level5" number="6.0.1.2">
-<h5><span class="header-section-number">6.0.1.2</span> DSS -
-up_crispr_hits</h5>
-<p><img src="figure/tcga_survival_crispr_hits_signatures.Rmd/signature-km-4.png" width="1920" style="display: block; margin: auto;" /></p>
-<p><img src="figure/tcga_survival_crispr_hits_signatures.Rmd/signature-km-5.png" width="1920" style="display: block; margin: auto;" /></p>
-<p><img src="figure/tcga_survival_crispr_hits_signatures.Rmd/signature-km-6.png" width="1920" style="display: block; margin: auto;" /></p>
+<div id="figure-6f-forest-plot-by-study" class="section level2">
+<h2>Figure 6F: Forest plot by study</h2>
+<p>Forest plot showing the association of high expression of each gene
+and multiple survival endpoints in individual TCGA studies and
+metanalysis. HRs and 95%CI by Cox regression model. BRCA (breast
+cancer), LUAD (lung adenocarcinoma), COAD (colon adenocarcinoma).</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a>chunk_data <span class="ot">&lt;-</span> use_surv</span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a>meta_weight <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">i =</span> <span class="fu">names</span>(use_meta_surv), <span class="at">.combine =</span> rbind) <span class="sc">%do%</span> {</span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a>  <span class="fu">foreach</span>(<span class="at">j =</span> <span class="fu">names</span>(use_meta_surv[[i]]), <span class="at">.combine =</span> rbind) <span class="sc">%do%</span> {</span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a>    use_meta_sum <span class="ot">&lt;-</span> <span class="fu">summary</span>(use_meta_surv[[i]][[j]])</span>
+<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a>    <span class="fu">data.frame</span>(</span>
+<span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a>      <span class="at">surv_var =</span> i,</span>
+<span id="cb14-8"><a href="#cb14-8" tabindex="-1"></a>      <span class="at">gene_name =</span> j,</span>
+<span id="cb14-9"><a href="#cb14-9" tabindex="-1"></a>      <span class="at">project_id =</span> use_meta_sum<span class="sc">$</span>studlab,</span>
+<span id="cb14-10"><a href="#cb14-10" tabindex="-1"></a>      <span class="at">w.fixed =</span> use_meta_sum<span class="sc">$</span>w.fixed,</span>
+<span id="cb14-11"><a href="#cb14-11" tabindex="-1"></a>      <span class="at">w.pct =</span> <span class="dv">100</span><span class="sc">*</span> use_meta_sum<span class="sc">$</span>w.fixed <span class="sc">/</span> <span class="fu">sum</span>(use_meta_sum<span class="sc">$</span>w.fixed)</span>
+<span id="cb14-12"><a href="#cb14-12" tabindex="-1"></a>    )</span>
+<span id="cb14-13"><a href="#cb14-13" tabindex="-1"></a>  }</span>
+<span id="cb14-14"><a href="#cb14-14" tabindex="-1"></a>}</span>
+<span id="cb14-15"><a href="#cb14-15" tabindex="-1"></a></span>
+<span id="cb14-16"><a href="#cb14-16" tabindex="-1"></a>chunk_data <span class="sc">%&lt;&gt;%</span> <span class="fu">left_join</span>(meta_weight, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&#39;surv_var&#39;</span>, <span class="st">&#39;gene_name&#39;</span>, <span class="st">&#39;project_id&#39;</span>))</span>
+<span id="cb14-17"><a href="#cb14-17" tabindex="-1"></a></span>
+<span id="cb14-18"><a href="#cb14-18" tabindex="-1"></a>cox_meta_add <span class="ot">&lt;-</span> <span class="fu">foreach</span>(<span class="at">i =</span> <span class="fu">names</span>(use_meta_surv), <span class="at">.combine =</span> rbind) <span class="sc">%do%</span> {</span>
+<span id="cb14-19"><a href="#cb14-19" tabindex="-1"></a>  <span class="fu">foreach</span>(<span class="at">g =</span> <span class="fu">names</span>(use_meta_surv[[i]]), <span class="at">.combine =</span> rbind) <span class="sc">%do%</span> {</span>
+<span id="cb14-20"><a href="#cb14-20" tabindex="-1"></a>    use_meta_sum <span class="ot">&lt;-</span> <span class="fu">summary</span>(use_meta_surv[[i]][[g]])</span>
+<span id="cb14-21"><a href="#cb14-21" tabindex="-1"></a>    cox_meta <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb14-22"><a href="#cb14-22" tabindex="-1"></a>      <span class="at">project_id =</span> <span class="st">&#39;Meta&#39;</span>,</span>
+<span id="cb14-23"><a href="#cb14-23" tabindex="-1"></a>      <span class="at">gene_name =</span> g,</span>
+<span id="cb14-24"><a href="#cb14-24" tabindex="-1"></a>      <span class="at">HR =</span> <span class="fu">exp</span>(use_meta_sum<span class="sc">$</span>random<span class="sc">$</span>TE),</span>
+<span id="cb14-25"><a href="#cb14-25" tabindex="-1"></a>      <span class="at">p.value =</span> use_meta_sum<span class="sc">$</span>random<span class="sc">$</span>p,</span>
+<span id="cb14-26"><a href="#cb14-26" tabindex="-1"></a>      <span class="at">std.error =</span> use_meta_sum<span class="sc">$</span>random<span class="sc">$</span>seTE,</span>
+<span id="cb14-27"><a href="#cb14-27" tabindex="-1"></a>      <span class="at">conf.low =</span> <span class="fu">exp</span>(use_meta_sum<span class="sc">$</span>random<span class="sc">$</span>lower),</span>
+<span id="cb14-28"><a href="#cb14-28" tabindex="-1"></a>      <span class="at">conf.high =</span> <span class="fu">exp</span>(use_meta_sum<span class="sc">$</span>random<span class="sc">$</span>upper),</span>
+<span id="cb14-29"><a href="#cb14-29" tabindex="-1"></a>      <span class="at">surv_var =</span> i,</span>
+<span id="cb14-30"><a href="#cb14-30" tabindex="-1"></a>      <span class="at">w.fixed =</span> <span class="cn">NA</span>,</span>
+<span id="cb14-31"><a href="#cb14-31" tabindex="-1"></a>      <span class="at">w.pct =</span> <span class="dv">2</span><span class="sc">*</span><span class="fu">max</span>(chunk_data <span class="sc">%&gt;%</span> <span class="fu">filter</span>(gene_name <span class="sc">==</span> g) <span class="sc">%&gt;%</span> <span class="fu">pull</span>(w.pct))</span>
+<span id="cb14-32"><a href="#cb14-32" tabindex="-1"></a>    )</span>
+<span id="cb14-33"><a href="#cb14-33" tabindex="-1"></a>    cox_empty <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb14-34"><a href="#cb14-34" tabindex="-1"></a>      <span class="at">project_id =</span> <span class="st">&#39;&#39;</span>,</span>
+<span id="cb14-35"><a href="#cb14-35" tabindex="-1"></a>      <span class="at">gene_name =</span> g,</span>
+<span id="cb14-36"><a href="#cb14-36" tabindex="-1"></a>      <span class="at">HR =</span> <span class="cn">NA</span>,</span>
+<span id="cb14-37"><a href="#cb14-37" tabindex="-1"></a>      <span class="at">p.value =</span> <span class="dv">1</span>,</span>
+<span id="cb14-38"><a href="#cb14-38" tabindex="-1"></a>      <span class="at">std.error =</span> <span class="dv">0</span>,</span>
+<span id="cb14-39"><a href="#cb14-39" tabindex="-1"></a>      <span class="at">conf.low =</span> <span class="dv">1</span>,</span>
+<span id="cb14-40"><a href="#cb14-40" tabindex="-1"></a>      <span class="at">conf.high =</span> <span class="dv">1</span>,</span>
+<span id="cb14-41"><a href="#cb14-41" tabindex="-1"></a>      <span class="at">surv_var =</span> i,</span>
+<span id="cb14-42"><a href="#cb14-42" tabindex="-1"></a>      <span class="at">w.fixed =</span> <span class="cn">NA</span>,</span>
+<span id="cb14-43"><a href="#cb14-43" tabindex="-1"></a>      <span class="at">w.pct =</span> <span class="dv">0</span></span>
+<span id="cb14-44"><a href="#cb14-44" tabindex="-1"></a>    )</span>
+<span id="cb14-45"><a href="#cb14-45" tabindex="-1"></a>    <span class="fu">rbind</span>(cox_meta, cox_empty)</span>
+<span id="cb14-46"><a href="#cb14-46" tabindex="-1"></a>  }</span>
+<span id="cb14-47"><a href="#cb14-47" tabindex="-1"></a>}</span>
+<span id="cb14-48"><a href="#cb14-48" tabindex="-1"></a></span>
+<span id="cb14-49"><a href="#cb14-49" tabindex="-1"></a>chunk_data <span class="sc">%&lt;&gt;%</span></span>
+<span id="cb14-50"><a href="#cb14-50" tabindex="-1"></a>  <span class="fu">bind_rows</span>(cox_meta_add) <span class="sc">%&gt;%</span></span>
+<span id="cb14-51"><a href="#cb14-51" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb14-52"><a href="#cb14-52" tabindex="-1"></a>    <span class="at">project_id =</span> <span class="fu">factor</span>(project_id, <span class="at">levels=</span> <span class="fu">c</span>(<span class="st">&#39;Meta&#39;</span>, <span class="st">&#39;&#39;</span>, <span class="fu">rev</span>(tcga_selected))),</span>
+<span id="cb14-53"><a href="#cb14-53" tabindex="-1"></a>    <span class="at">project_type =</span> <span class="fu">ifelse</span>(project_id <span class="sc">==</span> <span class="st">&#39;Meta&#39;</span>, <span class="st">&#39;Meta&#39;</span>, <span class="st">&#39;Project&#39;</span>),</span>
+<span id="cb14-54"><a href="#cb14-54" tabindex="-1"></a>    <span class="at">FDR =</span> <span class="fu">p.adjust</span>(p.value, <span class="at">method =</span> <span class="st">&#39;BH&#39;</span>),</span>
+<span id="cb14-55"><a href="#cb14-55" tabindex="-1"></a>    <span class="at">logP =</span> <span class="sc">-</span><span class="fu">log10</span>(p.value),</span>
+<span id="cb14-56"><a href="#cb14-56" tabindex="-1"></a>    <span class="at">logP =</span> <span class="fu">ifelse</span>(logP <span class="sc">&gt;</span> <span class="dv">10</span>, <span class="dv">10</span> , logP),</span>
+<span id="cb14-57"><a href="#cb14-57" tabindex="-1"></a>    <span class="at">logFDR =</span> <span class="sc">-</span><span class="fu">log10</span>(FDR),</span>
+<span id="cb14-58"><a href="#cb14-58" tabindex="-1"></a>    <span class="at">logFDR =</span> <span class="fu">ifelse</span>(logFDR <span class="sc">&gt;</span> <span class="dv">10</span>, <span class="dv">10</span> , logFDR)</span>
+<span id="cb14-59"><a href="#cb14-59" tabindex="-1"></a>  )</span>
+<span id="cb14-60"><a href="#cb14-60" tabindex="-1"></a></span>
+<span id="cb14-61"><a href="#cb14-61" tabindex="-1"></a>chunk_data <span class="sc">%&lt;&gt;%</span></span>
+<span id="cb14-62"><a href="#cb14-62" tabindex="-1"></a>  <span class="fu">bind_rows</span>(cox_meta_add) <span class="sc">%&gt;%</span></span>
+<span id="cb14-63"><a href="#cb14-63" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb14-64"><a href="#cb14-64" tabindex="-1"></a>    <span class="at">project_id =</span> <span class="fu">factor</span>(project_id, <span class="at">levels=</span> <span class="fu">c</span>(<span class="st">&#39;Meta&#39;</span>, <span class="st">&#39;&#39;</span>, <span class="fu">rev</span>(tcga_selected))),</span>
+<span id="cb14-65"><a href="#cb14-65" tabindex="-1"></a>    <span class="at">project_type =</span> <span class="fu">ifelse</span>(project_id <span class="sc">==</span> <span class="st">&#39;Meta&#39;</span>, <span class="st">&#39;Meta&#39;</span>, <span class="st">&#39;Project&#39;</span>),</span>
+<span id="cb14-66"><a href="#cb14-66" tabindex="-1"></a>    <span class="at">FDR =</span> <span class="fu">p.adjust</span>(p.value, <span class="at">method =</span> <span class="st">&#39;BH&#39;</span>),</span>
+<span id="cb14-67"><a href="#cb14-67" tabindex="-1"></a>    <span class="at">logP =</span> <span class="sc">-</span><span class="fu">log10</span>(p.value),</span>
+<span id="cb14-68"><a href="#cb14-68" tabindex="-1"></a>    <span class="at">logP =</span> <span class="fu">ifelse</span>(logP <span class="sc">&gt;</span> <span class="dv">10</span>, <span class="dv">10</span> , logP),</span>
+<span id="cb14-69"><a href="#cb14-69" tabindex="-1"></a>    <span class="at">logFDR =</span> <span class="sc">-</span><span class="fu">log10</span>(FDR),</span>
+<span id="cb14-70"><a href="#cb14-70" tabindex="-1"></a>    <span class="at">logFDR =</span> <span class="fu">ifelse</span>(logFDR <span class="sc">&gt;</span> <span class="dv">10</span>, <span class="dv">10</span> , logFDR)</span>
+<span id="cb14-71"><a href="#cb14-71" tabindex="-1"></a>  )</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a>fc_palette <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">Up =</span> <span class="st">&quot;#e41a1c&quot;</span>, <span class="at">Down =</span> <span class="st">&quot;#377eb8&quot;</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a>shape_scale <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">DSS =</span> <span class="dv">16</span>, <span class="at">DFI =</span> <span class="dv">15</span>, <span class="at">PFI =</span> <span class="dv">0</span>)</span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a>use_postition_dodge <span class="ot">&lt;-</span> <span class="fl">0.8</span></span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a>use_lwd <span class="ot">&lt;-</span> (<span class="dv">1</span><span class="sc">/</span><span class="fl">2.141959</span>)<span class="sc">/</span><span class="dv">4</span></span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a>chunk_data <span class="sc">%&gt;%</span></span>
+<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a>  <span class="fu">filter</span>(surv_var <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&#39;DSS&#39;</span>, <span class="st">&#39;DFI&#39;</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb15-8"><a href="#cb15-8" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span>project_id <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&#39;&#39;</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb15-9"><a href="#cb15-9" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb15-10"><a href="#cb15-10" tabindex="-1"></a>    <span class="at">gene_name =</span> <span class="fu">ifelse</span>(gene_name <span class="sc">==</span> <span class="st">&#39;down_crispr_hits&#39;</span>, <span class="st">&#39;Down&#39;</span>, <span class="st">&#39;Up&#39;</span>)</span>
+<span id="cb15-11"><a href="#cb15-11" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> </span>
+<span id="cb15-12"><a href="#cb15-12" tabindex="-1"></a>  <span class="fu">filter</span>(std.error <span class="sc">&lt;=</span> <span class="dv">10</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb15-13"><a href="#cb15-13" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(HR, project_id,</span>
+<span id="cb15-14"><a href="#cb15-14" tabindex="-1"></a>             <span class="at">size =</span> w.pct,</span>
+<span id="cb15-15"><a href="#cb15-15" tabindex="-1"></a>             <span class="at">color =</span> gene_name,</span>
+<span id="cb15-16"><a href="#cb15-16" tabindex="-1"></a>             <span class="at">shape =</span> surv_var</span>
+<span id="cb15-17"><a href="#cb15-17" tabindex="-1"></a>             )</span>
+<span id="cb15-18"><a href="#cb15-18" tabindex="-1"></a>         ) <span class="sc">+</span></span>
+<span id="cb15-19"><a href="#cb15-19" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">position =</span> <span class="fu">position_dodge</span>(use_postition_dodge)) <span class="sc">+</span></span>
+<span id="cb15-20"><a href="#cb15-20" tabindex="-1"></a>  <span class="fu">geom_linerange</span>(<span class="fu">aes</span>(<span class="at">xmin=</span>conf.low, <span class="at">xmax=</span>conf.high), </span>
+<span id="cb15-21"><a href="#cb15-21" tabindex="-1"></a>                 <span class="at">linewidth =</span> use_lwd,</span>
+<span id="cb15-22"><a href="#cb15-22" tabindex="-1"></a>                 <span class="at">show.legend =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb15-23"><a href="#cb15-23" tabindex="-1"></a>                 <span class="at">position =</span> <span class="fu">position_dodge</span>(use_postition_dodge)</span>
+<span id="cb15-24"><a href="#cb15-24" tabindex="-1"></a>                 ) <span class="sc">+</span></span>
+<span id="cb15-25"><a href="#cb15-25" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">1</span>, <span class="at">linetype =</span> <span class="st">&#39;dotted&#39;</span>, <span class="at">linewidth =</span> use_lwd) <span class="sc">+</span></span>
+<span id="cb15-26"><a href="#cb15-26" tabindex="-1"></a>  <span class="fu">scale_shape_manual</span>(<span class="at">values =</span> shape_scale) <span class="sc">+</span></span>
+<span id="cb15-27"><a href="#cb15-27" tabindex="-1"></a>  <span class="fu">scale_color_manual</span>(<span class="at">values =</span> fc_palette) <span class="sc">+</span></span>
+<span id="cb15-28"><a href="#cb15-28" tabindex="-1"></a>  <span class="fu">scale_size_continuous</span>(<span class="at">range =</span> <span class="fu">c</span>(<span class="fl">0.6</span>, <span class="dv">2</span>)) <span class="sc">+</span></span>
+<span id="cb15-29"><a href="#cb15-29" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">trans =</span> <span class="st">&#39;log2&#39;</span>,</span>
+<span id="cb15-30"><a href="#cb15-30" tabindex="-1"></a>                     <span class="at">breaks =</span> <span class="fu">c</span>(<span class="fl">0.1</span>, <span class="fl">0.2</span>, <span class="fl">0.5</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">5</span>, <span class="dv">10</span>),</span>
+<span id="cb15-31"><a href="#cb15-31" tabindex="-1"></a>                     <span class="at">labels =</span> <span class="fu">as.character</span>(<span class="fu">c</span>(<span class="fl">0.1</span>, <span class="fl">0.2</span>, <span class="fl">0.5</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">5</span>, <span class="dv">10</span>))</span>
+<span id="cb15-32"><a href="#cb15-32" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb15-33"><a href="#cb15-33" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb15-34"><a href="#cb15-34" tabindex="-1"></a>    <span class="at">axis.line.y =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb15-35"><a href="#cb15-35" tabindex="-1"></a>    <span class="at">axis.ticks.y =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb15-36"><a href="#cb15-36" tabindex="-1"></a>    <span class="at">axis.line.x =</span> <span class="fu">element_line</span>(<span class="at">linewidth =</span> use_lwd),</span>
+<span id="cb15-37"><a href="#cb15-37" tabindex="-1"></a>    <span class="at">axis.ticks.x =</span> <span class="fu">element_line</span>(<span class="at">linewidth =</span> use_lwd)</span>
+<span id="cb15-38"><a href="#cb15-38" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb15-39"><a href="#cb15-39" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb15-40"><a href="#cb15-40" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">&#39;HR&#39;</span>,</span>
+<span id="cb15-41"><a href="#cb15-41" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">&#39;&#39;</span>,</span>
+<span id="cb15-42"><a href="#cb15-42" tabindex="-1"></a>    <span class="at">shape =</span> <span class="st">&#39;&#39;</span>,</span>
+<span id="cb15-43"><a href="#cb15-43" tabindex="-1"></a>    <span class="at">size =</span> <span class="st">&#39;Weight (%)&#39;</span>,</span>
+<span id="cb15-44"><a href="#cb15-44" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">&#39;Estimates with a standard error &gt; 10 were removed from the plot&#39;</span>,</span>
+<span id="cb15-45"><a href="#cb15-45" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">&#39;&#39;</span></span>
+<span id="cb15-46"><a href="#cb15-46" tabindex="-1"></a>    )</span></code></pre></div>
+<p><img src="figure/tcga_survival_crispr_hits_signatures.Rmd/signature-maxstat-coxph-ggplot-forestplot-dss-dfi-vertical-1.png" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-signature-maxstat-coxph-ggplot-forestplot-dss-dfi-vertical-1">
+Past versions of
+signature-maxstat-coxph-ggplot-forestplot-dss-dfi-vertical-1.png
+</button>
+</p>
+<div
+id="fig-signature-maxstat-coxph-ggplot-forestplot-dss-dfi-vertical-1"
+class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/7190d2fb979857cc47654867e91194f92fbb7c17/docs/figure/tcga_survival_crispr_hits_signatures.Rmd/signature-maxstat-coxph-ggplot-forestplot-dss-dfi-vertical-1.png" target="_blank">7190d2f</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-07-01
+</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
-<div id="dfi" class="section level4" number="6.0.2">
-<h4><span class="header-section-number">6.0.2</span> DFI</h4>
-<div id="dfi---down_crispr_hits" class="section level5"
-number="6.0.2.1">
-<h5><span class="header-section-number">6.0.2.1</span> DFI -
-down_crispr_hits</h5>
-<p><img src="figure/tcga_survival_crispr_hits_signatures.Rmd/signature-km-7.png" width="1920" style="display: block; margin: auto;" /></p>
-<p><img src="figure/tcga_survival_crispr_hits_signatures.Rmd/signature-km-8.png" width="1920" style="display: block; margin: auto;" /></p>
-<p><img src="figure/tcga_survival_crispr_hits_signatures.Rmd/signature-km-9.png" width="1920" style="display: block; margin: auto;" /></p>
 </div>
-<div id="dfi---up_crispr_hits" class="section level5" number="6.0.2.2">
-<h5><span class="header-section-number">6.0.2.2</span> DFI -
-up_crispr_hits</h5>
-<p><img src="figure/tcga_survival_crispr_hits_signatures.Rmd/signature-km-10.png" width="1920" style="display: block; margin: auto;" /></p>
-<p><img src="figure/tcga_survival_crispr_hits_signatures.Rmd/signature-km-11.png" width="1920" style="display: block; margin: auto;" /></p>
-<p><img src="figure/tcga_survival_crispr_hits_signatures.Rmd/signature-km-12.png" width="1920" style="display: block; margin: auto;" /></p>
-<pre class="r"><code># c(Up = &quot;#e41a1c&quot;, Down = &quot;#377eb8&quot;)</code></pre>
+<div id="figure-6e-kaplan-meier-plots" class="section level2">
+<h2>Figure 6E: Kaplan-Meier plots</h2>
+<p>Kaplan-Meier plots showing disease-free interval in TCGA-BRCA
+patients stratified by expression of signatures based on depleted and
+enriched genes highlighted in Fig. 6C. HRs and P values by two-sided Cox
+regression model. BRCA (breast cancer); TCGA (The Cancer Genome Atlas);
+HR (hazard ratio).</p>
+<p><strong>Please note that the plots, tables, and Cox regression
+results may differ slightly from those presented in the manuscript. This
+is because, in the paper, the GSVA-based signature scores were
+calculated using a matrix that included all signatures, including the
+one derived from Amhr2 KO.</strong></p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>use_survfit_km <span class="ot">&lt;-</span> survfit_km_maxstat_list[<span class="st">&#39;DFI&#39;</span>]</span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>use_survfit_km[[<span class="st">&#39;DFI&#39;</span>]] <span class="ot">&lt;-</span> use_survfit_km[[<span class="st">&#39;DFI&#39;</span>]][<span class="st">&quot;TCGA-BRCA&quot;</span>]</span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a>use_lwd <span class="ot">&lt;-</span> (<span class="dv">1</span><span class="sc">/</span><span class="fl">2.141959</span>)<span class="sc">/</span><span class="dv">4</span></span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a>surv_var_i <span class="ot">&lt;-</span> <span class="fu">names</span>(use_survfit_km)[<span class="dv">1</span>]</span>
+<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a>gene_i <span class="ot">&lt;-</span> <span class="fu">names</span>(use_survfit_km[[<span class="dv">1</span>]][[<span class="dv">1</span>]])[<span class="dv">1</span>]</span>
+<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a>p_i <span class="ot">&lt;-</span> <span class="fu">names</span>(use_survfit_km[[<span class="dv">1</span>]])[<span class="dv">1</span>]</span>
+<span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a><span class="cf">for</span>(surv_var_i <span class="cf">in</span> <span class="fu">names</span>(use_survfit_km)) {</span>
+<span id="cb17-6"><a href="#cb17-6" tabindex="-1"></a>  <span class="cf">for</span>(gene_i <span class="cf">in</span> <span class="fu">names</span>(use_survfit_km[[surv_var_i]][[<span class="dv">1</span>]])) {</span>
+<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a>    <span class="cf">for</span>(p_i <span class="cf">in</span> <span class="fu">names</span>(use_survfit_km[[surv_var_i]])) {</span>
+<span id="cb17-8"><a href="#cb17-8" tabindex="-1"></a>      top_color <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(gene_i <span class="sc">==</span> <span class="st">&#39;up_crispr_hits&#39;</span>, </span>
+<span id="cb17-9"><a href="#cb17-9" tabindex="-1"></a>                            <span class="st">&#39;#e41a1c&#39;</span>, </span>
+<span id="cb17-10"><a href="#cb17-10" tabindex="-1"></a>                            <span class="st">&#39;#377eb8&#39;</span>)</span>
+<span id="cb17-11"><a href="#cb17-11" tabindex="-1"></a>      use_palette <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">Low =</span> <span class="st">&#39;grey60&#39;</span>, <span class="at">High =</span> top_color)</span>
+<span id="cb17-12"><a href="#cb17-12" tabindex="-1"></a>      </span>
+<span id="cb17-13"><a href="#cb17-13" tabindex="-1"></a>      hr_p <span class="ot">&lt;-</span> chunk_data <span class="sc">%&gt;%</span> </span>
+<span id="cb17-14"><a href="#cb17-14" tabindex="-1"></a>        <span class="fu">filter</span>(surv_var <span class="sc">==</span> surv_var_i) <span class="sc">%&gt;%</span> </span>
+<span id="cb17-15"><a href="#cb17-15" tabindex="-1"></a>        <span class="fu">filter</span>(project_id <span class="sc">==</span>  p_i) <span class="sc">%&gt;%</span> </span>
+<span id="cb17-16"><a href="#cb17-16" tabindex="-1"></a>        <span class="fu">filter</span>(gene_name <span class="sc">==</span> gene_i)</span>
+<span id="cb17-17"><a href="#cb17-17" tabindex="-1"></a>      cox_res <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">&#39;HR(95%CI)=&#39;</span>, <span class="fu">round</span>(hr_p<span class="sc">$</span>HR, <span class="dv">2</span>), </span>
+<span id="cb17-18"><a href="#cb17-18" tabindex="-1"></a>                        <span class="st">&#39;(&#39;</span>, <span class="fu">round</span>(hr_p<span class="sc">$</span>conf.low,<span class="dv">2</span>),<span class="st">&#39;-&#39;</span>,<span class="fu">round</span>(hr_p<span class="sc">$</span>conf.high,<span class="dv">2</span>),<span class="st">&#39;)&#39;</span>,</span>
+<span id="cb17-19"><a href="#cb17-19" tabindex="-1"></a>                        <span class="st">&#39;;P=&#39;</span>,<span class="fu">format.pval</span>(hr_p<span class="sc">$</span>p.value,<span class="dv">2</span>))</span>
+<span id="cb17-20"><a href="#cb17-20" tabindex="-1"></a>      </span>
+<span id="cb17-21"><a href="#cb17-21" tabindex="-1"></a>      res <span class="ot">&lt;-</span> use_survfit_km[[surv_var_i]][[p_i]][[gene_i]] <span class="sc">+</span></span>
+<span id="cb17-22"><a href="#cb17-22" tabindex="-1"></a>        <span class="fu">labs</span>(</span>
+<span id="cb17-23"><a href="#cb17-23" tabindex="-1"></a>          <span class="at">title =</span> <span class="fu">paste</span>(surv_var_i, p_i, gene_i),</span>
+<span id="cb17-24"><a href="#cb17-24" tabindex="-1"></a>          <span class="at">caption =</span> cox_res</span>
+<span id="cb17-25"><a href="#cb17-25" tabindex="-1"></a>        ) <span class="sc">+</span></span>
+<span id="cb17-26"><a href="#cb17-26" tabindex="-1"></a>        <span class="fu">scale_color_manual</span>(<span class="at">values =</span> use_palette) <span class="sc">+</span></span>
+<span id="cb17-27"><a href="#cb17-27" tabindex="-1"></a>        <span class="fu">theme</span>(</span>
+<span id="cb17-28"><a href="#cb17-28" tabindex="-1"></a>          <span class="at">axis.line =</span> <span class="fu">element_line</span>(<span class="at">linewidth =</span> use_lwd),</span>
+<span id="cb17-29"><a href="#cb17-29" tabindex="-1"></a>          <span class="at">axis.ticks =</span> <span class="fu">element_line</span>(<span class="at">linewidth =</span> use_lwd)</span>
+<span id="cb17-30"><a href="#cb17-30" tabindex="-1"></a>        )</span>
+<span id="cb17-31"><a href="#cb17-31" tabindex="-1"></a>      <span class="fu">print</span>(res)</span>
+<span id="cb17-32"><a href="#cb17-32" tabindex="-1"></a>      <span class="fu">cat</span>(<span class="st">&quot;</span><span class="sc">\n\n</span><span class="st">&quot;</span>)</span>
+<span id="cb17-33"><a href="#cb17-33" tabindex="-1"></a>    } </span>
+<span id="cb17-34"><a href="#cb17-34" tabindex="-1"></a>  }</span>
+<span id="cb17-35"><a href="#cb17-35" tabindex="-1"></a>}</span></code></pre></div>
+<p><img src="figure/tcga_survival_crispr_hits_signatures.Rmd/signature-km-1.png" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-signature-km-1">
+Past versions of signature-km-1.png
+</button>
+</p>
+<div id="fig-signature-km-1" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/7190d2fb979857cc47654867e91194f92fbb7c17/docs/figure/tcga_survival_crispr_hits_signatures.Rmd/signature-km-1.png" target="_blank">7190d2f</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-07-01
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p><img src="figure/tcga_survival_crispr_hits_signatures.Rmd/signature-km-2.png" style="display: block; margin: auto;" /></p>
+<p>
+<button type="button" class="btn btn-default btn-xs btn-workflowr btn-workflowr-fig" data-toggle="collapse" data-target="#fig-signature-km-2">
+Past versions of signature-km-2.png
+</button>
+</p>
+<div id="fig-signature-km-2" class="collapse">
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/7190d2fb979857cc47654867e91194f92fbb7c17/docs/figure/tcga_survival_crispr_hits_signatures.Rmd/signature-km-2.png" target="_blank">7190d2f</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-07-01
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
@@ -1283,9 +1525,9 @@ Session information
 </button>
 </p>
 <div id="workflowr-sessioninfo" class="collapse">
-<pre class="r"><code>sessionInfo()</code></pre>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span></code></pre></div>
 <p>R version 4.4.3 (2025-02-28) Platform: aarch64-apple-darwin20 Running
-under: macOS Sequoia 15.5</p>
+under: macOS 26.0.1</p>
 <p>Matrix products: default BLAS:
 /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/lib/libRblas.0.dylib
 LAPACK:
@@ -1297,12 +1539,12 @@ en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8</p>
 <p>attached base packages: [1] stats4 stats graphics grDevices utils
 datasets methods<br />
 [8] base</p>
-<p>other attached packages: [1] cowplot_1.1.3.9000 GSVA_2.0.7<br />
+<p>other attached packages: [1] cowplot_1.2.0 GSVA_2.3.1<br />
 [3] openxlsx_4.2.8 kableExtra_1.4.0<br />
-[5] magrittr_2.0.3 meta_8.1-0<br />
+[5] magrittr_2.0.3 meta_8.2-0<br />
 [7] metadat_1.4-0 survminer_0.5.0<br />
-[9] ggpubr_0.6.0 ggsurvfit_1.1.0<br />
-[11] gtsummary_2.2.0 survival_3.8-3<br />
+[9] ggpubr_0.6.1 ggsurvfit_1.1.0<br />
+[11] gtsummary_2.3.0 survival_3.8-3<br />
 [13] SummarizedExperiment_1.36.0 Biobase_2.66.0<br />
 [15] GenomicRanges_1.58.0 GenomeInfoDb_1.42.3<br />
 [17] IRanges_2.40.1 S4Vectors_0.44.0<br />
@@ -1310,15 +1552,15 @@ datasets methods<br />
 [21] matrixStats_1.5.0 foreach_1.5.2<br />
 [23] knitr_1.50 lubridate_1.9.4<br />
 [25] forcats_1.0.0 stringr_1.5.1<br />
-[27] dplyr_1.1.4 purrr_1.0.4<br />
+[27] dplyr_1.1.4 purrr_1.1.0<br />
 [29] readr_2.1.5 tidyr_1.3.1<br />
-[31] tibble_3.2.1 ggplot2_3.5.2<br />
+[31] tibble_3.3.0 ggplot2_3.5.2<br />
 [33] tidyverse_2.0.0 workflowr_1.7.1</p>
 <p>loaded via a namespace (and not attached): [1] splines_4.4.3
-later_1.4.2<br />
-[3] graph_1.84.1 XML_3.99-0.18<br />
+later_1.4.4<br />
+[3] graph_1.84.1 XML_3.99-0.19<br />
 [5] lifecycle_1.0.4 Rdpack_2.6.4<br />
-[7] rstatix_0.7.2 rprojroot_2.0.4<br />
+[7] rstatix_0.7.2 rprojroot_2.1.0<br />
 [9] processx_3.8.6 lattice_0.22-7<br />
 [11] MASS_7.3-65 backports_1.5.0<br />
 [13] metafor_4.8-0 sass_0.4.10<br />
@@ -1328,7 +1570,7 @@ later_1.4.2<br />
 [21] minqa_1.2.8 RColorBrewer_1.1-3<br />
 [23] abind_1.4-8 zlibbioc_1.52.0<br />
 [25] git2r_0.36.2 GenomeInfoDbData_1.2.13<br />
-[27] KMsurv_0.1-5 irlba_2.3.5.1<br />
+[27] KMsurv_0.1-6 irlba_2.3.5.1<br />
 [29] annotate_1.84.0 svglite_2.2.1<br />
 [31] codetools_0.2-20 DelayedArray_0.32.0<br />
 [33] xml2_1.3.8 tidyselect_1.2.1<br />
@@ -1337,17 +1579,17 @@ later_1.4.2<br />
 [39] mathjaxr_1.8-0 jsonlite_2.0.0<br />
 [41] Formula_1.2-5 iterators_1.0.14<br />
 [43] systemfonts_1.2.3 tools_4.4.3<br />
-[45] Rcpp_1.0.14 glue_1.8.0<br />
+[45] Rcpp_1.1.0 glue_1.8.0<br />
 [47] gridExtra_2.3 SparseArray_1.6.2<br />
-[49] xfun_0.52 HDF5Array_1.34.0<br />
+[49] xfun_0.53 HDF5Array_1.34.0<br />
 [51] withr_3.0.2 numDeriv_2016.8-1.1<br />
 [53] fastmap_1.2.0 boot_1.3-31<br />
 [55] rhdf5filters_1.18.1 callr_3.7.6<br />
 [57] digest_0.6.37 rsvd_1.0.5<br />
 [59] timechange_0.3.0 R6_2.6.1<br />
 [61] textshaping_1.0.1 dichromat_2.0-0.1<br />
-[63] RSQLite_2.3.11 generics_0.1.4<br />
-[65] data.table_1.17.2 httr_1.4.7<br />
+[63] RSQLite_2.4.3 generics_0.1.4<br />
+[65] data.table_1.17.8 httr_1.4.7<br />
 [67] S4Arrays_1.6.0 whisker_0.4.1<br />
 [69] pkgconfig_2.0.3 gtable_0.3.6<br />
 [71] blob_1.2.4 SingleCellExperiment_1.28.1 [73] XVector_0.46.0
@@ -1361,26 +1603,24 @@ survMisc_0.5.6<br />
 [87] nloptr_2.2.1 cachem_1.1.0<br />
 [89] zoo_1.8-14 rhdf5_2.50.2<br />
 [91] parallel_4.4.3 AnnotationDbi_1.68.0<br />
-[93] pillar_1.10.2 grid_4.4.3<br />
-[95] vctrs_0.6.5 promises_1.3.2<br />
+[93] pillar_1.11.0 grid_4.4.3<br />
+[95] vctrs_0.6.5 promises_1.3.3<br />
 [97] car_3.1-3 BiocSingular_1.22.0<br />
 [99] beachmat_2.22.0 xtable_1.8-4<br />
-[101] evaluate_1.0.3 magick_2.8.6<br />
+[101] evaluate_1.0.5 magick_2.8.7<br />
 [103] cli_3.6.5 compiler_4.4.3<br />
 [105] rlang_1.1.6 crayon_1.5.3<br />
 [107] ggsignif_0.6.4 labeling_0.4.3<br />
 [109] ps_1.9.1 getPass_0.2-4<br />
 [111] fs_1.6.6 stringi_1.8.7<br />
 [113] viridisLite_0.4.2 BiocParallel_1.40.2<br />
-[115] Biostrings_2.74.1 CompQuadForm_1.4.3<br />
-[117] Matrix_1.7-3 patchwork_1.3.0<br />
+[115] Biostrings_2.74.1 CompQuadForm_1.4.4<br />
+[117] Matrix_1.7-3 patchwork_1.3.1<br />
 [119] hms_1.1.3 sparseMatrixStats_1.18.0<br />
 [121] bit64_4.6.0-1 Rhdf5lib_1.28.0<br />
 [123] KEGGREST_1.46.0 rbibutils_2.3<br />
-[125] broom_1.0.8 memoise_2.0.1<br />
+[125] broom_1.0.9 memoise_2.0.1<br />
 [127] bslib_0.9.0 bit_4.6.0</p>
-</div>
-</div>
 </div>
 </div>
 </div>
@@ -1457,7 +1697,7 @@ $(document).ready(function ()  {
 
     // establish options
     var options = {
-      selectors: "h1,h2,h3,h4,h5",
+      selectors: "h1,h2,h3,h4",
       theme: "bootstrap3",
       context: '.toc-content',
       hashGenerator: function (text) {
