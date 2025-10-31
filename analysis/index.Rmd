@@ -24,7 +24,7 @@ Raw data is available at Gene Expression Omnibus (GEO, NCBI), under the accessio
 
 ##  Data and code availability
 
-To reproduce our analysis, first clone source code from the [GitHub repository](https://github.com/TheAcetoLab/saini-stealTHY). This repository is also archived at [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11288553.svg)](https://doi.org/10.5281/11288553)
+To reproduce our analysis, first clone source code from the [GitHub repository](https://github.com/TheAcetoLab/saini-stealTHY). This repository is also archived at [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11208099.svg)](https://doi.org/10.5281/11208099)
 
     git clone https://github.com/TheAcetoLab/saini-stealTHY
 
