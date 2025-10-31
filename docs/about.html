@@ -13,10 +13,10 @@
 
 <title>About</title>
 
-<script src="site_libs/header-attrs-2.25/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<link href="site_libs/bootstrap-3.3.5/css/journal.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
@@ -31,10 +31,8 @@
        pre:not([class]) { background-color: white }</style>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <script src="site_libs/navigation-1.1/codefolding.js"></script>
-<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
-<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
-<link href="site_libs/font-awesome-6.4.2/css/all.min.css" rel="stylesheet" />
-<link href="site_libs/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.5.2/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet" />
 
 <link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/main/img/reproducible.png">
 <!-- Add a small amount of space between sections. -->
@@ -55,22 +53,13 @@ div.section {
   ul.task-list{list-style: none;}
     </style>
 
-<style type="text/css">code{white-space: pre;}</style>
-<script type="text/javascript">
-if (window.hljs) {
-  hljs.configure({languages: []});
-  hljs.initHighlightingOnLoad();
-  if (document.readyState && document.readyState === "complete") {
-    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
-  }
-}
-</script>
 
 
 
 
 
 
+<link rel="stylesheet" href="style.css" type="text/css" />
 
 
 
@@ -254,26 +243,72 @@ $(document).ready(function () {
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="index.html">crispr-immunorejection</a>
+      <a class="navbar-brand" href="index.html">StealTHY</a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
+        
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
         <li>
-  <a href="index.html">Home</a>
+  <a href="index.html">
+    <span class="fa fa-home"></span>
+     
+    Home
+  </a>
 </li>
 <li>
-  <a href="about.html">About</a>
+  <a href="about.html">
+    <span class="fa fa-info"></span>
+     
+    About
+  </a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="fa fa-bar-chart"></span>
+     
+    Analyses
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li class="dropdown-header">Data generation</li>
+    <li>
+      <a href="0_differential_expression_gsea_gsva.html">Run differential gene expression analysis, GSEA and GSVA</a>
+    </li>
+    <li class="divider"></li>
+    <li class="dropdown-header">Main results</li>
+    <li>
+      <a href="patients_ctc_counts_distribution.html">CTC counts distribution in breast cancer patients</a>
+    </li>
+    <li>
+      <a href="br16_pca.html">PCA analysis of CTC gene expression in NSG-CDX-BR16 mice</a>
+    </li>
+    <li>
+      <a href="br16_dge.html">Differential gene expression report for NSG-CDX-BR16 data</a>
+    </li>
+    <li>
+      <a href="gsea_across_models.html">Report of GSEA and GSVA analysis in NSG-CDX-BR16, NSG-LM2, Patient and NSG-LM2 time kinetics</a>
+    </li>
+    <li>
+      <a href="core_gene_sets.html">Analysis of genes from candidate pathways</a>
+    </li>
+  </ul>
 </li>
 <li>
   <a href="license.html">License</a>
 </li>
-      </ul>
-      <ul class="nav navbar-nav navbar-right">
-        <li>
-  <a href="https://github.com/fcg-bio/crispr-immunorejection">
-    <span class="fab fa-github"></span>
+<li>
+  <a href="https://github.com/TheAcetoLab/saini-stealTHY">
+    <span class="fa fa-github"></span>
      
-    Source code
+  </a>
+</li>
+<li>
+  <a href="https://www.theacetolab.com">
+    <span class="fa fa-flask"></span>
+     
   </a>
 </li>
       </ul>
@@ -322,7 +357,7 @@ class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2024-05-17
+<strong>Last updated:</strong> 2025-10-31
 </p>
 <p>
 <strong>Checks:</strong> <span
@@ -369,13 +404,15 @@ results.</p>
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrong5c3fb91">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtree7bb3fec1f59a54caf60f6f727bd2b08ec5a5dec9targetblank7bb3feca">
 <span class="glyphicon glyphicon-ok text-success"
-aria-hidden="true"></span> <strong>Repository version:</strong> 5c3fb91
+aria-hidden="true"></span> <strong>Repository version:</strong>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/7bb3fec1f59a54caf60f6f727bd2b08ec5a5dec9" target="_blank">7bb3fec</a>
 </a>
 </p>
 </div>
-<div id="strongRepositoryversionstrong5c3fb91"
+<div
+id="strongRepositoryversionstrongahrefhttpsgithubcomTheAcetoLabsainistealTHYtree7bb3fec1f59a54caf60f6f727bd2b08ec5a5dec9targetblank7bb3feca"
 class="panel-collapse collapse">
 <div class="panel-body">
 <p>
@@ -384,7 +421,8 @@ and connecting the code version to the results is critical for
 reproducibility.
 </p>
 <p>
-The results in this page were generated with repository version 5c3fb91.
+The results in this page were generated with repository version
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/tree/7bb3fec1f59a54caf60f6f727bd2b08ec5a5dec9" target="_blank">7bb3fec</a>.
 See the <em>Past versions</em> tab to see a history of the changes made
 to the R Markdown and HTML files.
 </p>
@@ -399,11 +437,72 @@ were generated:
 </p>
 <pre><code>
 Ignored files:
+    Ignored:    .DS_Store
     Ignored:    .Rhistory
     Ignored:    .Rproj.user/
+    Ignored:    analysis/.DS_Store
+    Ignored:    analysis/templates/.DS_Store
+    Ignored:    code/.DS_Store
+    Ignored:    code/raw_data_processing/rnaseq/p27851_o32062/pipelines/
+    Ignored:    configuration/.DS_Store
+    Ignored:    data/.DS_Store
+    Ignored:    data/crispr/
+    Ignored:    data/resources/
+    Ignored:    data/rnaseq/
+    Ignored:    output/.DS_Store
+    Ignored:    output/clinical/
+    Ignored:    output/crispr/
+    Ignored:    output/rnaseq/
+
+Untracked files:
+    Untracked:  analysis/crispr-hsapiens_2180_sgRNA.md
+    Untracked:  analysis/crispr-mm_2215_sgRNA-CMT167-LLC1-CT26.md
+    Untracked:  analysis/crispr-mm_2215_sgRNA-StealTHY.md
+    Untracked:  analysis/crispr-mm_2215_sgRNA-clonality.md
+    Untracked:  analysis/index.md
+    Untracked:  analysis/license.md
+    Untracked:  analysis/rnaseq-amhr2_ko-deg.md
+    Untracked:  analysis/rnaseq-tumor-bulk.md
+    Untracked:  analysis/rnaseq-tumor-facs-cancer.md
+    Untracked:  analysis/rnaseq-tumor-facs-immune.md
+    Untracked:  analysis/style.css
+    Untracked:  analysis/tcga_immune_infiltrate_amhr2_ko_signatures.md
+    Untracked:  analysis/tcga_survival_amhr2_ko_signatures.md
+    Untracked:  analysis/tcga_survival_crispr_hits_genes.md
+    Untracked:  analysis/tcga_survival_crispr_hits_signatures.md
+    Untracked:  code/R-functions/subchunkify.R
 
 Unstaged changes:
+    Modified:   .gitignore
     Modified:   analysis/_site.yml
+    Deleted:    analysis/crispr-hsapiens_2180_sgRNA_r1.Rmd
+    Deleted:    analysis/crispr-mm_2215_sgRNA-clonality_r1.Rmd
+    Deleted:    analysis/crispr-mm_2215_sgRNA-r2oC.Rmd
+    Deleted:    analysis/crispr-mm_2215_sgRNA-r2oD.Rmd
+    Deleted:    analysis/crispr-mm_2215_sgRNA-r2oD_r1.Rmd
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_ko_culture--over--amhr2_control_culture_GSEA_msigdb.h-1.pdf
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_ko_culture--over--amhr2_control_culture_GSEA_msigdb.h-1.png
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_ko_notgfbeta--over--amhr2_ko_culture_GSEA_msigdb.h-1.pdf
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_ko_notgfbeta--over--amhr2_ko_culture_GSEA_msigdb.h-1.png
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_overexpression--over--amhr2_control_culture_GSEA_msigdb.h-1.pdf
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_overexpression--over--amhr2_control_culture_GSEA_msigdb.h-1.png
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_overexpression--over--amhr2_ko_culture_GSEA_msigdb.h-1.pdf
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_overexpression--over--amhr2_ko_culture_GSEA_msigdb.h-1.png
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_overexpression--over--amhr2_ko_notgfbeta_GSEA_msigdb.h-1.pdf
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-amhr2_overexpression--over--amhr2_ko_notgfbeta_GSEA_msigdb.h-1.png
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-invivo_amhr2_ko-+-amhr2_ko_culture--over--invivo_control_sgrna-+-amhr2_control_culture_GSEA_msigdb.h-1.pdf
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-invivo_amhr2_ko-+-amhr2_ko_culture--over--invivo_control_sgrna-+-amhr2_control_culture_GSEA_msigdb.h-1.png
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-invivo_amhr2_ko--over--invivo_control_sgrna_GSEA_msigdb.h-1.pdf
+    Deleted:    analysis/templates/docs/figure/gse-dotplot-invivo_amhr2_ko--over--invivo_control_sgrna_GSEA_msigdb.h-1.png
+    Deleted:    analysis/templates/docs/file/tmp/dge.xlsx
+    Deleted:    analysis/templates/docs/file/tmp/gse_gsea_msigdb.h.xlsx
+    Deleted:    analysis/templates/docs/file/tmp/gse_gsego_bp.xlsx
+    Deleted:    analysis/templates/docs/file/tmp/gse_gsego_mf.xlsx
+    Modified:   analysis/templates/rnaseq-deg-edger.Rmd
+    Modified:   code/R-functions/gse_report.r
+    Modified:   configuration/rmarkdown/color_palettes.R
+    Modified:   configuration/rmarkdown/ggplot_theme.R
+    Modified:   update_workflowr.R
 
 </code></pre>
 <p>
@@ -418,7 +517,6 @@ have uncommitted changes.
 <hr>
 </div>
 <div id="versions" class="tab-pane fade">
-
 <p>
 These are the previous versions of the repository in which changes were
 made to the R Markdown (<code>analysis/about.Rmd</code>) and HTML
@@ -453,7 +551,41 @@ Message
 Rmd
 </td>
 <td>
-5c3fb91
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/7bb3fec1f59a54caf60f6f727bd2b08ec5a5dec9/analysis/about.Rmd" target="_blank">7bb3fec</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2025-10-31
+</td>
+<td>
+Update license and about
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/TheAcetoLab/saini-stealTHY/13b89b011934eb3bd6ea30828c0fe8a0c0cd5a92/docs/about.html" target="_blank">13b89b0</a>
+</td>
+<td>
+Francesc Castro-Giner
+</td>
+<td>
+2024-05-17
+</td>
+<td>
+Build site.
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/TheAcetoLab/saini-stealTHY/blob/5c3fb91479e6eb57971b4b2e04b5d7c95d632e4a/analysis/about.Rmd" target="_blank">5c3fb91</a>
 </td>
 <td>
 Francesc Castro-Giner
@@ -472,7 +604,62 @@ Start workflowr project.
 </div>
 </div>
 </div>
-<p>Describe your project.</p>
+<div
+id="stealthy-eludes-crispr-immunogenicity-to-expose-concealed-metastatic-regulators"
+class="section level2">
+<h2>StealTHY eludes CRISPR immunogenicity to expose concealed metastatic
+regulators</h2>
+<p><strong>Abstract</strong></p>
+<p>CRISPR screens have become standard gene discovery platforms in
+various contexts, including cancer. Yet, commonly available CRISPR-Cas9
+tools are increasingly recognized as unfit for in vivo investigations in
+immunocompetent contexts, due to broad immunogenicity of bacterial
+nucleases and reporters. Here, we show how conventional CRISPR screens
+in tumor grafts are systematically jeopardized by immunoediting in
+syngeneic and humanized immunocompetent hosts, resulting in iatrogenic
+clonal dropouts and ultimately compromising target identification. To
+resolve this, we present StealTHY, an immunogen-free CRISPR platform
+compatible with virtually all immunocompetent designs, enabling
+preservation of clonal architecture and exposing previously concealed
+cancer vulnerabilities. Among these, we identify the AMH-AMHR2 axis as a
+formerly unappreciated metastasis target. Thus, with StealTHY, we
+provide a new resource to expand the applicability of CRISPR screens to
+immunocompetent models including humanized tumor grafts, revealing
+metastasis regulators of therapeutic relevance.</p>
+<p><strong>Authors</strong></p>
+<p>Massimo Saini<sup>1</sup>, Francesc Castro-Giner<sup>1</sup>, Adriana
+Hotz<sup>2</sup>, Magdalena K. Sznurkowska<sup>1</sup>, Manuel
+Nüesch<sup>1</sup>, François M. Cuenot<sup>1</sup>, Selina
+Budinjas<sup>1</sup> Gilles Bilfeld<sup>1</sup>, Ece Su
+Ildız<sup>1</sup>, Karin Strittmatter<sup>1</sup>, Ilona
+Krol<sup>1</sup>, Zoi Diamantopoulou<sup>1</sup>,<sup>3</sup>, Aino
+Paasinen-Sohns<sup>4</sup>, Maria Waldmeier<sup>1</sup>, Rafaela
+Cássio<sup>2</sup>, Susanne Kreutzer<sup>2</sup>, Zacharias
+Kontarakis<sup>2,5</sup>, Ana Gvozdenovic<sup>1</sup>, &amp; Nicola
+Aceto<sup>1,6,*</sup></p>
+<p><sup>1</sup> Department of Biology, Institute of Molecular Health
+Sciences, Swiss Federal Institute of Technology (ETH) Zurich, 8093
+Zurich, Switzerland <sup>2</sup> Functional Genomics Center Zurich,
+Swiss Federal Institute of Technology (ETH) Zurich, 8093 Zurich,
+Switzerland. <sup>3</sup> Current address: Cancer Research UK Scotland
+Institute, Garscube Estate, Switchback Road Glasgow, G61 1BD, UK and
+School of Cancer Sciences, University of Glasgow, Garscube Estate,
+Switchback Road, Glasgow, G61 1QH, UK <sup>4</sup> Department of
+Biomedicine, University of Basel and University Hospital Basel, 4058
+Basel, Switzerland <sup>5</sup> Genome Engineering and Measurement
+Laboratory (GEML), Swiss Federal Institute of Technology (ETH) Zurich,
+8093 Zurich, Switzerland<br />
+<sup>6</sup> Lead Contact</p>
+<p><sup>*</sup>Corresponding author</p>
+</div>
+<div id="citation" class="section level2">
+<h2>Citation</h2>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
 
 
 <!-- Adjust MathJax settings so that all math formulae are shown using
