@@ -5,7 +5,7 @@ author: "Francesc Castro-Giner"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 output: workflowr::wflow_html
 editor_options:
-  chunk_output_type: inline
+  chunk_output_type: console
 params:
   data_dir: ./data/crispr/mm_2215_sgRNA
   output_dir: ./output/crispr/mm_2215_sgRNA
@@ -24,7 +24,6 @@ use_seed <- 1100101
 
 set.seed(use_seed)
 
-# dir.create(params$output_dir, recursive = TRUE, showWarnings = FALSE)
 ```
 
 Load packages
@@ -247,11 +246,6 @@ for(i in names(mageck_comp_list)) {
   writeData(wb, wsn, gene_summ[[i]])
   wsn <- 'sgrna_summ'
   addWorksheet(wb, wsn)
-  # writeData(wb, wsn, sgrna_summ[[i]])
-  # for(wsn in names(mageck_flute[[i]])) {
-  #   addWorksheet(wb, wsn)
-  #   writeData(wb, wsn, mageck_flute[[i]][[wsn]])
-  # }
   saveWorkbook(wb, file_xlsx, TRUE)
 }
 ```
@@ -347,24 +341,14 @@ use_shape <- c(
   `Positive controls` = 1
 )
 
-# get gene order based on Original figure
-# gene_levels <- gene_summ_5C[['stealthy_ko_syngeneic']] %>%
-#   ReadRRA(score = 'lfc') %>%
-#   dplyr::rename(LFC = Score) %>%
-#   left_join(gene_info, by = c('id' = 'id')) %>%
-#   filter(!is.na(gene_set)) %>%
-#   mutate(gene_name = fct_reorder(gene_name, LFC, .desc = FALSE)) %>%
-#   pull(gene_name) %>%
-#   levels
+
 gene_levels <- rev(gene_info$id)
 
 
 gene_levels_list <- list()
 gene_levels_list[['stealthy_ko_syngeneic_llc1']] <- c(
   "Pcna",
-  # "Tgfb2","Gdf9","Amhr2","Tgfbr2","Gdf15","Tgfb3","Tgfbr1",
   "Amh", "Amhr2",  "Tgfbr2", "Acvr2b", "Gdf15", "Tgfb3", "Tgfbr1",
-  # "Met","Igf2r","Igf1r","Egfr","Axl","Gas6", "Erbb3","Erbb2","Egf",
   "Mertk", "Igf2r", "Angpt2", "Igf1r", "Egfr", "Axl", "Gas6",
   "Plk1","Trim72",
   "Cd30","Ifnlr1","Ifnar1","Trail","Ifne","Lta","Ltbr","Tnfr2","Light", 
@@ -373,9 +357,7 @@ gene_levels_list[['stealthy_ko_syngeneic_llc1']] <- c(
 
 gene_levels_list[['stealthy_ko_syngeneic_ct26']] <- c(
   "Pcna",
-  # "Amhr2","Gdf9","Tgfbr1","Tgfbr2","Tgfb2","Gdf15","Tgfb3",
   'Amhr2', 'Amh', 'Gdf15', 'Tgfbr2', 'Gdf9', 'Acvr1b', 'Tgfbr1',
-  # "Met","Igf1r","Igf2r","Egfr","Axl","Erbb3","Erbb2","Egf","Gas6",
   'Axl', 'Egfr', 'Erbb3', 'Igf2r', 'Mertk', 'Gas6', 'Met',
   "Plk1","Trim72",
   "Cd30","Ifnlr1","Ifnar1","Trail","Ifne","Lta","Ltbr","Tnfr2","Light", 
@@ -384,9 +366,7 @@ gene_levels_list[['stealthy_ko_syngeneic_ct26']] <- c(
 
 gene_levels_list[['stealthy_ko_syngeneic_cmt167']]  <- c(
   "Pcna",
-  # "Amhr2","Gdf9","Tgfbr2","Tgfbr1","Tgfb2","Gdf15","Tgfb3",
   'Amhr2', 'Amh', 'Gdf9', 'Acvr1b', 'Acvr1', 'Tgfbr2', 'Tgfbr1',
-  # "Met","Igf1r","Igf2r","Egfr","Axl","Erbb3","Erbb2","Egf","Gas6",
   'Met', 'Igf1r', 'Igf2r', 'Egfr', 'Mertk', 'Axl', 'Angpt2',
   "Plk1","Trim72",
   "Cd30","Ifnlr1","Ifnar1","Trail","Ifne","Lta","Ltbr","Tnfr2","Light",
@@ -396,7 +376,9 @@ gene_levels_list[['stealthy_ko_syngeneic_cmt167']]  <- c(
 ```
 
 ### Supplementary figure 4M: Differential abundance of selected genes
-Differential abundance of selected genes in carcinoma cells subjected to StealTHY KO or Cas9+Puro
+
+
+Dot plots highlighting hits identified following the strategy depicted in Fig. 4A upon transplantation in immunocompetent hosts of metastatic lung carcinoma cells (LLC1, C167) and colon carcinoma cells (CT26) previously subjected to StealTHY KO; representative genes from two recurrently identified categories are shown in comparison across screening methods. The fold-change values indicate differential sgRNA abundance between primary tumors and lung metastases; n=5 each; RTK, receptor tyrosine kinase; Ca, carcinoma; FDR, false discovery rate; Tnf, tumor necrosis factor; Ifn, interferon.
 
 ```{r da-selected-genes-dotplot, fig.width=2.37, fig.asp=2.2}
 use_comp <- names(gene_summ)
@@ -412,22 +394,6 @@ xfdr <- foreach(i=gene_summ[use_comp], .combine = rbind) %do% {
     min
 }
 maxFDR <- -log10(xfdr[,1]) %>% max
- 
-# Set LFC (x-axis) for comparable plots to "stealthy_ko_syngeneic": "stealthy_ko_nsg"
-# stealthy_comp <- c("stealthy_ko_syngeneic", "stealthy_ko_nsg")
-# xlfc <- foreach(i=gene_summ_5C[stealthy_comp], .combine = rbind) %do% {
-#   i %>% 
-#     ReadRRA(score = 'lfc') %>% 
-#     dplyr::rename(LFC = Score) %>% 
-#     left_join(gene_info, by = c('id' = 'id')) %>% 
-#     filter(!is.na(gene_set)) %>% 
-#     pull(LFC) %>% 
-#     abs %>% max
-# }
-# stealthy_maxLFC <- max(xlfc[,1])
-# stealthy_xlim <- c(-stealthy_maxLFC, stealthy_maxLFC)
-# stealthy_breaks <- c(-2.5, -1, 0, 1, 2.5)
-# stealthy_labels <- c('-2.5', '-1', '0', '1', '2.5')
 
 xlfc <- foreach(i=gene_summ, .combine = rbind) %do% {
   i %>%
@@ -438,10 +404,6 @@ xlfc <- foreach(i=gene_summ, .combine = rbind) %do% {
     pull(LFC) %>%
     abs %>% max
 }
-# maxLFC <- ceiling(max(xlfc[,1]))
-# xlim <- c(-maxLFC, maxLFC)
-# xbreaks <- c(-6, -2.5, 0, 2.5, 6)
-# xlabels <- c('-6', '-2.5', '0', '2.5', '6')
 
 i <- use_comp[1]
 for(i in use_comp)  {
@@ -471,16 +433,12 @@ for(i in use_comp)  {
       )
   xlim <- c(-ceiling(max(abs(x$LFC), na.rm = TRUE)),
             ceiling(max(abs(x$LFC), na.rm = TRUE)))
-  # size_breaks <- c(0, 0.25, 0.5, 1, 2, ceiling(maxFDR))
   size_breaks <- c(0, 0.25, 0.5, ceiling(maxFDR))
   res <- x %>% 
     ggplot(aes(LFC, gene_name, color = gene_set, size = -log10(FDR))) +
     geom_point(aes(shape = gene_set)) +
     geom_vline(xintercept = 0, linetype = 3, linewidth = one_pt/2) +
     scale_y_discrete(expand = expansion(add = c(1, 1))) + # add fixed units around each facet to avoid lines over points
-    # scale_x_continuous(
-    #   expand = expansion(add = c(1, 1))
-    #   ) + # add fixed units around each facet to avoid lines over points
     scale_color_manual(values = use_colors) +
     scale_size(range = c(0.5, 2.5), 
                limits = c(0, ceiling(maxFDR)), 
@@ -494,7 +452,6 @@ for(i in use_comp)  {
     facet_grid(rows = vars(gene_set), scales = 'free_y', space = 'free_y') +
     theme_facet +
     theme(
-      # axis.line = element_line(linewidth = one_pt/2, color = 'black'),
       axis.ticks = element_line(linewidth = one_pt/2, color = 'black'),
       panel.border = element_rect(linewidth = one_pt/2, color = 'black'),
       axis.text = element_text(size=8), 
@@ -515,8 +472,6 @@ for(i in use_comp)  {
     scale_x_continuous(
       expand = expansion(add = c(1, 1)), 
       limits = xlim
-      # breaks = xbreaks,
-      # labels = xlabels
     )
   
   print(res)
@@ -525,9 +480,10 @@ for(i in use_comp)  {
 ```
 
 
-## Supplementary figure 4M: Muller plots of selected genes
+## Supplementary figure 4N: Muller plots of selected genes
 
-Define selected comparisons for muller plots
+Muller plots depicting the relative frequency of unique gene KOs in matched primary lung tumors versus synchronous liver metastasis samples from syngeneic recipients transplanted with C167 lung carcinoma cells, previously transduced with the mouse interactome library; n=5 (two representative samples are shown).
+
 ```{r define-comparisons-muller-plots}
 x <- colData(se) %>% data.frame
 
@@ -563,11 +519,9 @@ genes_list_2 <- gene_info %>%
 ```
 
 
-Generate Muller plots for genes in main figure 5C
 ```{r run-muller-plots}
 cpm_threshold <- 10000
 comp_list <- comp_list_muller
-# use_genes <- genes_list_1
 use_genes <- c(
   "Egfr",
   'Met',
@@ -614,30 +568,8 @@ muller_plots <- foreach(j = names(comp_list)) %do% {
       group_by(gene, sample_alias, sample_type) %>% 
       summarise(cpm = sum(cpm)) %>% 
       mutate(
-        # gene = fct_reorder(gene, cpm)
         gene = factor(gene, levels = use_genes)
       )
-
-    # # Select guides with cpm > cpm_threshold
-    # x_guides_keep <- x %>%
-    #   group_by(sample_type, guide) %>%
-    #   summarise(cpm = max(cpm)) %>%
-    #   filter(cpm > cpm_threshold) %>%
-    #   pull(guide)
-
-    # # Group guides with cpm < cpm_threshold into the low abundant category, and sum counts for low abundant
-    # x %<>%
-    #   mutate(
-    #     guide = ifelse(guide %in%  x_guides_keep, guide, 'low abundant')
-    #   ) %>%
-    #   group_by(sample_type, guide) %>%
-    #   summarise(cpm = sum(cpm)) %>%
-    #   ungroup() %>%
-    #   mutate(
-    #     guide = fct_reorder(guide, cpm),
-    #     guide = relevel(guide, ref = 'low abundant')
-    #   )
-    
     use_cols <- c(
       'low abundant' = 'grey80',
       colorRampPalette(palette_OkabeIto)(nlevels(x$gene)) %>% set_names(levels(x$gene))
@@ -654,12 +586,10 @@ muller_plots <- foreach(j = names(comp_list)) %do% {
         fill = ''
       ) +
       scale_x_discrete(expand = c(0, 0)) +
-      # scale_y_continuous(expand = c(0, 0), limits = c(0, 1000000/10000)) +
       scale_y_continuous(expand = c(0, 0)) +
       # guides(fill = 'none') +
       theme(
         panel.background = element_rect(fill = "grey90"),
-        # plot.margin = margin(0.5, 1.5, 0.5, 0, "cm"),
         plot.margin = margin(0, 0.5, 0, 0, "cm"),
         axis.text =  element_text(size=3),
         axis.title =  element_text(size=3),
@@ -672,7 +602,6 @@ muller_plots <- foreach(j = names(comp_list)) %do% {
 
 }
 names(muller_plots) <- names(comp_list)
-# muller_syngeneic_representative <- muller_plots
 ```
 
 

@@ -26,8 +26,6 @@ options(stringsAsFactors = FALSE)
 use_seed <- 1100101
 
 set.seed(use_seed)
-
-# dir.create(params$output_dir, recursive = TRUE, showWarnings = FALSE)
 ```
 
 Load packages
@@ -265,7 +263,6 @@ counts_stats_filterByExpr <- counts_stats
 # Filter Crispr Data
 keep_gene_guides <- rownames(se)[rowData(se)$Gene %in% genes_to_keep]
 keep_ctrl_guides <- rownames(se)[grepl('Non_Target', rowData(se)$Gene)]
-# se <- se[c(keep_gene_guides, keep_ctrl_guides),]
 ```
 
 The table below shows the proportion of samples with counts >= `r min_counts`in each group for genes removed (n = `r length(genes_to_rm)``).
@@ -528,6 +525,9 @@ use_assay <- assay(se[,use_samples], 'cpm') %>%
 ```
 
 ### Figure 4B: sgRNA distribution in mice transplanted with 4T1 cells previously subjected to StealTHY KO
+
+Density plots showing unique sgRNAs from 4T1 orthotopic tumors (n=5-7); frequency (cpm) = read counts per million.
+
 ```{r test-dist-stealthy-ko-ridges_plot-4t1, fig.width=1.5, fig.asp=1.32}
 use_samples <- selected_panels_df %>% 
   filter(group == '4T1') %>% 
@@ -550,7 +550,7 @@ use_assay %>%
              fill = mouse_model_short, 
              color = mouse_model_short, 
              height = after_stat(density))) +
-  geom_density_ridges(size = one_pt/4, 
+  geom_density_ridges(linewidth = default_linewidth, 
                       alpha = 0.8, 
                       scale = 4,
                       rel_min_height = 0.001 # set the `rel_min_height` argument to remove tails,
@@ -558,25 +558,29 @@ use_assay %>%
                       ) +
   scale_fill_manual(values = palette_mmodel) +
   scale_color_manual(values = palette_mmodel_line) +
-  scale_x_log10(expand = expansion(mult = c(0, 0))
-                # breaks = c(1, 10, 1000, 100000)
+  scale_x_log10(expand = expansion(mult = c(0, 0)),
+                breaks = c(1, 1000, 100000)
                 ) +
-  scale_y_discrete(expand = c(0.01, 0)) +
+  scale_y_discrete(expand = expansion(mult = c(0.01, 0.2))) +
   labs(y = '') +
   guides(fill = 'none', color = 'none') +
   theme_ridges(font_size = 8, grid = F) +
   theme(
     strip.background = element_blank(),
-    axis.line.x = element_line(linewidth = one_pt/4, color = 'black'),
-    axis.ticks.x = element_line(linewidth = one_pt/4, color = 'black'),
+    axis.line.x = element_line(linewidth = default_linewidth, color = 'black'),
+    axis.ticks.x = element_line(linewidth = default_linewidth, color = 'black'),
     axis.text.y = element_blank(),
-    axis.text.x = element_text(size=2),
-    axis.title.x = element_text(size=2),
+    axis.text.x = element_text(size=4),
+    axis.title.x = element_text(size=4),
     strip.text.x = element_text(size=4, hjust = 0)
   )
+  
 ```
 
 ### Supplementary figure 4B: sgRNA distribution in mice transplanted with 4T1 cells previously subjected to StealTHY KO
+
+Density plots showing the distribution of unique sgRNAs retrieved in primary tumors from the indicated mice transplanted with MVT1 cells (left) or Py2T cells (right) previously subjected to Stealthy KO; relative frequency is shown as read counts per million (cpm+1); n=5-7 each; representative tumors are shown.
+
 ```{r test-dist-stealthy-ko-ridges_plot-mvt1-py2t, fig.width=3, fig.asp=0.66}
 use_samples <- selected_panels_df %>% 
   filter(group %in% c('MVT1', 'Py2T')) %>% 
@@ -599,32 +603,30 @@ use_assay %>%
              fill = mouse_model_short, 
              color = mouse_model_short, 
              height = after_stat(density))) +
-  geom_density_ridges(size = one_pt/4, 
+  geom_density_ridges(linewidth = default_linewidth, 
                       alpha = 0.8, 
                       scale = 4,
                       rel_min_height = 0.001 # set the `rel_min_height` argument to remove tails,
-                      # stat = "density"
                       ) +
   scale_fill_manual(values = palette_mmodel) +
   scale_color_manual(values = palette_mmodel_line) +
-  scale_x_log10(expand = expansion(mult = c(0, 0))
-                # breaks = c(1, 10, 1000, 100000)
+  scale_x_log10(expand = expansion(mult = c(0, 0)),
+                breaks = c(1, 1000, 100000)
                 ) +
-  scale_y_discrete(expand = c(0.01, 0)) +
+  scale_y_discrete(expand = expansion(mult = c(0.01, 0.2))) +
   labs(y = '') +
   guides(fill = 'none', color = 'none') +
   ggh4x::facet_wrap2(vars(group), nrow = 1,
                      scales = 'free_y', 
-                     # space = "free_y",
                      axes = "x") +
   theme_ridges(font_size = 8, grid = F) +
   theme(
     strip.background = element_blank(),
-    axis.line.x = element_line(linewidth = one_pt/4, color = 'black'),
-    axis.ticks.x = element_line(linewidth = one_pt/4, color = 'black'),
+    axis.line.x = element_line(linewidth = default_linewidth, color = 'black'),
+    axis.ticks.x = element_line(linewidth = default_linewidth, color = 'black'),
     axis.text.y = element_blank(),
-    axis.text.x = element_text(size=2),
-    axis.title.x = element_text(size=2),
+    axis.text.x = element_text(size=4),
+    axis.title.x = element_text(size=4),
     strip.text.x = element_text(size=4, hjust = 0)
   )
 ```
@@ -672,9 +674,7 @@ for(i in names(comp_list_modality)) {
     scale_color_manual(values = palette_vector_mmodel) +
     labs(x = "log(1+cpm)",
          color = '',
-         sub = i#,
-         # caption =paste("Kolmogorov-Smirnov test p-value:", round(ks.res$p.value, 3), "\n",
-                        # "Kolmogorov-Smirnov test D:", round(ks.res$statistic, 3))
+         sub = i
          ) +
     theme(
       text = element_text(size=2),
@@ -691,6 +691,9 @@ for(i in names(comp_list_modality)) {
 ```
 
 ### Supplementary Figure 4D : K-S test table 
+
+Table depicting the results of Kolmogorov-Smirnov tests, comparing sgRNA distributions from the CRISPR KO datasets indicated, encompassing three mammary carcinoma models (MVT1, 4T1, Py2T). The datasets are obtained from primary tumors harvested from the experiments shown in Figure 4A and Supplementary Figure 4A; n=5-7 each.
+
 ```{r modality-comparisons-ks-table}
 ks_test_df %>% 
   dplyr::select(-case, -reference) %>% 
@@ -824,7 +827,8 @@ gene_levels <- gene_summ[['stealthy_ko_syngeneic']] %>%
 ```
 
 ### Figure 4C and Supplementary Figure 4F
-Differential abundance of selected genes in carcinoma cells subjected to StealTHY KO or Cas9+Puro
+
+Dot plots highlighting hits identified following the strategy depicted in Figure 4A upon transplantation in the indicated hosts of metastatic mammary carcinoma cells (MVT1, 4T1, Py2T) previously subjected to Stealthy KO or gold standard KO by Cas9+PuroR; representative genes from four recurrently identified gene families are shown in comparison across screening methods. The fold-change values indicate differential sgRNA abundance between primary tumors and synchronous lung metastases; n=5-7 each; RTK, receptor tyrosine kinase, Tnf, tumor necrosis factor; Ifn, interferon; FDR, false discovery rate.
 
 ```{r da-selected-genes-dotplot, fig.width=2.37, fig.asp=2.2}
 use_comp <- c('stealthy_ko_syngeneic', 'stealthy_ko_nsg', 'cas9+puro_syngeneic')
@@ -888,9 +892,6 @@ for(i in use_comp)  {
     geom_point(aes(shape = gene_set)) +
     geom_vline(xintercept = 0, linetype = 3, linewidth = one_pt/2) +
     scale_y_discrete(expand = expansion(add = c(1, 1))) + # add fixed units around each facet to avoid lines over points
-    # scale_x_continuous(
-    #   expand = expansion(add = c(1, 1))
-    #   ) + # add fixed units around each facet to avoid lines over points
     scale_color_manual(values = use_colors) +
     scale_size(range = c(0.5, 2.5), 
                limits = c(0, ceiling(maxFDR)), 
@@ -904,7 +905,6 @@ for(i in use_comp)  {
     facet_grid(rows = vars(gene_set), scales = 'free_y', space = 'free_y') +
     theme_facet +
     theme(
-      # axis.line = element_line(linewidth = one_pt/2, color = 'black'),
       axis.ticks = element_line(linewidth = one_pt/2, color = 'black'),
       panel.border = element_rect(linewidth = one_pt/2, color = 'black'),
       axis.text = element_text(size=8), 
@@ -937,9 +937,10 @@ for(i in use_comp)  {
 
 
 ### Supplementary Figure 4E
-Differential abundance of selected genes in carcinoma cells subjected to StealTHY KO with respect to a mock KO reference
 
-```{r da-positive-controls-genes-dotplot, fig.width=2.37, fig.asp=0.6}
+Dot plots presenting differential sgRNA abundance for selected positive control genes in mammary carcinoma models (MVT1, 4T1, Py2T) subjected to StealTHY KO with respect to a mock KO reference dataset. In the mock KO condition, dCas9 transduction was performed instead of Apo-Cas9 transfection in the same sgRNA-transduced cells. Top: dot plot showing differential sgRNA abundance measured in vitro in cells prior to transplantation, i.e. harvested 60 hours after Apo-Cas9 transfection or dCas9 transduction; n=3 samples per group. Bottom: dot plot showing differential sgRNA abundance measured in primary tumors in vivo, harvested at the experimental endpoint from syngeneic hosts; n=5-7 mice per group.
+
+```{r da-positive-controls-genes-dotplot, fig.width=2.37, fig.asp=0.4}
 use_comp <- c('stealthy_ko_over_dcas9_in_vitro', 'stealthy_ko_over_dcas9_in_vivo')
 
 # FDR limits
@@ -982,27 +983,26 @@ for(i in use_comp)  {
             ceiling(max(abs(x$LFC), na.rm = TRUE)))
   size_breaks <- c(0, 0.25, 0.5, 1, 2, ceiling(maxFDR))
   res <- x %>% 
-    ggplot(aes(LFC, gene_name, color = gene_set, size = -log10(FDR))) +
-    geom_point(aes(shape = gene_set)) +
+    ggplot(aes(LFC, gene_name, size = -log10(FDR))) +
+    geom_point(shape = 1, linewidth = default_linewidth) +
+    
     geom_vline(xintercept = 0, linetype = 3, linewidth = one_pt/2) +
     scale_y_discrete(expand = expansion(add = c(1, 1))) + # add fixed units around each facet to avoid lines over points
-    # scale_x_continuous(
-    #   expand = expansion(add = c(1, 1))
-    #   ) + # add fixed units around each facet to avoid lines over points
     scale_color_manual(values = use_colors) +
-    scale_size(range = c(0.5, 2.5), 
+    scale_size(range = c(2, 4), 
                limits = c(0, ceiling(maxFDR)), 
                breaks = size_breaks,
                labels = size_breaks %>% as.character # remove trailing 0 from decimals
                ) +
     scale_shape_manual(values = use_shape) +
     scale_x_continuous(
-        expand = expansion(add = c(1, 1))
+        expand = expansion(add = c(1, 1)),
+        limits = c(-4.5, 4.5),
+        breaks = c(-4, 0, 4),
         ) +
     facet_grid(rows = vars(gene_set), scales = 'free_y', space = 'free_y') +
     theme_facet +
     theme(
-      # axis.line = element_line(linewidth = one_pt/2, color = 'black'),
       axis.ticks = element_line(linewidth = one_pt/2, color = 'black'),
       panel.border = element_rect(linewidth = one_pt/2, color = 'black'),
       axis.text = element_text(size=8), 
@@ -1080,7 +1080,6 @@ colnames(counts_stats) <- levels(use_group)
 counts_stats$all <- rowSums(counts_mat >= min_counts)  / ncol(counts_mat)
   
 # Keep genes with min_counts threshold in >=min_prop of samples in at least 1 group
-# rows_to_keep <- rownames(counts_stats)[rowSums(counts_stats >= min_prop) > 0]
 rows_to_keep <- rownames(counts_stats)[counts_stats$all >= min_prop]
 rows_to_remove <- setdiff(rownames(counts_stats), rows_to_keep)
 
@@ -1108,7 +1107,6 @@ colnames(counts_stats) <- levels(use_group)
 counts_stats$all <- rowSums(counts_mat >= min_counts)  / ncol(counts_mat)
   
 # Keep genes with min_counts threshold in >=min_prop of samples in at least 1 group
-# rows_to_keep <- rownames(counts_stats)[rowSums(counts_stats >= min_prop) > 0]
 rows_to_keep <- rownames(counts_stats)[counts_stats$all >= min_prop]
 rows_to_remove <- setdiff(rownames(counts_stats), rows_to_keep)
 
@@ -1116,8 +1114,12 @@ expr_genes[['whole_lung']] <- rows_to_keep
 non_expr_genes[['whole_lung']] <- rows_to_remove
 ```
 
+
 ```{r non-expressed-hits-data}
 use_annot <- colData(se)
+
+expr_genes_combined <- expr_genes
+non_expr_genes_combined <- non_expr_genes
 
 use_comp <- c("StealTHY", "Puro", "Cas9+Puro", "StealTHY NSG")
 i <- 'StealTHY'
@@ -1204,7 +1206,6 @@ colnames(counts_stats) <- levels(use_group)
 counts_stats$all <- rowSums(counts_mat >= min_counts)  / ncol(counts_mat)
   
 # Keep genes with min_counts threshold in >=min_prop of samples in at least 1 group
-# rows_to_keep <- rownames(counts_stats)[rowSums(counts_stats >= min_prop) > 0]
 rows_to_keep <- rownames(counts_stats)[counts_stats$all >= min_prop]
 rows_to_remove <- setdiff(rownames(counts_stats), rows_to_keep)
 
@@ -1232,7 +1233,6 @@ colnames(counts_stats) <- levels(use_group)
 counts_stats$all <- rowSums(counts_mat >= min_counts)  / ncol(counts_mat)
   
 # Keep genes with min_counts threshold in >=min_prop of samples in at least 1 group
-# rows_to_keep <- rownames(counts_stats)[rowSums(counts_stats >= min_prop) > 0]
 rows_to_keep <- rownames(counts_stats)[counts_stats$all >= min_prop]
 rows_to_remove <- setdiff(rownames(counts_stats), rows_to_keep)
 
@@ -1292,6 +1292,59 @@ hits_stats_4t1 <- hits_stats %>%
     )
 ```
 
+```{r non-expressed-combined-hits-data-4t1}
+use_annot <- colData(se)
+
+use_comp <- c("StealTHY 4T1", "Puro 4T1", "Cas9+Puro 4T1", "StealTHY NSG 4T1")
+
+i <- use_comp[1]
+hits_stats <- foreach(i = use_comp, .combine = rbind) %do% {
+  i_names <- i %>% gsub(" ", "_", .) %>% tolower
+  st1 <- unique(use_annot[ne_mageck_comp_list[[i]][[1]],]$sample_type)
+  st2 <- unique(use_annot[ne_mageck_comp_list[[i]][[2]],]$sample_type)
+  
+  genes_expr <- intersect(expr_genes_combined[[st1]], expr_genes_combined[[st2]])
+ 
+  da_res <- ne_gene_summ[[i_names]]  %>%  
+    ReadRRA(score = 'lfc') %>% 
+    dplyr::rename(LFC = Score) %>% 
+    mutate(
+      expressed = id %in% genes_expr,
+      hit = (abs(LFC) >= 2)
+      )
+  
+   prop_non_expr_genes <- (nrow(da_res)-length(genes_expr)) / nrow(da_res)
+   prop_non_expr_hits <- sum(da_res$hit & !da_res$expressed) / sum(da_res$hit)
+   data.frame(
+     comparison = i,
+     total_genes = nrow(da_res),
+     n_nonexpr_genes = nrow(da_res)-length(genes_expr),
+     prop_non_expr_genes = (nrow(da_res)-length(genes_expr)) / nrow(da_res),
+     n_hits = sum(da_res$hit),
+     non_expr_hits = sum(da_res$hit & !da_res$expressed),
+     n_nohits = sum(!da_res$hit)
+   ) %>% 
+     mutate(
+       prop_non_expr_hits = non_expr_hits / n_hits,
+       prop_non_expr_hits_over_non_expr = non_expr_hits / prop_non_expr_genes,
+       lfc = log2(prop_non_expr_hits / prop_non_expr_genes)
+     )
+  
+}
+
+hits_stats <- hits_stats %>% 
+  mutate(
+    comparison = factor(comparison,levels = names(ne_mageck_comp_list) %>% rev)
+  )
+
+hits_stats_4t1_comb <- hits_stats %>% 
+  mutate(
+    donor = '4T1',
+    comparison = gsub(" 4T1", "", comparison)
+    )
+```
+
+
 
 ```{r non-expressed-genes-conf-mvt1}
 min_counts <- 1
@@ -1334,7 +1387,6 @@ colnames(counts_stats) <- levels(use_group)
 counts_stats$all <- rowSums(counts_mat >= min_counts)  / ncol(counts_mat)
   
 # Keep genes with min_counts threshold in >=min_prop of samples in at least 1 group
-# rows_to_keep <- rownames(counts_stats)[rowSums(counts_stats >= min_prop) > 0]
 rows_to_keep <- rownames(counts_stats)[counts_stats$all >= min_prop]
 rows_to_remove <- setdiff(rownames(counts_stats), rows_to_keep)
 
@@ -1362,7 +1414,6 @@ colnames(counts_stats) <- levels(use_group)
 counts_stats$all <- rowSums(counts_mat >= min_counts)  / ncol(counts_mat)
   
 # Keep genes with min_counts threshold in >=min_prop of samples in at least 1 group
-# rows_to_keep <- rownames(counts_stats)[rowSums(counts_stats >= min_prop) > 0]
 rows_to_keep <- rownames(counts_stats)[counts_stats$all >= min_prop]
 rows_to_remove <- setdiff(rownames(counts_stats), rows_to_keep)
 
@@ -1422,6 +1473,59 @@ hits_stats_mvt1 <- hits_stats %>%
     )
 ```
 
+```{r non-expressed-combined-hits-data-mvt1}
+use_annot <- colData(se)
+
+use_comp <- c("StealTHY MVT1", "Puro MVT1", "StealTHY NSG MVT1")
+
+i <- use_comp[1]
+hits_stats <- foreach(i = use_comp, .combine = rbind) %do% {
+  i_names <- i %>% gsub(" ", "_", .) %>% tolower
+  st1 <- unique(use_annot[ne_mageck_comp_list[[i]][[1]],]$sample_type)
+  st2 <- unique(use_annot[ne_mageck_comp_list[[i]][[2]],]$sample_type)
+  
+  genes_expr <- intersect(expr_genes_combined[[st1]], expr_genes_combined[[st2]])
+ 
+  da_res <- ne_gene_summ[[i_names]]  %>%  
+    ReadRRA(score = 'lfc') %>% 
+    dplyr::rename(LFC = Score) %>% 
+    mutate(
+      expressed = id %in% genes_expr,
+      hit = (abs(LFC) >= 2)
+      )
+  
+   prop_non_expr_genes <- (nrow(da_res)-length(genes_expr)) / nrow(da_res)
+   prop_non_expr_hits <- sum(da_res$hit & !da_res$expressed) / sum(da_res$hit)
+   data.frame(
+     comparison = i,
+     total_genes = nrow(da_res),
+     n_nonexpr_genes = nrow(da_res)-length(genes_expr),
+     prop_non_expr_genes = (nrow(da_res)-length(genes_expr)) / nrow(da_res),
+     n_hits = sum(da_res$hit),
+     non_expr_hits = sum(da_res$hit & !da_res$expressed),
+     n_nohits = sum(!da_res$hit)
+   ) %>% 
+     mutate(
+       prop_non_expr_hits = non_expr_hits / n_hits,
+       prop_non_expr_hits_over_non_expr = non_expr_hits / n_nohits,
+       lfc = log2(prop_non_expr_hits / prop_non_expr_genes)
+     )
+  
+}
+
+hits_stats <- hits_stats %>% 
+  mutate(
+    comparison = factor(comparison,levels = names(ne_mageck_comp_list) %>% rev)
+  )
+
+hits_stats_mvt1_comb <- hits_stats %>% 
+  mutate(
+    donor = 'MVT1',
+    comparison = gsub(" MVT1", "", comparison)
+    )
+```
+
+
 ```{r non-expressed-genes-conf-py2t}
 min_counts <- 1
 min_prop <- 1/3
@@ -1463,7 +1567,6 @@ colnames(counts_stats) <- levels(use_group)
 counts_stats$all <- rowSums(counts_mat >= min_counts)  / ncol(counts_mat)
   
 # Keep genes with min_counts threshold in >=min_prop of samples in at least 1 group
-# rows_to_keep <- rownames(counts_stats)[rowSums(counts_stats >= min_prop) > 0]
 rows_to_keep <- rownames(counts_stats)[counts_stats$all >= min_prop]
 rows_to_remove <- setdiff(rownames(counts_stats), rows_to_keep)
 
@@ -1491,7 +1594,6 @@ colnames(counts_stats) <- levels(use_group)
 counts_stats$all <- rowSums(counts_mat >= min_counts)  / ncol(counts_mat)
   
 # Keep genes with min_counts threshold in >=min_prop of samples in at least 1 group
-# rows_to_keep <- rownames(counts_stats)[rowSums(counts_stats >= min_prop) > 0]
 rows_to_keep <- rownames(counts_stats)[counts_stats$all >= min_prop]
 rows_to_remove <- setdiff(rownames(counts_stats), rows_to_keep)
 
@@ -1551,8 +1653,64 @@ hits_stats_py2t <- hits_stats %>%
   )
 ```
 
+```{r non-expressed-combined-hits-data-py2t}
+use_annot <- colData(se)
+
+use_comp <- c("StealTHY Py2T", "Puro Py2T", "StealTHY NSG Py2T")
+
+i <- use_comp[1]
+hits_stats <- foreach(i = use_comp, .combine = rbind) %do% {
+  i_names <- i %>% gsub(" ", "_", .) %>% tolower
+  st1 <- unique(use_annot[ne_mageck_comp_list[[i]][[1]],]$sample_type)
+  st2 <- unique(use_annot[ne_mageck_comp_list[[i]][[2]],]$sample_type)
+  
+  genes_expr <- intersect(expr_genes_combined[[st1]], expr_genes_combined[[st2]])
+ 
+  da_res <- ne_gene_summ[[i_names]]  %>%  
+    ReadRRA(score = 'lfc') %>% 
+    dplyr::rename(LFC = Score) %>% 
+    mutate(
+      expressed = id %in% genes_expr,
+      hit = (abs(LFC) >= 2)
+      )
+  
+   prop_non_expr_genes <- (nrow(da_res)-length(genes_expr)) / nrow(da_res)
+   prop_non_expr_hits <- sum(da_res$hit & !da_res$expressed) / sum(da_res$hit)
+   data.frame(
+     comparison = i,
+     total_genes = nrow(da_res),
+     n_nonexpr_genes = nrow(da_res)-length(genes_expr),
+     prop_non_expr_genes = (nrow(da_res)-length(genes_expr)) / nrow(da_res),
+     n_hits = sum(da_res$hit),
+     non_expr_hits = sum(da_res$hit & !da_res$expressed),
+     n_nohits = sum(!da_res$hit)
+   ) %>% 
+     mutate(
+       prop_non_expr_hits = non_expr_hits / n_hits,
+       prop_non_expr_hits_over_non_expr = non_expr_hits / n_nohits,
+       lfc = log2(prop_non_expr_hits / prop_non_expr_genes)
+     )
+  
+}
+
+hits_stats <- hits_stats %>% 
+  mutate(
+    comparison = factor(comparison,levels = names(ne_mageck_comp_list) %>% rev)
+  )
+
+hits_stats_py2t_comb <- hits_stats %>% 
+  mutate(
+    donor = 'Py2T',
+    comparison = gsub(" Py2T", "", comparison)
+  )
+```
+
+
 
 ### Figure 4D: Proportion of non-expressed hits
+
+Bar graph presenting the proportion of hits (log2 fold-change ≥ 2 or ≤ −2) not expressed (read counts <1 in ≥ 2/3 of samples) in MVT1, 4T1 and Py2T models (n=5-7), assessed using RNA-seq of Thy(A)-sorted carcinoma cells from primary tumors (n=3) and metastatic lungs (n=3).
+
 ```{r non-expressed-hits-barplot-prop, fig.width=1.5, fig.asp=1}
 chunk_data <- hits_stats_global
 
@@ -1563,9 +1721,7 @@ chunk_data %>%
              linewidth = one_pt/4) +
   coord_flip() +
   scale_y_continuous(
-    expand = expansion(mult = c(0, 0.05)),
-  #   breaks = y_breaks, 
-  #   labels = y_labels
+    expand = expansion(mult = c(0, 0.05))
     )  +
   scale_fill_manual(values = use_color_palette) +
   theme_facet +
@@ -1587,43 +1743,10 @@ chunk_data %>%
 ```
 
 
-### Supplementary figure 4G: Fold-change of non-expressed hits
-```{r non-expressed-hits-barplot-lfc-bymodel, fig.width=1.5, fig.asp=1.5}
-chunk_data <- rbind(hits_stats_4t1, hits_stats_mvt1, hits_stats_py2t) %>% 
-  mutate(
-    comparison = factor(comparison, levels = rev(c('StealTHY', 'Puro', 'Cas9+Puro', 'StealTHY NSG')))
-  )
-chunk_data %>%
-  ggplot(aes(comparison, lfc, fill = comparison)) +
-  geom_col() +
-  geom_hline(yintercept = 0, 
-             linetype = 'dashed', 
-             linewidth = one_pt/4) +
-  coord_flip() +
-  scale_fill_manual(values = use_color_palette) +
-  facet_grid(rows = vars(donor),
-             scales = 'free_y',
-             space = 'free_y') +
-  theme_facet +
-  theme(
-    # axis.line = element_line(linewidth = one_pt/2, color = 'black'),
-    axis.ticks = element_line(linewidth = one_pt/2, color = 'black'),
-    panel.border = element_rect(linewidth = one_pt/2, color = 'black'),
-    axis.text = element_text(size=4), 
-    axis.title = element_text(size = 4),
-    legend.title = element_text(size=4),
-    legend.text = element_text(size=4),
-    strip.text.y = element_text(size = 4, angle = 0)
-  ) +
-  guides(fill = 'none') +
-  labs(
-    x = '',
-    y =  'Proportion of\nnon-expressed hits\nLog2(Fold change)'
-  )
-
-```
-
 ### Supplementary figure 4G: Proportion of non-expressed hits
+
+Detailed analysis of non-expressed screen hits sub-divided per individual mammary carcinoma model. Top panel: bar graph presenting the proportion of hits that are not expressed but are still identified by CRISPR KO screening. Genes were classified as “hit” if their absolute log2 fold-change was ≥2 in each screening condition (minimum n=5 mice per model), and as “non-expressed” if read counts were <1 in at least 2/3 of the samples, according to RNA-seq of Thy(A)-sorted carcinoma cells from metastatic lungs (n=3) in intersection with RNA-seq data from primary tumors (n=3); all RNA-seq data have been acquired in syngeneic hosts.
+
 ```{r non-expressed-hits-barplot-prop-bymodel, fig.width=1.5, fig.asp=1.5}
 chunk_data <- rbind(hits_stats_4t1, hits_stats_mvt1, hits_stats_py2t) %>% 
   mutate(
@@ -1632,9 +1755,6 @@ chunk_data <- rbind(hits_stats_4t1, hits_stats_mvt1, hits_stats_py2t) %>%
 chunk_data %>%
   ggplot(aes(comparison, prop_non_expr_hits, fill = comparison)) +
   geom_col() +
-  # geom_hline(yintercept = 0, 
-  #            linetype = 'dashed', 
-  #            linewidth = one_pt/4) +
   coord_flip() +
   scale_y_continuous(
     expand = expansion(mult = c(0, 0.05))
@@ -1645,7 +1765,6 @@ chunk_data %>%
              space = 'free_y') +
   theme_facet +
   theme(
-    # axis.line = element_line(linewidth = one_pt/2, color = 'black'),
     axis.ticks = element_line(linewidth = one_pt/2, color = 'black'),
     panel.border = element_rect(linewidth = one_pt/2, color = 'black'),
     axis.text = element_text(size=4), 
@@ -1661,4 +1780,3 @@ chunk_data %>%
   )
 
 ```
-

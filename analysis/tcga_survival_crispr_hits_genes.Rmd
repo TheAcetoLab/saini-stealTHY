@@ -34,7 +34,6 @@ Load packages
 ```{r load-libraries}
 library(tidyverse)
 library(knitr)
-# library(showtext)
 library(foreach)
 library(SummarizedExperiment)
 library(survival)
@@ -43,23 +42,8 @@ library(ggsurvfit)
 library(survminer)
 library(meta)
 library(magrittr)
-# library(DT)
-# library(colorblindr)
-# library(ggdendro)
-# library(RColorBrewer)
-# library(circlize)
-# library(Hmisc)
-# library(ComplexHeatmap)
-# library(ineq)
 library(kableExtra)
 library(openxlsx)
-# library(magrittr)
-# library(ggrepel)
-# library(ggpubr)
-# library(ggbeeswarm)
-# library(ggridges)
-# library(openxlsx)
-# library(MAGeCKFlute)
 ```
 
 Load ggplot theme
@@ -171,15 +155,7 @@ surv_maxstat <- foreach(surv_i = names(data_se), .combine = rbind) %do% {
     colnames(gene_exp) <- rowData(se)$gene_name
     
     sample_annot <- colData(se) %>% data.frame()
-    # sample_annot$status <- sample_annot[[params$event_var]]
-    # sample_annot$time <- sample_annot[[params$time_var]]/365.25
-    
-    # Set follow up limit
-    # sample_annot <- sample_annot %>% 
-    #   mutate(
-    #     status = ifelse(time >= params$max_time_years, 0, status),
-    #     time = ifelse(time >= params$max_time_years, params$max_time_years, time)
-    #   )
+
     # Keep only genes with expression in at least 10% of samples
     gene_exp_prop <- colSums(gene_exp > 0) / nrow(gene_exp)
     gene_exp <- gene_exp[,gene_exp_prop >= 0.1]
@@ -190,6 +166,11 @@ surv_maxstat <- foreach(surv_i = names(data_se), .combine = rbind) %do% {
                              variables = colnames(gene_exp))
     res_cat <- surv_categorize(res_cut, labels = c('Low', 'High'))
     sample_annot <- cbind(sample_annot, res_cat)
+    
+    # Categorize risk variables
+    for(g in colnames(gene_exp)) {
+      sample_annot[[g]] <- factor(sample_annot[[g]], levels = c('Low', 'High'))
+    }
     
     g <- colnames(gene_exp)[1]
     foreach(g = colnames(gene_exp), .combine = rbind) %do% {
@@ -222,16 +203,7 @@ survfit_km_maxstat <- foreach(surv_i = names(data_se)) %do% {
     colnames(gene_exp) <- rowData(se)$gene_name
     
     sample_annot <- colData(se) %>% data.frame()
-    # sample_annot$status <- sample_annot[[params$event_var]]
-    # sample_annot$time <- sample_annot[[params$time_var]]/365.25
-    
-    # Set follow up limit
-    # sample_annot <- sample_annot %>% 
-    #   mutate(
-    #     status = ifelse(time >= params$max_time_years, 0, status),
-    #     time = ifelse(time >= params$max_time_years, params$max_time_years, time)
-    #   )
-    # Keep only genes with expression in at least 10% of samples
+
     gene_exp_prop <- colSums(gene_exp > 0) / nrow(gene_exp)
     gene_exp <- gene_exp[,gene_exp_prop >= 0.1]
     
@@ -240,6 +212,11 @@ survfit_km_maxstat <- foreach(surv_i = names(data_se)) %do% {
                              variables = colnames(gene_exp))
     res_cat <- surv_categorize(res_cut, labels = c('Low', 'High'))
     sample_annot <- cbind(sample_annot, res_cat)
+    
+    # Categorize risk variables
+    for(g in colnames(gene_exp)) {
+      sample_annot[[g]] <- factor(sample_annot[[g]], levels = c('Low', 'High'))
+    }
     
     g <- colnames(gene_exp)[1]
     res_by_genes <- foreach(g = colnames(gene_exp)) %do% {
@@ -308,8 +285,7 @@ meta_surv_maxstat_summary <- foreach(sv = names(surv_endpoints), .combine = rbin
       p.value = x$random$p,
       std.error = x$random$seTE,
       conf.low = exp(x$random$lower),
-      conf.high = exp(x$random$upper)#,
-      # w.random = round(100*x$w.random / sum(x$w.random), 1)
+      conf.high = exp(x$random$upper)
     )
   }
 }
@@ -330,7 +306,8 @@ meta_surv_maxstat_weight <- foreach(sv = names(surv_endpoints), .combine = rbind
 
 ## Supplementary Figure 6L: Forest plot by study
 
-Forest plot showing HR and 95%CI for each study. The size of the circle point is determined by the weight of the effect size in the meta-analysis. The diamond shape at the bottom of the plot represents the average effect calculated using meta-analysis.
+Forest plot of individual TCGA studies and pooled estimate from metanalysis, displaying HR (points) and 95%CI (lines) for the association between high expression of AMH or AMHR2 and defined clinical survival endpoints (indicated by symbols); the weight of each study is represented as percentage in the pooled effect size; BRCA, breast cancer; LUAD, lung adenocarcinoma; COAD, colon adenocarcinoma; Meta, metanalysis; HR, hazard ratio; CI,  confidence interval.
+
 ```{r amh-amhr2-maxstat-coxph-conf}
 use_genes <- c('AMH', 'AMHR2')
 use_surv <- surv_maxstat %>% 
@@ -451,9 +428,6 @@ chunk_data %<>%
 ```
 
 ```{r amh-amhr2-maxstat-coxph-ggplot-forestplot-dss-dfi-vertical, fig.width = 2.8, fig.asp = 0.8}
-# shape_scale <- c(DSS = 16, DFI = 15, PFI = 15)
-# lfc_colors <- c(none = "gray80", up = "#e41a1c", down = "#377eb8")
-#   geom_point(shape = 16, alpha = 0.6, size = 0.8) +
 shape_scale <- c(DSS = 16, DFI = 15, PFI = 0)
 use_postition_dodge <- 0.8
 use_lwd <- (1/2.141959)/4
@@ -463,7 +437,6 @@ chunk_data %>%
   ggplot(aes(HR, project_id,
              size = w.pct,
              shape = surv_var
-             # color = surv_var
              )
          ) +
   geom_point(position = position_dodge(use_postition_dodge)) +
@@ -475,9 +448,7 @@ chunk_data %>%
   geom_vline(xintercept = 1, linetype = 'dotted', linewidth = use_lwd) +
   facet_grid(rows = vars(gene_name)) +
   scale_shape_manual(values = shape_scale) +
-  scale_size_continuous(range = c(0.3, 1.4)
-                        # breaks = c(0.1, 0.5, 1, 2, 5, 10),
-  ) +
+  scale_size_continuous(range = c(0.3, 1.4)) +
   scale_x_continuous(trans = 'log2',
                      breaks = c(0.1, 0.2, 0.5, 1, 2, 4, 10),
                      labels = as.character(c(0.1, 0.2, 0.5, 1, 2, 4, 10))
@@ -500,7 +471,9 @@ chunk_data %>%
 
 
  
-## Supplementary Figure 6F: Kaplan-Meier plots
+## Supplementary Figure 6E: Kaplan-Meier plots
+
+Kaplan-Meier plots showing the risk calculated for defined clinical outcomes in the BRCA-TCGA patients cohort based on dichotomization for lower or higher expression of AMH or GDF9; disease-specific survival for AMH: HR (95%CI)=2.65, P=0.00015 by two-sided Cox proportional hazard r model; progression-free survival for AMH: HR (95%CI)=1.83, P=0.001 by two-sided Cox proportional hazard regression model; disease-free interval for AMH: HR (95%CI)=2.02, P=0.0032 by two-sided Cox proportional hazard model; disease-specific survival for GDF9: HR (95%CI)=0.53, P=0.024 by two-sided Cox proportional hazard model; progression-free survival for GDF9: HR (95%CI)=0.59, P=0.0064 by Cox proportional hazard model; disease-free interval for GDF9: HR (95%CI) undefined, P=1 by two-sided Cox proportional hazard model; BRCA, breast cancer; TCGA, The Cancer Genome Atlas; HR, hazard ratio; CI, confidence interval by Cox proportional hazard model.
 
 ```{r gene-km-conf}
 use_survfit_km_full <- survfit_km_maxstat_list
@@ -531,7 +504,6 @@ for(surv_var_i in names(use_survfit_km)) {
   cat("####", surv_var_i,"\n\n")
   for(gene_i in km_gene_selection) {
     cat("#####", surv_var_i,"-", gene_i, "\n\n")
-    # for(p_i in names(use_survfit_km[[surv_var_i]])) {
     for(p_i in 'TCGA-BRCA') {
       top_color <- ifelse(km_gene_direction[[gene_i]] == 'Up', 
                           '#e41a1c', 
@@ -561,8 +533,6 @@ for(surv_var_i in names(use_survfit_km)) {
     } 
   }
 }
-
-# c(Up = "#e41a1c", Down = "#377eb8")
 ```
 
 

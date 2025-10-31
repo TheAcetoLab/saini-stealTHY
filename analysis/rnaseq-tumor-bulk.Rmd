@@ -299,11 +299,13 @@ dge_list <- readRDS(file.path(params$output_dir, 'dge-edgeR_QLF.rds'))
 gse_list <- readRDS(file.path(params$output_dir, 'gse_omnibus-edgeR_QLF.rds'))
 ```
 
+
 ## Differential expression analysis
 
 ### Supplementary Figure 2G top: Differential expressed genes in dCas9-Thy1 over Thy1 transduction
 
-Showing selected genes and genes with a FDR < 0.05 and a absolute log2 fold-change > 1. To calculate the fold-change by model, log normalized counts were aggregated at model and condition using their average (function aggregateAcrossCells). Then the aggregated expression in dCas9-Thy1 was divided by the aggregated expression in Thy1.
+Transcriptomic analysis of primary tumors harvested from syngeneic mice transplanted orthotopically with three mammary carcinoma cell models (MVT1, 4T1, Py2T) at the timepoint indicated in A, untreated; n=3 each. Top: annotated heat map of hierarchically clustered genes, highlighting transcripts differentially expressed in dCas9-Thy1(B) versus Thy1(B) transduction conditions. Bottom: dot plots highlighting representative gene signatures enriched in dCas9-Thy1(B) versus Thy1(B) transduction conditions; NES, normalized enrichment score.
+
 ```{r dge-heatmap-fc-dc9thy1--over--thy1, fig.width = 1, fig.asp = 2}
 # Heatmap parameters
 p_thrs <- 0.05
@@ -420,13 +422,11 @@ htz <- Heatmap(
   col = col_fun,
   show_row_names = FALSE,
   show_column_names = TRUE,
-  # row_names_gp = gpar(fontsize = 8),
   column_names_gp = gpar(fontsize = 3),
   column_names_rot = 0,
   column_names_side = 'top',
   cluster_column_slices = FALSE,
   
-  # top_annotation = column_ha,
   column_split = colnames(fcmat),
   column_gap = unit(0.039/3, "inches"),
   column_title = NULL,
@@ -435,13 +435,11 @@ htz <- Heatmap(
   right_annotation = row_annot_selected_labels,
   row_split = use_dge$direction,
   row_gap = unit(0.039/2, "inches"),
-  # left_annotation = row_annot_left,
   row_title = NULL,
   
   cluster_columns = FALSE,
   show_row_dend = FALSE,
   
-  # show_heatmap_legend = FALSE,
   heatmap_legend_param = list(
     direction = "horizontal",
     title_gp = gpar(fontsize = 3, fontface = "bold"),
@@ -461,6 +459,9 @@ cat("\n\n")
 ## Functional Enrichment
 
 ### Supplementary Figure 2G bottom: Representative gene-sets enriched in dCas9-Thy1 over Thy1 transduction
+
+Transcriptomic analysis of primary tumors harvested from syngeneic mice transplanted orthotopically with three mammary carcinoma cell models (MVT1, 4T1, Py2T) at the timepoint indicated in A, untreated; n=3 each. Top: annotated heat map of hierarchically clustered genes, highlighting transcripts differentially expressed in dCas9-Thy1(B) versus Thy1(B) transduction conditions. Bottom: dot plots highlighting representative gene signatures enriched in dCas9-Thy1(B) versus Thy1(B) transduction conditions; NES, normalized enrichment score.
+
 ```{r gsea-curated-dot-plot-dc9thy1--over--thy1, fig.width=2.37, fig.asp = 1}
 i <- "dCas9_Thy1--over--Thy1"
 use_sets <- c("GO:0019882","GO:0002250","GO:0050870","GO:0001819","GO:0001906",
@@ -521,9 +522,6 @@ res <- use_gse_res %>%
       legend.text = element_text(size=8),
       legend.position="bottom",
       legend.box = 'vertical'
-      # legend.key.size = unit(0.2, 'inches'),
-      # legend.key.width = unit(0.05, 'inches'),
-      # legend.key.height = unit(0.5, 'inches')
     )
 res_legend <- get_legend(res)
 print(res + theme(legend.position = 'none'))
@@ -534,6 +532,7 @@ cat("\n\n")
 plot_grid(res_legend, ncol = 1, nrow = 1)
 cat("\n\n")
 ```
+
 
 ## Sample clustering
 
@@ -589,7 +588,6 @@ names(hvg_list) <- names(clustering_groups)
 Generate heatmaps of sample distances
 ```{r sample-clustering-heatmap-generation}
 comp <- names(clustering_groups)[1]
-# for(comp in names(clustering_groups)) {
 clustering_heatmaps <- foreach(comp = names(clustering_groups)) %do% {
   use_samples <- clustering_groups[[comp]]
   ann_df <- ann_list[[comp]]
@@ -632,14 +630,13 @@ clustering_heatmaps <- foreach(comp = names(clustering_groups)) %do% {
       at = c(0, 25, 50, 75, 100)
       )
   )
-  # draw(ht,  heatmap_legend_side = "bottom")
 }
 names(clustering_heatmaps) <- names(clustering_groups)
 ```
 
 ### Figure 3H: Sample distances in MVT1 models
 
-Samples obtained from syngeneic hosts, following transplantation of mammary carcinoma cells transduced with integrating dCas9-Thy1 (LV Cas9) or transduced with HK and transfected with Apo-Cas9, then MACS-sorted as TrCD8a-positive and TrCD8a-negative cells
+Unsupervised hierarchical clustering of highly variable genes (HVGs) from MVT1 transcriptomes from FVB/N (n=3) based on Cas9 delivery TrCD8a status. 
 
 ```{r sample-clustering-heatmap-mvt1, fig.width = 2, fig.asp = 1.4}
 draw(clustering_heatmaps[['MVT1']],  heatmap_legend_side = "bottom")
@@ -649,7 +646,7 @@ cat("\n\n")
 
 ### Supplementary figure 3E left: Sample distances in Py2T model
 
-Samples obtained from syngeneic hosts, following transplantation of mammary carcinoma cells transduced with integrating dCas9-Thy1 (LV Cas9) or transduced with HK and transfected with Apo-Cas9, then MACS-sorted as TrCD8a-positive and TrCD8a-negative cells
+Heatmaps showing unsupervised hierarchical clustering of highly variable genes (HVGs) from primary tumor transcriptomes obtained from syngeneic hosts, following transplantation of cells transduced with integrating Cas9-Thy1 (LV Cas9) or transduced with hara-kiri (HK) vector and transfected with Apo-Cas9, then MACS-sorted as TrCD8a-positive and TrCD8a-negative cells; n=3 each; 4T1 tumors from BALB/c mice and Py2T tumors from FVB/N mice are shown.
 
 ```{r sample-clustering-heatmap-py2t, fig.width = 2, fig.asp = 1.4}
 draw(clustering_heatmaps[['Py2T']],  heatmap_legend_side = "bottom")
@@ -658,7 +655,7 @@ cat("\n\n")
 
 ### Supplementary figure 3E right: Sample distances in 4T1 model
 
-Samples obtained from syngeneic hosts, following transplantation of mammary carcinoma cells transduced with integrating dCas9-Thy1 (LV Cas9) or transduced with HK and transfected with Apo-Cas9, then MACS-sorted as TrCD8a-positive and TrCD8a-negative cells
+Heatmaps showing unsupervised hierarchical clustering of highly variable genes (HVGs) from primary tumor transcriptomes obtained from syngeneic hosts, following transplantation of cells transduced with integrating Cas9-Thy1 (LV Cas9) or transduced with hara-kiri (HK) vector and transfected with Apo-Cas9, then MACS-sorted as TrCD8a-positive and TrCD8a-negative cells; n=3 each; 4T1 tumors from BALB/c mice and Py2T tumors from FVB/N mice are shown.
 
 ```{r sample-clustering-heatmap-4t1, fig.width = 2, fig.asp = 1.4}
 draw(clustering_heatmaps[['4T1']],  heatmap_legend_side = "bottom")
@@ -750,6 +747,9 @@ ht_TrCD8a_neg <- Heatmap(
 
 
 ### Figure 3D : qRT-PCR in TrCD8a+ and TrCD8a-
+
+qRT-PCR (2-dCt) heatmaps in MACS-sorted TrCD8a-positive and TrCD8a-negative single-cell clones after sgRNA delivery.
+
 ```{r qrt-pcr-heatmap-combined2, fig.width = 1.80, fig.asp = 0.80}
 ht_list <-  ht_TrCD8a_pos + ht_TrCD8a_neg
 draw(ht_list, heatmap_legend_side = "bottom", merge_legend = TRUE)

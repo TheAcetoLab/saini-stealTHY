@@ -301,7 +301,8 @@ gse_list <- readRDS(file.path(params$output_dir, 'gse_omnibus-edgeR_QLF.rds'))
 
 ### Supplementary Figure 2H top right: Differential expressed genes in dCas9-Thy1 over Thy1 transduction in sorted carcinoma cells
 
-Showing selected genes and genes with a FDR < 0.05 and a absolute log2 fold-change > 1. To calculate the fold-change by model, log normalized counts were aggregated at model and condition using their average (function aggregateAcrossCells). Then the aggregated expression in dCas9-Thy1 was divided by the aggregated expression in Thy1.
+Annotated heat maps of hierarchically clustered genes, highlighting transcripts differentially expressed in Cas9-Thy1(A) versus Thy1(A) transduction conditions, in pure Thy1(A)-positive carcinoma cells
+
 ```{r dge-heatmap-fc-dc9thy1--over--thy1, fig.width = 1, fig.asp = 2}
 # Heatmap parameters
 p_thrs <- 0.05
@@ -459,6 +460,9 @@ cat("\n\n")
 ## Functional Enrichment
 
 ### Supplementary Figure 2H bottom right: Representative gene-sets enriched in dCas9-Thy1 over Thy1 transduction
+
+Dot plots highlighting representative gene signatures enriched in Cas9-Thy1(A) versus Thy1(A) transduction conditions, in pure Thy1(A)-positive carcinoma cells (right); TILs, tumor-infiltrating lymphocytes.
+
 ```{r gsea-curated-dot-plot-dc9thy1--over--thy1, fig.width=2.37, fig.asp = 1}
 i <- "dCas9_Thy1--over--Thy1"
 x <- gse_list[[i]]$GSEA[["msigdb.m2.cp.m5.bp.custom.signatures"]]@result
@@ -515,9 +519,6 @@ res <- use_gse_res %>%
       legend.text = element_text(size=8),
       legend.position="bottom",
       legend.box = 'vertical'
-      # legend.key.size = unit(0.2, 'inches'),
-      # legend.key.width = unit(0.05, 'inches'),
-      # legend.key.height = unit(0.5, 'inches')
     )
 res_legend <- get_legend(res)
 print(res + theme(legend.position = 'none'))

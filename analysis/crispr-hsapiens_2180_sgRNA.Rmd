@@ -322,8 +322,6 @@ muller_plots <- foreach(i = names(muller_groups_selected)) %do% {
       title = i
     ) +
     theme(
-      # panel.background = element_rect(fill = "grey90"),
-      # plot.margin = margin(0.5, 1.5, 0.5, 0, "cm"),
       plot.margin = margin(0, 0.5, 0, 0, "cm"),
       axis.text =  element_text(size=6),
       plot.title = element_text(size=6, hjust = 0.5)
@@ -335,98 +333,14 @@ muller_plots <- foreach(i = names(muller_groups_selected)) %do% {
 names(muller_plots) <- names(muller_groups_selected)
 ```
 
-### Figure 6H: Müller plots for huNSGs
-Müller plots showing the relative frequency (CPM) of unique sgRNAs in the indicated samples. Guides with CPM ≥ `r cpm_threshold` are colored. Individual guides with CPM < `r cpm_threshold` are grouped in a grey area.
+### Figure 5H: Muller plots for huNSGs
+Muller plots showing the relative frequency (CPM) of unique sgRNAs in the indicated samples. Guides with CPM ≥ `r cpm_threshold` are colored. Individual guides with CPM < `r cpm_threshold` are grouped in a grey area.
+
+Muller plots for four huNSGs, representative of data groups (G), showing the relative frequency of unique sgRNAs in matched primary tumors versus synchronous metastasis-relevant sites; cpm, read counts per million.
+
 ```{r muller-plots, fig.width = 7.55, fig.asp = 0.19}
 wrap_plots(muller_plots, nrow = 1)
 ```
-
-
-## Complexity dynamics
-
-### Supplementary Figure 6G: Complexity dynamics
-```{r complexity-dynamics, fig.width=2.8, fig.asp=1.6}
-chunk_data <- colData(se) %>% data.frame %>%
-  filter(immunogen_burden %in% c('HuTHY1','GFP','Cas9-HuTHY1','Cas9-GFP')) %>% 
-  mutate(
-    guides_over_30_pct = guides_over_30 / 2180,
-    sample_type = recode_factor(sample_type,
-                  'Primary\ntumor' = 'Primary tumor',
-                  'Lymph\nnodes' = 'Lymph nodes'),
-    sample_type = factor(sample_type, levels = c('Primary tumor', 
-                                                 'Lungs', 
-                                                 'Liver', 
-                                                 'Lymph nodes'))
-  )
-
-chunk_data %>% 
-  ggplot(aes(immunogen_burden, guides_over_30_pct,
-             color = immunogen_burden,
-             fill = immunogen_burden)) +
-  geom_quasirandom(shape = 21, 
-                   alpha = 0.8, 
-                   color = 'black', 
-                   size = 1, 
-                   stroke=one_pt/4
-                   ) +
-  scale_fill_manual(values = palette_immunogen_burden) +
-  scale_x_discrete(guide = guide_axis(angle = 45)) +
-  scale_y_continuous(
-    labels = scales::label_percent(accuracy = 0.1 )
-    ) +
-  facet_wrap2(vars(sample_type),
-              axes = "all",
-              scales = 'free_y'
-              ) +
-  guides(fill = 'none', color = 'none') +
-  labs(
-    y = 'Percentage of guides',
-    x = ''
-  )
-```
-
-
-```{r complexity-dynamics2, fig.width=2.8, fig.asp=1.6}
-chunk_data <- colData(se) %>% data.frame %>%
-  filter(immunogen_burden %in% c('HuTHY1','GFP','Cas9-HuTHY1','Cas9-GFP')) %>% 
-  mutate(
-    guides_over_100_pct = guides_over_100 / 2180,
-    sample_type = recode_factor(sample_type,
-                  'Primary\ntumor' = 'Primary tumor',
-                  'Lymph\nnodes' = 'Lymph nodes'),
-    sample_type = factor(sample_type, levels = c('Primary tumor', 
-                                                 'Lungs', 
-                                                 'Liver', 
-                                                 'Lymph nodes'))
-  )
-
-chunk_data %>% 
-  ggplot(aes(immunogen_burden, guides_over_100_pct,
-             color = immunogen_burden,
-             fill = immunogen_burden)) +
-  geom_quasirandom(shape = 21, 
-                   alpha = 0.8, 
-                   color = 'black', 
-                   size = 1, 
-                   stroke=one_pt/4
-                   ) +
-  scale_fill_manual(values = palette_immunogen_burden) +
-  scale_x_discrete(guide = guide_axis(angle = 45)) +
-  scale_y_continuous(
-    labels = scales::label_percent(accuracy = 0.1 )
-    ) +
-  facet_wrap2(vars(sample_type),
-              axes = "all",
-              scales = 'free_y'
-              ) +
-  guides(fill = 'none', color = 'none') +
-  labs(
-    y = 'Percentage of guides',
-    x = ''
-  )
-```
-
-
 
 
 ## sgRNA distribution by condition Primary tumor
@@ -436,7 +350,9 @@ use_colData <- colData(se) %>% data.frame %>%
   filter(sample_type == use_sample_type)
 ```
 
-### Figure 7B: sgRNA distribution of in mice transplanted with cells subjected to StealTHY KO
+### Figure 6B: sgRNA distribution of in mice transplanted with cells subjected to StealTHY KO
+
+Density plots of unique sgRNAs retrieved in MDA-MB-231 primary tumors (n≥6) under StealTHY KO; frequency(cpm+1)=read counts per million.
 
 ```{r test-dist-tumor-distribution-ridges_plot--ic-id, fig.asp = 1.03, fig.width = 1.79}
 sample_ord <- rev(c(
@@ -468,25 +384,24 @@ use_assay %>%
              fill = mouse_model_short, 
              height = after_stat(density))) +
   geom_density_ridges(color = 'black',
-                      size = one_pt/4, 
+                      linewidth = default_linewidth, 
                       alpha = 0.8, 
                       scale = 4,
                       rel_min_height = 0.001 # set the `rel_min_height` argument to remove tails,
                       ) +
   scale_fill_manual(values = palette_hu_stealthy_ko) +
   scale_x_log10(expand = expansion(mult = c(0, 0))) +
-  scale_y_discrete(expand = c(0.01, 0)) +
+  scale_y_discrete(expand = expansion(mult = c(0.01, 0.05))) +
   labs(y = '') +
   guides(fill = 'none', color = 'none') +
   theme_ridges(font_size = 6, grid = F) +
   theme(
     strip.background = element_blank(),
-    axis.line.x = element_line(linewidth = one_pt/4, color = 'black'),
-    axis.ticks.x = element_line(linewidth = one_pt/4, color = 'black'),
+    axis.line.x = element_line(linewidth = default_linewidth, color = 'black'),
+    axis.ticks.x = element_line(linewidth = default_linewidth, color = 'black'),
     axis.text.y = element_blank()
   )
 ```
-
 
 
 ## Differential abundance analysis
@@ -545,8 +460,10 @@ gene_levels <- gene_summ[[i]] %>%
 ```
 
 
-### Figure 7C: Volcano plots showing genes Lungs over Primary Tumor in StealTHY KO
-Colored points with FDR ≤ 0.10
+### Figure 6C: Volcano plots showing genes Lungs over Primary Tumor in StealTHY KO
+
+Volcano plot of the StealTHY KO screen in huNSGs (n=10 mice, n=1 human HLA-matched donor). Genes referenced in the main text and/or analyzed in Figure 6E–F are highlighted. 
+
 ```{r volcano-plot-stealthy-ko-pt-over-lung, fig.width=2, fig.asp=0.818}
 lfc_colors <- c(none = "gray80", up = "#e41a1c", down = "#377eb8")
 i <- 'stealthy_hunsg'
@@ -595,7 +512,10 @@ ggplot(x, aes(LFC, -log10(FDR), color = direction)) +
   )
 ```
 
-### Figure 7D: Distribution of the fold-change of Lungs over Primary Tumor in huNSG and NSG host
+### Figure 6D: Distribution of the fold-change of Lungs over Primary Tumor in huNSG and NSG host
+
+Violin plots showing the fold-change distribution of sgRNAs targeting metastasis-relevant genes identified upon orthotopic transplantation of MDA-MB-231 in huNSGs (n=10) and NSGs (n=6). 
+
 ```{r split-violinplot-selected-genes-ic-vs-id-curated, fig.width=3.555, fig.asp=1.4}
 i <- names(gene_summ)[1]
 
@@ -695,7 +615,9 @@ plot_data %>%
   
 ```
 
-### Supplementary Figure 7D: Fold-change of Lungs over Primary Tumor in huNSG and NSG host
+### Supplementary Figure 6D: Fold-change of Lungs over Primary Tumor in huNSG and NSG host
+
+Dot plots highlighting screen hits identified upon transplantation in the indicated hosts of MDA-MB-231 previously subjected to StealTHY KO as depicted in Figure 6A; representative genes from six recurrently identified gene families are shown on top, followed below by genes previously known to impact tumorigenicity and metastasis, presented as positive controls. The fold-change values indicate differential sgRNA abundance between primary tumors and synchronous lung metastases; n≥6 each; RTK, receptor tyrosine kinase, TNF, tumor necrosis factor; IFN, interferon; FDR, false discovery rate.
 
 ```{r dotplot-selected-genes-allconditions, fig.width=2.97, fig.asp=2.8}
 i <- names(gene_summ)[1]
@@ -752,7 +674,6 @@ plot_data %>%
     facet_grid(cols = vars(mouse_model_short), rows = vars(gene_set), scales = 'free_y', space = 'free_y') +
     theme_facet +
     theme(
-      # axis.line = element_line(linewidth = one_pt/2, color = 'black'),
       axis.ticks = element_line(linewidth = one_pt/2, color = 'black'),
       panel.border = element_rect(linewidth = one_pt/2, color = 'black'),
       axis.text = element_text(size=6), 
@@ -767,11 +688,5 @@ plot_data %>%
       size = expression(paste("-lo", g[10],"(FDR)"))
     ) +
     guides(color = 'none', shape = 'none')
-```
-
-
-## Stop knitr
-```{r}
-knitr::knit_exit()
 ```
 

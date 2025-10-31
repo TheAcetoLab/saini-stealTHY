@@ -305,12 +305,12 @@ gse_list <- readRDS(file.path(params$output_dir, 'gse_omnibus-edgeR_QLF.rds'))
 
 ### Supplementary Figure 2H top left: Differential expressed genes in dCas9-Thy1 over Thy1 transduction in sorted CD3-positive TILs
 
-Showing selected genes and genes with a FDR < 0.05 and a absolute log2 fold-change > 1. To calculate the fold-change by model, log normalized counts were aggregated at model and condition using their average (function aggregateAcrossCells). Then the aggregated expression in dCas9-Thy1 was divided by the aggregated expression in Thy1.
+Annotated heat maps of hierarchically clustered genes, highlighting transcripts differentially expressed in Cas9-Thy1(A) versus Thy1(A) transduction conditions, in sorted CD3-positive TILs.
+
 ```{r dge-heatmap-fc-dc9thy1--over--thy1, fig.width = 1, fig.asp = 2}
 # Heatmap parameters
 p_thrs <- 0.05
 lfc_thrs <- 1
-# topn <- 50
 max_color_range <- 3 # put the color range to -3 to 3
 
 # Select comparison
@@ -422,13 +422,11 @@ htz <- Heatmap(
   col = col_fun,
   show_row_names = FALSE,
   show_column_names = TRUE,
-  # row_names_gp = gpar(fontsize = 8),
   column_names_gp = gpar(fontsize = 3),
   column_names_rot = 0,
   column_names_side = 'top',
   cluster_column_slices = FALSE,
   
-  # top_annotation = column_ha,
   column_split = colnames(fcmat),
   column_gap = unit(0.039/3, "inches"),
   column_title = NULL,
@@ -437,13 +435,11 @@ htz <- Heatmap(
   right_annotation = row_annot_selected_labels,
   row_split = use_dge$direction,
   row_gap = unit(0.039/2, "inches"),
-  # left_annotation = row_annot_left,
   row_title = NULL,
   
   cluster_columns = FALSE,
   show_row_dend = FALSE,
   
-  # show_heatmap_legend = FALSE,
   heatmap_legend_param = list(
     direction = "horizontal",
     title_gp = gpar(fontsize = 3, fontface = "bold"),
@@ -463,6 +459,9 @@ cat("\n\n")
 ## Functional Enrichment
 
 ### Supplementary Figure 2H bottom left: Representative gene-sets enriched in dCas9-Thy1 over Thy1 transduction
+
+Dot plots highlighting representative gene signatures enriched in Cas9-Thy1(A) versus Thy1(A) transduction conditions, in sorted CD3-positive tumor-infiltrating lymphocytes 
+
 ```{r gsea-curated-dot-plot-dc9thy1--over--thy1, fig.width=2.37, fig.asp = 1}
 i <- "dCas9_Thy1--over--Thy1"
 x <- gse_list[[i]]$GSEA[["msigdb.m2.cp.m5.bp.custom.signatures"]]@result
@@ -519,9 +518,6 @@ res <- use_gse_res %>%
       legend.text = element_text(size=8),
       legend.position="bottom",
       legend.box = 'vertical'
-      # legend.key.size = unit(0.2, 'inches'),
-      # legend.key.width = unit(0.05, 'inches'),
-      # legend.key.height = unit(0.5, 'inches')
     )
 res_legend <- get_legend(res)
 print(res + theme(legend.position = 'none'))

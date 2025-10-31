@@ -34,7 +34,6 @@ Load packages
 ```{r load-libraries}
 library(tidyverse)
 library(knitr)
-# library(showtext)
 library(foreach)
 library(SummarizedExperiment)
 library(survival)
@@ -43,23 +42,8 @@ library(ggsurvfit)
 library(survminer)
 library(meta)
 library(magrittr)
-# library(DT)
-# library(colorblindr)
-# library(ggdendro)
-# library(RColorBrewer)
-# library(circlize)
-# library(Hmisc)
-# library(ComplexHeatmap)
-# library(ineq)
 library(kableExtra)
 library(openxlsx)
-# library(magrittr)
-# library(ggrepel)
-# library(ggpubr)
-# library(ggbeeswarm)
-# library(ggridges)
-# library(openxlsx)
-# library(MAGeCKFlute)
 library(GSVA)
 ```
 
@@ -79,10 +63,9 @@ if(!is.null(rmd_file)) {
 }
 ```
 
+## Run survival analysis for signatures
 
-## Generate signatures
-
-### Generate Signature for CRISPR Hits
+Generate Signature for CRISPR Hits
 ```{r crispr-ko-signatures}
 dge_signatures <- list(
   down_crispr_hits = c('CCR10', `TRAIL-R2` = 'TNFRSF10B', 'CCL27', 'IGFBP1', 
@@ -93,10 +76,6 @@ dge_signatures <- list(
 ```
 
 
-
-
-
-## Run survival analysis
 ```{r conf-survival-analysis}
 project_id <- list.files(
   path = params$data_dir, 
@@ -211,7 +190,14 @@ saveRDS(data_se, file = file.path(params$output_dir, 'data_se_surv.rds'))
 
 Generate data using optimal cutoff point. Cutoff determined using the maximally selected rank statistics from the 'maxstat' R package. This is an outcome-oriented methods providing a value of a cutpoint that correspond to the most significant relation with outcome (here, survival).
 ```{r run-survival-maxstat-analysis, eval = FALSE}
-i <- names(data_se)[12]
+
+x_se <- readRDS(file.path('~/analysis/saini/crispr-immunorejection/output/clinical/tcga_xena_dfi_5y_signatures', 'data_se_surv.rds'))
+xse <- x_se[[i]]
+
+table(res_cat$down_crispr_hits)
+
+surv_i = 'DFI'
+i = "TCGA-BRCA"
 surv_maxstat <- foreach(surv_i = names(data_se), .combine = rbind) %do% {
   res <- foreach(i = names(data_se[[surv_i]]), .combine = rbind) %do% {
     se <- data_se[[surv_i]][[i]]
@@ -220,25 +206,17 @@ surv_maxstat <- foreach(surv_i = names(data_se), .combine = rbind) %do% {
     colnames(gene_exp) <-rownames(se)
     
     sample_annot <- colData(se) %>% data.frame()
-    # sample_annot$status <- sample_annot[[params$event_var]]
-    # sample_annot$time <- sample_annot[[params$time_var]]/365.25
-    
-    # Set follow up limit
-    # sample_annot <- sample_annot %>% 
-    #   mutate(
-    #     status = ifelse(time >= params$max_time_years, 0, status),
-    #     time = ifelse(time >= params$max_time_years, params$max_time_years, time)
-    #   )
-    # # Keep only genes with expression in at least 20% of samples
-    # gene_exp_prop <- colSums(gene_exp > 0) / nrow(gene_exp)
-    # gene_exp <- gene_exp[,gene_exp_prop >= 0.2]
-    # 
-    
+   
     res_cut <- surv_cutpoint(cbind(sample_annot, gene_exp),
                              time = "time", event = "status",
                              variables = colnames(gene_exp))
     res_cat <- surv_categorize(res_cut, labels = c('Low', 'High'))
     sample_annot <- cbind(sample_annot, res_cat)
+    
+    # Categorize risk variables
+    for(g in colnames(gene_exp)) {
+      sample_annot[[g]] <- factor(sample_annot[[g]], levels = c('Low', 'High'))
+    }
     
     g <- colnames(gene_exp)[1]
     foreach(g = colnames(gene_exp), .combine = rbind) %do% {
@@ -269,24 +247,17 @@ survfit_km_maxstat <- foreach(surv_i = names(data_se)) %do% {
     gene_exp <- assay(se, 'gsva') %>% t()
     
     sample_annot <- colData(se) %>% data.frame()
-    # sample_annot$status <- sample_annot[[params$event_var]]
-    # sample_annot$time <- sample_annot[[params$time_var]]/365.25
-    
-    # Set follow up limit
-    # sample_annot <- sample_annot %>% 
-    #   mutate(
-    #     status = ifelse(time >= params$max_time_years, 0, status),
-    #     time = ifelse(time >= params$max_time_years, params$max_time_years, time)
-    #   )
-    # # Keep only genes with expression in at least 10% of samples
-    # gene_exp_prop <- colSums(gene_exp > 0) / nrow(gene_exp)
-    # gene_exp <- gene_exp[,gene_exp_prop >= 0.2]
-    
+
     res_cut <- surv_cutpoint(cbind(sample_annot, gene_exp),
                              time = "time", event = "status",
                              variables = colnames(gene_exp))
     res_cat <- surv_categorize(res_cut, labels = c('Low', 'High'))
     sample_annot <- cbind(sample_annot, res_cat)
+    
+    # Categorize risk variables
+    for(g in colnames(gene_exp)) {
+      sample_annot[[g]] <- factor(sample_annot[[g]], levels = c('Low', 'High'))
+    }
     
     g <- colnames(gene_exp)[1]
     res_by_genes <- foreach(g = colnames(gene_exp)) %do% {
@@ -355,8 +326,7 @@ meta_surv_maxstat_summary <- foreach(sv = names(surv_endpoints), .combine = rbin
       p.value = x$random$p,
       std.error = x$random$seTE,
       conf.low = exp(x$random$lower),
-      conf.high = exp(x$random$upper)#,
-      # w.random = round(100*x$w.random / sum(x$w.random), 1)
+      conf.high = exp(x$random$upper)
     )
   }
 }
@@ -429,8 +399,7 @@ You can download the results of the survival analysis using the following link:
 
 ## Figure 6F: Forest plot by study
 
-Forest plot showing HR and 95%CI for each study. The size of the circle point is determined by the weight of the effect size in the meta-analysis. The diamond shape at the bottom of the plot represents the average effect calculated using meta-analysis.
-
+Forest plot showing the association of high expression of each gene and multiple survival endpoints in individual TCGA studies and metanalysis. HRs and 95%CI by Cox regression model. BRCA (breast cancer), LUAD (lung adenocarcinoma), COAD (colon adenocarcinoma).
 
 ```{r signature-maxstat-coxph-ggplot-forestplot-conf}
 chunk_data <- use_surv
@@ -448,8 +417,6 @@ meta_weight <- foreach(i = names(use_meta_surv), .combine = rbind) %do% {
   }
 }
 
-
-# use_meta_sum <- summary(use_meta)
 chunk_data %<>% left_join(meta_weight, by = c('surv_var', 'gene_name', 'project_id'))
 
 cox_meta_add <- foreach(i = names(use_meta_surv), .combine = rbind) %do% {
@@ -498,7 +465,6 @@ chunk_data %<>%
 chunk_data %<>%
   bind_rows(cox_meta_add) %>%
   mutate(
-    # project_id = factor(project_id, levels= c('Meta', '', gsub("TCGA-", "", rev(tcga_selected)))),
     project_id = factor(project_id, levels= c('Meta', '', rev(tcga_selected))),
     project_type = ifelse(project_id == 'Meta', 'Meta', 'Project'),
     FDR = p.adjust(p.value, method = 'BH'),
@@ -511,7 +477,7 @@ chunk_data %<>%
 ```
 
 
-```{r signature-maxstat-coxph-ggplot-forestplot-dss-dfi-vertical, fig.width = 2.8, fig.asp = 0.6}
+```{r signature-maxstat-coxph-ggplot-forestplot-dss-dfi-vertical, fig.width = 2.8, fig.asp = 0.7}
 fc_palette <- c(Up = "#e41a1c", Down = "#377eb8")
 shape_scale <- c(DSS = 16, DFI = 15, PFI = 0)
 use_postition_dodge <- 0.8
@@ -537,12 +503,9 @@ chunk_data %>%
                  position = position_dodge(use_postition_dodge)
                  ) +
   geom_vline(xintercept = 1, linetype = 'dotted', linewidth = use_lwd) +
-  # facet_grid(rows = vars(gene_name)) +
   scale_shape_manual(values = shape_scale) +
   scale_color_manual(values = fc_palette) +
-  scale_size_continuous(range = c(0.6, 2)
-                        # breaks = c(0.1, 0.5, 1, 2, 5, 10),
-  ) +
+  scale_size_continuous(range = c(0.6, 2)) +
   scale_x_continuous(trans = 'log2',
                      breaks = c(0.1, 0.2, 0.5, 1, 2, 3, 5, 10),
                      labels = as.character(c(0.1, 0.2, 0.5, 1, 2, 3, 5, 10))
@@ -560,16 +523,19 @@ chunk_data %>%
     size = 'Weight (%)',
     caption = 'Estimates with a standard error > 10 were removed from the plot',
     color = ''
-    ) #+
-  # guides(
-  #   shape = 'none'
-  # )
+    )
 ```
 
 
-## Figure 6E: Kaplan-Meier plots  - Optimal cut-off
+## Figure 6E: Kaplan-Meier plots
+
+Kaplan-Meier plots showing disease-free interval in TCGA-BRCA patients stratified by expression of signatures based on depleted and enriched genes highlighted in Fig. 6C. HRs and P values by two-sided Cox regression model. BRCA (breast cancer); TCGA (The Cancer Genome Atlas); HR (hazard ratio).
+
+**Please note that the plots, tables, and Cox regression results may differ slightly from those presented in the manuscript. This is because, in the paper, the GSVA-based signature scores were calculated using a matrix that included all signatures, including the one derived from Amhr2 KO.**
+
 ```{r signature-km-conf}
-use_survfit_km <- survfit_km_maxstat_list
+use_survfit_km <- survfit_km_maxstat_list['DFI']
+use_survfit_km[['DFI']] <- use_survfit_km[['DFI']]["TCGA-BRCA"]
 ```
 
 
@@ -579,9 +545,7 @@ surv_var_i <- names(use_survfit_km)[1]
 gene_i <- names(use_survfit_km[[1]][[1]])[1]
 p_i <- names(use_survfit_km[[1]])[1]
 for(surv_var_i in names(use_survfit_km)) {
-  cat("####", surv_var_i,"\n\n")
   for(gene_i in names(use_survfit_km[[surv_var_i]][[1]])) {
-    cat("#####", surv_var_i,"-", gene_i, "\n\n")
     for(p_i in names(use_survfit_km[[surv_var_i]])) {
       top_color <- ifelse(gene_i == 'up_crispr_hits', 
                             '#e41a1c', 
@@ -612,6 +576,5 @@ for(surv_var_i in names(use_survfit_km)) {
   }
 }
 
-# c(Up = "#e41a1c", Down = "#377eb8")
 ```
 

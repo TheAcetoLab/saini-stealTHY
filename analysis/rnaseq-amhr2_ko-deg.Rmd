@@ -100,17 +100,13 @@ if(!is.null(rmd_file)) {
 ## Configure analyses
 
 ### Data wrangling
-Load SE onjecct
+Load SE object
 ```{r dw-load-se}
 se <- readRDS(params$se_path)
 ```
 
 Modify sample annotation
 ```{r dw-coldata}
-se$sample_alias %>% 
-  gsub('_rep.', '', .) %>% 
-  unique
-
 colData(se) %<>% 
   data.frame %>% 
   mutate(
@@ -130,20 +126,6 @@ colData(se) %<>%
 
   ) %>% DataFrame
 
-# colData(se) %<>% data.frame %>%
-#   mutate(
-#     sample_type_grouped = sample_type,
-#     sample_type_grouped = ifelse(sample_type == 'ctc_cluster_heterotypic_dn', 
-#                                  'ctc_cluster_heterotypic', 
-#                                  sample_type_grouped),
-#     sample_type_grouped_3l = ifelse(sample_type == 'ctc_cluster_wbc', 
-#                                  'ctc_cluster_heterotypic', 
-#                                  sample_type_grouped),
-#     sample_type_grouped_2l = ifelse(sample_type_grouped == 'ctc_cluster_heterotypic', 
-#                                  'ctc_cluster', 
-#                                  sample_type_grouped)
-#   ) %>%
-#   DataFrame
 ```
 
 
@@ -186,7 +168,8 @@ group_samples <- foreach(i = use_levels) %do% {
 }
 names(group_samples) <- use_levels
 
-# Define all pairwise comparisons
+
+# Define all potential pairwise comparisons
 group_combn <- combn(names(group_samples) , 2, simplify = FALSE)
 
 i <- group_combn[[1]]
@@ -200,9 +183,8 @@ comp_list <- foreach(i = group_combn) %do%{
 }
 names(comp_list) <- lapply(group_combn, function(x) paste0(x[1], '-o-', x[2]))
 
-# Add additional comparison
-# InVivo_AMHR2_KO + AMHR2_KO_culture - over - InVivo_Control_sgRNA + AMHR2_Control_culture
 
+# Add additional comparison
 comp_list[['AMHR2_KO-o-ctrl']] <- list(
   `AMHR2_KO` = x %>% 
     filter(condition %in% c('InVivo_AMHR2_KO', 'AMHR2_KO_culture')) %>% 
@@ -212,42 +194,12 @@ comp_list[['AMHR2_KO-o-ctrl']] <- list(
      pull(sample_alias)
 )
 
-# Keep only the following comparisons
-#   InVivo_AMHR2_KO–over–InVivo_Control_sgRNA 
-#   AMHR2_Control_culture–over–AMHR2_KO_culture : invert the terms
-#   AMHR2_KO_noTGFbeta–over–AMHR2_Control_culture 
-#   AMHR2_KO_noTGFbeta–over–AMHR2_KO_culture
-#   AMHR2_Overexpression–over–AMHR2_Control_culture
-#   AMHR2_Overexpression–over–AMHR2_KO_culture
-#   AMHR2_KO_noTGFbeta–over–AMHR2_Overexpression : invert the terms
 keep_comp <- c(
-  `InVivo_AMHR2_KO--over--InVivo_Control_sgRNA` = 'i_AMHR2_KO-o-i_ctrl_sgRNA',
-  `AMHR2_Control_culture--over--AMHR2_KO_culture` =  'c_AMHR2_ctrl-o-c_AMHR2_KO',
-  `AMHR2_KO_noTGFbeta--over--AMHR2_Control_culture` =  'AMHR2_KO_noTGFb-o-c_AMHR2_ctrl',
-  `AMHR2_KO_noTGFbeta--over--AMHR2_KO_culture` =  'AMHR2_KO_noTGFb-o-c_AMHR2_KO',
-  `AMHR2_Overexpression--over--AMHR2_Control_culture` = 'AMHR2_over-o-c_AMHR2_ctrl', 
-  `AMHR2_Overexpression--over--AMHR2_KO_culture` =  'AMHR2_over-o-c_AMHR2_KO',
-  `AMHR2_KO_noTGFbeta--over--AMHR2_Overexpression` =  'AMHR2_KO_noTGFb-o-AMHR2_over',
-  `InVivo_AMHR2_KO + AMHR2_KO_culture--over--InVivo_Control_sgRNA + AMHR2_Control_culture` = 'AMHR2_KO-o-ctrl'
+  `InVivo_AMHR2_KO + AMHR2_KO_culture--over--InVivo_Control_sgRNA + AMHR2_Control_culture` = 'AMHR2_KO-o-ctrl',
+  `AMHR2_KO_noTGFbeta--over--AMHR2_Control_culture` = 'AMHR2_KO_noTGFb-o-c_AMHR2_ctrl',
+  `InVivo_AMHR2_KO–over–InVivo_Control_sgRNA` = 'i_AMHR2_KO-o-i_ctrl_sgRNA'
 )
 comp_list <- comp_list[keep_comp]
-
-# Invert the terms were required
-
-#   AMHR2_Control_culture–over–AMHR2_KO_culture : invert the terms
-#   AMHR2_KO_noTGFbeta–over–AMHR2_Overexpression : invert the terms
-
-i_comp <- c('c_AMHR2_ctrl-o-c_AMHR2_KO', 'AMHR2_KO_noTGFb-o-AMHR2_over')
-
-i <- i_comp[1]
-for(i in i_comp) {
-  comp_list[[i]] <- rev(comp_list[[i]])
-  rev_name <- strsplit(i, split = '-o-') %>% unlist() %>% rev %>% paste(., collapse = '-o-')
-  names(comp_list)[names(comp_list) == i] <- rev_name
-  i_desc <- names(keep_comp)[keep_comp == i]
-  rev_description <- strsplit(i_desc, split = '..over..') %>% unlist() %>% rev %>% paste(., collapse = '--over--')
-  names(keep_comp)[keep_comp == i] <- rev_description
-}
 
 
 # Generate DF with name description
@@ -451,6 +403,7 @@ saveRDS(gse_list, file = file.path(params$output_dir,'gse_omnibus-edgeR_QLF.rds'
 ```{r dge-gse-load}
 dge_list <- readRDS(file = file.path(params$output_dir, 'dge-edgeR_QLF.rds'))
 gse_list <- readRDS(file = file.path(params$output_dir, 'gse_omnibus-edgeR_QLF.rds'))
+
 ```
 
 
@@ -471,33 +424,33 @@ src <- knit_expand(
 Define signatures
 ```{r user-defined-gene_sets}
 manual_gene_sets <- list(
-  # Signature 1
-  `Mammary epithelium proliferation` = c(
-    'Aurka',
-    'Aurkb',
-    'Brca1',
-    'Brca2',
-    'Ccdn1',
-    'Cdkn2a',
-    'Esr1',
-    'Gata3',
-    'Hoxa5',
-    'Mki67',
-    'Plk1',
-    'Wnt5A',
-    'Agap2',
-    'Areg',
-    'Bax',
-    'Deaf1',
-    'Epha2',
-    'Etv4',
-    'Id2',
-    'Kdm5b',
-    'Robo1',
-    'Mapk1',
-    'Med1',
-    'Pygo2',
-    'Tfap2c'
+   # Signature 4
+  `STAT1 target genes and interactors` = c(
+    'Ciita',
+    'Socs1',
+    'Cxcl10',
+    'Irf1',
+    'Irf7',
+    'Irf9',
+    'Stat1',
+    'Stat2',
+    'Stat3',
+    'Stat5a',
+    'Stat5b',
+    'Sting1',
+    'Jak1',
+    'Jak2',
+    'Tap1',
+    'Tap2',
+    'Usp18',
+    'Cyp1b1',
+    'Mx1',
+    'Ido1',
+    'Bcl6',
+    'Gbp5',
+    'Egr1',
+    'Fos',
+    'Lyn'
   ),
   # Signature 2
   `EMT regulators and targets` = c(
@@ -527,6 +480,34 @@ manual_gene_sets <- list(
     'Ppl',
     'Dsg3'
   ),
+  # Signature 1
+  `Mammary epithelium proliferation` = c(
+    'Aurka',
+    'Aurkb',
+    'Brca1',
+    'Brca2',
+    'Ccdn1',
+    'Cdkn2a',
+    'Esr1',
+    'Gata3',
+    'Hoxa5',
+    'Mki67',
+    'Plk1',
+    'Wnt5A',
+    'Agap2',
+    'Areg',
+    'Bax',
+    'Deaf1',
+    'Epha2',
+    'Etv4',
+    'Id2',
+    'Kdm5b',
+    'Robo1',
+    'Mapk1',
+    'Med1',
+    'Pygo2',
+    'Tfap2c'
+  ),
   # Signature 3
   `SMAD target genes and interactors` = c(
     'Wnt4',
@@ -554,34 +535,6 @@ manual_gene_sets <- list(
     'Tcf12',
     'Hmga2',
     'Foxa2'
-  ),
-  # Signature 4
-  `STAT1 target genes and interactors` = c(
-    'Ciita',
-    'Socs1',
-    'Cxcl10',
-    'Irf1',
-    'Irf7',
-    'Irf9',
-    'Stat1',
-    'Stat2',
-    'Stat3',
-    'Stat5a',
-    'Stat5b',
-    'Sting1',
-    'Jak1',
-    'Jak2',
-    'Tap1',
-    'Tap2',
-    'Usp18',
-    'Cyp1b1',
-    'Mx1',
-    'Ido1',
-    'Bcl6',
-    'Gbp5',
-    'Egr1',
-    'Fos',
-    'Lyn'
   )
 )
 
@@ -648,7 +601,7 @@ gseaplot2_custom <- function (
     p2.add.intervals.colors = FALSE,
     p2.segment.color.var = 'Description', # Either Description or geneList (log2FC)
     geneList.limit = NULL,
-    fontface = "italic" #c("plain", "bold", "italic", "bold.italic")
+    fontface = "italic" 
     )
 {
     ##
@@ -683,7 +636,6 @@ gseaplot2_custom <- function (
         panel.grid.minor = element_blank(),
         panel.grid.major.y = element_blank(), 
         panel.grid.minor.y = element_blank()
-        # panel.border = element_rect(fill =NULL,color = "black", linewidth = one_pt/4)
       ) + 
       scale_x_continuous(expand = c(0, 0))
     
@@ -708,7 +660,6 @@ gseaplot2_custom <- function (
         axis.ticks.x = element_blank(), 
         axis.line.x = element_blank(), 
         axis.line.y = element_blank(), 
-        # axis.line.y = element_line(linewidth = axis.linewidth, color = 'black'),
         panel.border = element_rect(fill ="transparent",color = "black", linewidth = axis.linewidth)
         )
     ##
@@ -725,7 +676,6 @@ gseaplot2_custom <- function (
     
     p2 <- ggplot(gsdata, aes_(x = ~x)) + 
       annotate("rect", xmin=0, xmax=100+max(gsdata$x), ymin=0 , ymax=2, alpha=0.8, color=p2.fill, fill=p2.fill) +
-      # geom_linerange(aes_(ymin = ~ymin, ymax = ~ymax, color = ~Description), linewidth = p2.linerange.linewidth) + 
       geom_linerange(aes_string(ymin = 'ymin', ymax = 'ymax', color = p2.segment.color.var), linewidth = p2.linerange.linewidth) + 
       xlab(NULL) + 
       ylab(NULL) + 
@@ -737,8 +687,7 @@ gseaplot2_custom <- function (
         axis.text = element_blank(), 
         axis.line.x = element_blank(),
         axis.line.y = element_blank(),
-        panel.border = element_rect(fill ="transparent",color = "black", linewidth = axis.linewidth)#,
-        # panel.background = element_rect(fill = p2.fill)
+        panel.border = element_rect(fill ="transparent",color = "black", linewidth = axis.linewidth)
         ) + 
       scale_x_continuous(expand = c(0, 0)) + 
       scale_y_continuous(expand = c(0, 0))
@@ -866,7 +815,6 @@ gseaplot2_custom <- function (
         panel.grid.minor = element_blank(),
         panel.grid.major.y = element_blank(), 
         panel.grid.minor.y = element_blank(),
-        # axis.line.y = element_line(linewidth = axis.linewidth, color = 'black'),
         panel.border = element_rect(fill ="transparent",color = "black", linewidth = axis.linewidth)
         )
     
@@ -906,7 +854,6 @@ gseaplot2_custom <- function (
     n <- length(plotlist)
     plotlist[[n]] <- plotlist[[n]] + 
       theme(
-        # axis.line.x = element_line(), 
         axis.ticks.x = element_line(),
         axis.text.x = element_text()
         )
@@ -919,13 +866,270 @@ gseaplot2_custom <- function (
 }
 ```
 
+### Supplementary Figure 7L
 
-The figures below shows the GSEA plots with labels with a reverse rank compared to traditional ranking. In this case, the rank is based on increasing order of fold-change.
+Gene set enrichment analysis of Amhr2 KO versus control RNA-seq datasets (as reported in Fig. 7F) interrogating the enrichment of a mammary cancer proliferative signature, comparing Py2T cells treated as indicated; NES, normalized enrichment score.
 
-In these plots, the segments (second panel) are colored by fold change (color range capped to -5 to 5)
-```{r gseaplot2-custom-labels-individual-plot, fig.width=7.2, fig.asp = 1.1}
+```{r gseaplot2-custom-labels-individual-plot-sf7L, fig.width=7.2, fig.asp = 0.5}
+i <- "InVivo_AMHR2_KO–over–InVivo_Control_sgRNA"
+use_gsets <- c('STAT1 target genes and interactors', 'SMAD target genes and interactors')
+
+gse_manual_list[[i]]@result %>% 
+  filter(ID %in% use_gsets) %>% 
+  mutate(
+    NES = round(NES, 2),
+    pvalue = format.pval(pvalue, digits = 2),
+    p.adjust = format.pval(p.adjust, digits = 2)
+  ) %>% 
+  dplyr::select(Description, setSize, NES, pvalue, p.adjust) %>% 
+  kbl(caption = 'GSEA results',
+      row.names = F) %>%
+  kable_paper(bootstrap_options = c("striped", "hover", "condensed"), 
+              full_width = F) %>%
+  column_spec(1, bold = TRUE) %>% 
+  print
+
+cat("\n\n")
+
+# n_gsets <- seq_along(gse_manual_list[[i]]$Description)
+n_gsets <- which(gse_manual_list[[i]]$Description %in% use_gsets)
+for(j in n_gsets) {
+  es_color <- ifelse(gse_manual_list[[i]]$NES[j] > 0, "#e41a1c", "#377eb8")
+  cat("####", gse_manual_list[[i]]$Description[j], "\n\n")
+  res <- gseaplot2_custom(
+    gse_manual_list[[i]], 
+    geneSetID = j, 
+    title = i,
+    base_size = 8,
+    rel_heights = c(1, 1.5, 0),
+    color =es_color,
+    p2.fill = 'grey90',
+    p2.linerange.linewidth = 0.80,
+    legend.position = 'top',
+    p.pos.ylab = 'Log2 Fold Change',
+    p2.labels = TRUE,
+    reverse.rank = FALSE,
+    p2.segment.color.var = 'geneList',
+    geneList.limit = 5
+  )
+  print(res)
+  cat("\n\n")
+}
+
+```
+
+
+### Supplementary Figure 7M (Galunisertib positive)
+
+Gene set enrichment analysis of Amhr2 KO versus control RNA-seq datasets (as reported in Fig. 7F) interrogating the enrichment of a mammary cancer proliferative signature, comparing Py2T cells treated in vitro with Galunisertib as indicated. 
+
+```{r gseaplot2-custom-labels-individual-plot-sf7Mtop, fig.width=7.2, fig.asp = 0.5}
+i <- "AMHR2_KO_noTGFbeta--over--AMHR2_Control_culture"
+use_gsets <- c('Mammary epithelium proliferation')
+
+gse_manual_list[[i]]@result %>% 
+  filter(ID %in% use_gsets) %>% 
+  mutate(
+    NES = round(NES, 2),
+    pvalue = format.pval(pvalue, digits = 2),
+    p.adjust = format.pval(p.adjust, digits = 2)
+  ) %>% 
+  dplyr::select(Description, setSize, NES, pvalue, p.adjust) %>% 
+  kbl(caption = 'GSEA results',
+      row.names = F) %>%
+  kable_paper(bootstrap_options = c("striped", "hover", "condensed"), 
+              full_width = F) %>%
+  column_spec(1, bold = TRUE) %>% 
+  print
+
+cat("\n\n")
+
+n_gsets <- which(gse_manual_list[[i]]$Description %in% use_gsets)
+for(j in n_gsets) {
+  es_color <- ifelse(gse_manual_list[[i]]$NES[j] > 0, "#e41a1c", "#377eb8")
+  cat("####", gse_manual_list[[i]]$Description[j], "\n\n")
+  res <- gseaplot2_custom(
+    gse_manual_list[[i]], 
+    geneSetID = j, 
+    title = i,
+    base_size = 8,
+    rel_heights = c(1, 1.5, 0),
+    color =es_color,
+    p2.fill = 'grey90',
+    p2.linerange.linewidth = 0.80,
+    legend.position = 'top',
+    p.pos.ylab = 'Log2 Fold Change',
+    p2.labels = TRUE,
+    reverse.rank = FALSE,
+    p2.segment.color.var = 'geneList',
+    geneList.limit = 5
+  )
+  print(res)
+  cat("\n\n")
+}
+
+```
+
+
+
+
+### Supplementary Figure 7P
+
+Gene set enrichment analysis of Amhr2 KO versus control RNA-seq datasets (as reported in Fig. 7F) interrogating the enrichment of a mammary cancer proliferative signature or the enrichment of an EMT signature including epithelial and mesenchymal genes, showing data from orthotopic Py2T tumors in FVB/N mice.
+
+```{r gseaplot2-custom-labels-individual-plot-sf7p, fig.width=7.2, fig.asp = 0.5}
+i <- "InVivo_AMHR2_KO + AMHR2_KO_culture--over--InVivo_Control_sgRNA + AMHR2_Control_culture"
+use_gsets <- c('Mammary epithelium proliferation', 'EMT regulators and targets')
+
+gse_manual_list[[i]]@result %>% 
+  filter(ID %in% use_gsets) %>% 
+  mutate(
+    NES = round(NES, 2),
+    pvalue = format.pval(pvalue, digits = 2),
+    p.adjust = format.pval(p.adjust, digits = 2)
+  ) %>% 
+  dplyr::select(Description, setSize, NES, pvalue, p.adjust) %>% 
+  kbl(caption = 'GSEA results',
+      row.names = F) %>%
+  kable_paper(bootstrap_options = c("striped", "hover", "condensed"), 
+              full_width = F) %>%
+  column_spec(1, bold = TRUE) %>% 
+  print
+
+cat("\n\n")
+
+n_gsets <- which(gse_manual_list[[i]]$Description %in% use_gsets)
+for(j in n_gsets) {
+  es_color <- ifelse(gse_manual_list[[i]]$NES[j] > 0, "#e41a1c", "#377eb8")
+  cat("####", gse_manual_list[[i]]$Description[j], "\n\n")
+  res <- gseaplot2_custom(
+    gse_manual_list[[i]], 
+    geneSetID = j, 
+    title = i,
+    base_size = 8,
+    rel_heights = c(1, 1.5, 0),
+    color =es_color,
+    p2.fill = 'grey90',
+    p2.linerange.linewidth = 0.80,
+    legend.position = 'top',
+    p.pos.ylab = 'Log2 Fold Change',
+    p2.labels = TRUE,
+    reverse.rank = FALSE,
+    p2.segment.color.var = 'geneList',
+    geneList.limit = 5
+  )
+  print(res)
+  cat("\n\n")
+}
+```
+
+### Supplementary Figure 7U left (Galunisertib negative)
+
+Gene set enrichment analysis of Amhr2 KO versus control RNA-seq datasets (as reported in Fig. 7F) interrogating the enrichment of an IFN-α transcriptional target signature, comparing Py2T cells treated in vitro with Galunisertib as indicated.
+
+```{r gseaplot2-custom-labels-individual-plot-sf7Uleft, fig.width=7.2, fig.asp = 0.5}
+i <- "InVivo_AMHR2_KO + AMHR2_KO_culture--over--InVivo_Control_sgRNA + AMHR2_Control_culture"
+use_gsets <- c('STAT1 target genes and interactors')
+
+gse_manual_list[[i]]@result %>% 
+  filter(ID %in% use_gsets) %>% 
+  mutate(
+    NES = round(NES, 2),
+    pvalue = format.pval(pvalue, digits = 2),
+    p.adjust = format.pval(p.adjust, digits = 2)
+  ) %>% 
+  dplyr::select(Description, setSize, NES, pvalue, p.adjust) %>% 
+  kbl(caption = 'GSEA results',
+      row.names = F) %>%
+  kable_paper(bootstrap_options = c("striped", "hover", "condensed"), 
+              full_width = F) %>%
+  column_spec(1, bold = TRUE) %>% 
+  print
+
+cat("\n\n")
+
+n_gsets <- which(gse_manual_list[[i]]$Description %in% use_gsets)
+for(j in n_gsets) {
+  es_color <- ifelse(gse_manual_list[[i]]$NES[j] > 0, "#e41a1c", "#377eb8")
+  cat("####", gse_manual_list[[i]]$Description[j], "\n\n")
+  res <- gseaplot2_custom(
+    gse_manual_list[[i]], 
+    geneSetID = j, 
+    title = i,
+    base_size = 8,
+    rel_heights = c(1, 1.5, 0),
+    color =es_color,
+    p2.fill = 'grey90',
+    p2.linerange.linewidth = 0.80,
+    legend.position = 'top',
+    p.pos.ylab = 'Log2 Fold Change',
+    p2.labels = TRUE,
+    reverse.rank = FALSE,
+    p2.segment.color.var = 'geneList',
+    geneList.limit = 5
+  )
+  print(res)
+  cat("\n\n")
+}
+
+```
+
+
+### Supplementary Figure 7U right (Galunisertib positive)
+
+Gene set enrichment analysis of Amhr2 KO versus control RNA-seq datasets (as reported in Fig. 7F) interrogating the enrichment of an IFN-α transcriptional target signature, comparing Py2T cells treated in vitro with Galunisertib as indicated.
+
+```{r gseaplot2-custom-labels-individual-plot-sf7Uright, fig.width=7.2, fig.asp = 0.5}
+i <- "AMHR2_KO_noTGFbeta--over--AMHR2_Control_culture"
+use_gsets <- c('STAT1 target genes and interactors')
+
+gse_manual_list[[i]]@result %>% 
+  filter(ID %in% use_gsets) %>% 
+  mutate(
+    NES = round(NES, 2),
+    pvalue = format.pval(pvalue, digits = 2),
+    p.adjust = format.pval(p.adjust, digits = 2)
+  ) %>% 
+  dplyr::select(Description, setSize, NES, pvalue, p.adjust) %>% 
+  kbl(caption = 'GSEA results',
+      row.names = F) %>%
+  kable_paper(bootstrap_options = c("striped", "hover", "condensed"), 
+              full_width = F) %>%
+  column_spec(1, bold = TRUE) %>% 
+  print
+
+cat("\n\n")
+
+n_gsets <- which(gse_manual_list[[i]]$Description %in% use_gsets)
+for(j in n_gsets) {
+  es_color <- ifelse(gse_manual_list[[i]]$NES[j] > 0, "#e41a1c", "#377eb8")
+  cat("####", gse_manual_list[[i]]$Description[j], "\n\n")
+  res <- gseaplot2_custom(
+    gse_manual_list[[i]], 
+    geneSetID = j, 
+    title = i,
+    base_size = 8,
+    rel_heights = c(1, 1.5, 0),
+    color =es_color,
+    p2.fill = 'grey90',
+    p2.linerange.linewidth = 0.80,
+    legend.position = 'top',
+    p.pos.ylab = 'Log2 Fold Change',
+    p2.labels = TRUE,
+    reverse.rank = FALSE,
+    p2.segment.color.var = 'geneList',
+    geneList.limit = 5
+  )
+  print(res)
+  cat("\n\n")
+}
+
+```
+
+## All GSEA plots
+```{r gseaplot2-custom-labels-individual-plot, fig.width=7.2, fig.asp = 0.5, eval = FALSE}
 i <- names(gse_manual_list)[1]
-for(i in names(dge_list)) {
+for(i in names(gse_manual_list)) {
   cat("### Comparison", i, "\n\n")
   
   gse_manual_list[[i]]@result %>% 
@@ -951,7 +1155,6 @@ for(i in names(dge_list)) {
     res <- gseaplot2_custom(
       gse_manual_list[[i]], 
       geneSetID = j, 
-      # pvalue_table = TRUE,
       title = i,
       base_size = 8,
       rel_heights = c(1, 1.5, 0),

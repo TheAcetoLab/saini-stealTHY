@@ -31,32 +31,11 @@ Load packages
 ```{r load-libraries}
 library(tidyverse)
 library(knitr)
-# library(showtext)
 library(foreach)
 library(SummarizedExperiment)
-# library(survival)
-# library(gtsummary)
-# library(ggsurvfit)
-# library(survminer)
-# library(meta)
 library(magrittr)
-# library(DT)
-# library(colorblindr)
-# library(ggdendro)
-# library(RColorBrewer)
-# library(circlize)
-# library(Hmisc)
-# library(ComplexHeatmap)
-# library(ineq)
 library(kableExtra)
 library(openxlsx)
-# library(magrittr)
-# library(ggrepel)
-# library(ggpubr)
-# library(ggbeeswarm)
-# library(ggridges)
-# library(openxlsx)
-# library(MAGeCKFlute)
 library(GSVA)
 library(tldr)
 library(ggcorrplot)
@@ -180,9 +159,6 @@ new_signature_names <- c(
   down_fc_AMHR2_KO = 'AMH active signature (CC)',
   down_fc_c_AMHR2_KO = 'AMH fully active signature'
 )
-# 
-# dge_signatures <- dge_signatures[names(new_signature_names)]
-# names(dge_signatures) <- new_signature_names
 ```
 
 ### Generate data for the analysis
@@ -272,22 +248,14 @@ data_processed <- foreach(i = project_id) %do%{
   # Set quantiles
   quantile_df <- apply(gsva_res, 2, function(x){cutp(x, p=c(0.33, 0.66), labels=c('T1', 'T2', 'T3'))}) %>% 
     set_rownames(colnames(se)) %>% 
-    data.frame(check.names = FALSE) #%>%
-    # rownames_to_column('sampleID') %>% 
-    # pivot_longer(-sampleID, names_to = 'gene', values_to = 'quantile') %>% 
-    # # Add immune infiltration scores
-    # left_join(use_imm_est %>% rownames_to_column('sampleID'), by = 'sampleID') %>% 
-    # pivot_longer(-c(sampleID, gene, quantile), names_to = 'cell_type', values_to = 'score')
+    data.frame(check.names = FALSE)
 
   # Comparing scores between terciles
   x <- quantile_df %>% 
     rownames_to_column('sampleID') %>%
-    # pivot_longer(-sampleID, names_to = 'gene', values_to = 'quantile') %>%
     # Add immune infiltration scores
     left_join(use_imm_est %>% rownames_to_column('sampleID'), by = 'sampleID') #%>%
-    # pivot_longer(-c(sampleID, gene, quantile), names_to = 'cell_type', values_to = 'score') %>% 
-    # filter(quantile %in% c('T1', 'T3'))
-  
+
   use_group_var <- c(names(selected_signatures))
   use_cell_types <- colnames(use_imm_est)
   g <- use_group_var[1]
@@ -398,7 +366,7 @@ lapply(dge_signatures, function(x) length(x[x!=''])) %>%
 
 ## Figure 7G: Correlation of AMH signatures with immune cell fractions across TCGA cohorts (Heatmaps)
 
-Using CIBERSORT and showing correlation of gene expression and immune infiltration.
+Correlation of AMH signatures with immune cell fractions across TCGA cohorts as estimated by CIBERSORT. Distinct AMH signatures include prevalent contribution from the tumor microenvironment (TME) or from cancer cells (CC); BRCA (breast cancer), LUAD (lung adenocarcinoma), COAD (colon adenocarcinoma). 
 
 ```{r cibersort-correlation-combined, fig.width = 7.2, fig.asp = 2}
 i <- names(data_processed)[1]
@@ -421,7 +389,6 @@ gene_order <- c(
   names(selected_signatures)
 )
 gene_order <- intersect(gene_order, combined_corr$gene)
-# gene_order[!gene_order %in% combined_corr$gene]
 combined_corr$gene <- factor(combined_corr$gene, levels = gene_order)
 
 # Cell type order
@@ -540,7 +507,6 @@ for(i in names(data_processed)) {
   res_plot <- ggcorrplot(t(corr), 
              method = "square", 
              p.mat = t(p.mat),
-             # lab = TRUE, 
              insig = "blank") +
     labs(
       subtitle = paste(i, 'Spearman correlation. Blank values represent P < 0.05'),
