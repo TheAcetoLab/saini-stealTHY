@@ -58,9 +58,9 @@ Files containing pre-computed results from differential expression or gene-set e
 ## Main figures
 
 ### Figure 2
--   [Figure 2B](crispr-mm_2215_sgRNA-clonality.html#31_Figure_2B:_sgRNA_distribution_in_mice_transplanted_with_4T1_cells)
--   [Figure 2C](crispr-mm_2215_sgRNA-clonality.html#5_Figure_2C:_Representative_Müller_plots_of_4T1_in_syngeneic_recipients)
-    
+-   [Figure 2B](crispr-mm_2215_sgRNA-clonality.html#Figure_2B:_sgRNA_distribution_in_mice_transplanted_with_4T1_cells)
+-   [Figure 2C](crispr-mm_2215_sgRNA-clonality.html#Figure_2C:_Representative_M%C3%BCller_plots_of_4T1_in_syngeneic_recipients)
+
 ### Figure 3
 -   [Figure 3D](rnaseq-tumor-bulk.html#Figure_3D_:_qRT-PCR_in_TrCD8a+_and_TrCD8a-)
 -   [Figure 3H](rnaseq-tumor-bulk.html#Figure_3H:_Sample_distances_in_MVT1_models)
@@ -71,18 +71,18 @@ Files containing pre-computed results from differential expression or gene-set e
 -   [Figure 4D](crispr-mm_2215_sgRNA-StealTHY.html#Figure_4D:_Proportion_of_non-expressed_hits)
 
 ### Figure 5   
--   [Figure 5H](crispr-hsapiens_2180_sgRNA.html#31_Figure_5H:_Muller_plots_for_huNSGs)
+-   [Figure 5H](crispr-hsapiens_2180_sgRNA.html#Figure_5H:_Muller_plots_for_huNSGs)
 
 ### Figure 6    
 -   [Figure 6B](crispr-hsapiens_2180_sgRNA.html#sgRNA_distribution_by_condition_Primary_tumor)
 -   [Figure 6C](crispr-hsapiens_2180_sgRNA.html#Figure_6C:_Volcano_plots_showing_genes_Lungs_over_Primary_Tumor_in_StealTHY_KO)
 -   [Figure 6D](crispr-hsapiens_2180_sgRNA.html#Figure_6D:_Distribution_of_the_fold-change_of_Lungs_over_Primary_Tumor_in_huNSG_and_NSG_host)
--   [Figure 6E](tcga_survival_crispr_hits_signatures.html#Figure_6F:_Forest_plot_by_study)
--   [Figure 6F](tcga_survival_crispr_hits_signatures.html#Figure_6E:_Kaplan-Meier_plots)
+-   [Figure 6E](tcga_survival_crispr_hits_signatures.html#Figure_6E:_Kaplan-Meier_plots)
+-   [Figure 6F](tcga_survival_crispr_hits_signatures.html#Figure_6F:_Forest_plot_by_study)
 
 ### Figure 7    
--   [Figure 7F](rnaseq-amhr2_ko-deg.html#__531_Comparison_InVivo_AMHR2_KO_+_AMHR2_KO_culture–over–InVivo_Control_sgRNA_+_AMHR2_Control_culture_)
--   [Figure 7G](tcga_immune_infiltrate_amhr2_ko_signatures.html#4_Figure_7G:_Correlation_of_AMH_signatures_with_immune_cell_fractions_across_TCGA_cohorts_(Heatmaps))
+-   [Figure 7F](rnaseq-amhr2_ko-deg.html#Dotplots)
+-   [Figure 7G](tcga_immune_infiltrate_amhr2_ko_signatures.html#Figure_7G:_Correlation_of_AMH_signatures_with_immune_cell_fractions_across_TCGA_cohorts_(Heatmaps))
 -   [Figure 7H: Left panel](tcga_survival_amhr2_ko_signatures.html#Figure_7H_Right:_Pooled_Kaplan-Meier_plots_-_Optimal_cut-off)
 -   [Figure 7H: Right panel](tcga_survival_amhr2_ko_signatures.html#Figure_7H_Left:_Forest_plot_by_study)
       
@@ -91,20 +91,20 @@ Files containing pre-computed results from differential expression or gene-set e
 ## Supplementary figures
 
 ### Supplementary Figure 2
--   [Supplementary Figure 2B](crispr-mm_2215_sgRNA-clonality.html#32_Supplementary_Figure_2B:_sgRNA_distribution_in_mice_transplanted_with_Py2T_and_MVT1_cells)
--   [Supplementary Figure 2C-left](crispr-mm_2215_sgRNA-clonality.html#41_Supplementary_Figure_2C_left_:_K-S_test_table)
--   [Supplementary Figure 2C-right](crispr-mm_2215_sgRNA-clonality.html#42_Supplementary_Figure_2C_right_:_Empirical_Cumulative_Density_Function_(ECDF)_plots)
--   [Supplementary Figure 2D: Lung cancer in dCas9 + Puro (left-upper panel)](crispr-mm_2215_sgRNA-clonality.html#21_Supplementary_Figure_2D_(left_upper))
+-   [Supplementary Figure 2B](crispr-mm_2215_sgRNA-clonality.html#Supplementary_Figure_2B:_sgRNA_distribution_in_mice_transplanted_with_Py2T_and_MVT1_cells)
+-   [Supplementary Figure 2C-left](crispr-mm_2215_sgRNA-clonality.html#Kolmogorov-Smirnov_test_and_ECDF_plots)
+-   [Supplementary Figure 2C-right](crispr-mm_2215_sgRNA-clonality.html#Supplementary_Figure_2C_right_:_Empirical_Cumulative_Density_Function_(ECDF)_plots)
+-   [Supplementary Figure 2D: Lung cancer in dCas9 + Puro (left-upper panel)](crispr-mm_2215_sgRNA-clonality.html#Supplementary_Figure_2D_(left_upper))
 -   [Supplementary Figure 2D: Lung cancer in Thy1 (right-upper panel)](crispr-mm_2215_sgRNA-clonality.html#22_Supplementary_Figure_2D_(right_upper))
--   [Supplementary Figure 2D: Mammary cancer in Puro (left-lower panel)](crispr-mm_2215_sgRNA-clonality.html#Supplementary_Figure_2D:_Metastasis_-_Puro_(left_lower))
--   [Supplementary Figure 2D: Mammary cancer in Thy1 (right-lower panel)](crispr-mm_2215_sgRNA-clonality.html#Supplementary_Figure_2D:_Metastasis_-_Thy1_(right_lower))
--   [Supplementary Figure 2F: Right panel](crispr-mm_2215_sgRNA-clonality.html#23_Supplementary_Figure_2F)
+-   [Supplementary Figure 2D: Mammary cancer in Puro (left-lower panel)](crispr-mm_2215_sgRNA-clonality.html#Supplementary_Figure_2D_(left_lower))
+-   [Supplementary Figure 2D: Mammary cancer in Thy1 (right-lower panel)](crispr-mm_2215_sgRNA-clonality.html#Supplementary_Figure_2D_(right_lower))
+-   [Supplementary Figure 2F: Right panel](crispr-mm_2215_sgRNA-clonality.html#Supplementary_Figure_2F)
 -   [Supplementary Figure 2G: Upper panel](rnaseq-tumor-bulk.html#Supplementary_Figure_2G_top:_Differential_expressed_genes_in_dCas9-Thy1_over_Thy1_transduction)
 -   [Supplementary Figure 2G: Lower panel](rnaseq-tumor-bulk.html#Supplementary_Figure_2G_bottom:_Representative_gene-sets_enriched_in_dCas9-Thy1_over_Thy1_transduction)
--   [Supplementary Figure 2H: CD3+ TIL upper panel](rnaseq-tumor-facs-immune.html#41_Supplementary_Figure_2H_top_left:_Differential_expressed_genes_in_dCas9-Thy1_over_Thy1_transduction_in_sorted_CD3-positive_TILs)
--   [Supplementary Figure 2H: CD3+ TIL lower panel](rnaseq-tumor-facs-immune.html#51_Supplementary_Figure_2H_bottom_left:_Representative_gene-sets_enriched_in_dCas9-Thy1_over_Thy1_transduction) 
--   [Supplementary Figure 2H: Carcinoma cells upper panel](rnaseq-tumor-facs-cancer.html#41_Supplementary_Figure_2H_top_right:_Differential_expressed_genes_in_dCas9-Thy1_over_Thy1_transduction_in_sorted_carcinoma_cells)
--   [Supplementary Figure 2H: Carcinoma cells lower panel](rnaseq-tumor-facs-cancer.html#51_Supplementary_Figure_2H_bottom_right:_Representative_gene-sets_enriched_in_dCas9-Thy1_over_Thy1_transduction)  
+-   [Supplementary Figure 2H: CD3+ TIL upper panel](rnaseq-tumor-facs-immune.html#Supplementary_Figure_2H_top_left:_Differential_expressed_genes_in_dCas9-Thy1_over_Thy1_transduction_in_sorted_CD3-positive_TILs)
+-   [Supplementary Figure 2H: CD3+ TIL lower panel](rnaseq-tumor-facs-immune.html#Supplementary_Figure_2H_bottom_left:_Representative_gene-sets_enriched_in_dCas9-Thy1_over_Thy1_transduction) 
+-   [Supplementary Figure 2H: Carcinoma cells upper panel](rnaseq-tumor-facs-cancer.html#Supplementary_Figure_2H_top_right:_Differential_expressed_genes_in_dCas9-Thy1_over_Thy1_transduction_in_sorted_carcinoma_cells)
+-   [Supplementary Figure 2H: Carcinoma cells lower panel](rnaseq-tumor-facs-cancer.html#Supplementary_Figure_2H_bottom_right:_Representative_gene-sets_enriched_in_dCas9-Thy1_over_Thy1_transduction)  
 
 ### Supplementary Figure 3   
 -   [Supplementary Figure 3E: Py2T1 (left panel)](rnaseq-tumor-bulk.html#Supplementary_figure_3E_left:_Sample_distances_in_Py2T_model)
@@ -112,12 +112,12 @@ Files containing pre-computed results from differential expression or gene-set e
 
 ### Supplementary Figure 4  
 -   [Supplementary Figure 4B](crispr-mm_2215_sgRNA-StealTHY.html#Supplementary_figure_4B:_sgRNA_distribution_in_mice_transplanted_with_4T1_cells_previously_subjected_to_StealTHY_KO)
--   [Supplementary Figure 4C](crispr-mm_2215_sgRNA-clonality.html#7_Supplementary_Figure_4C)
+-   [Supplementary Figure 4C](crispr-mm_2215_sgRNA-clonality.html#Supplementary_Figure_4C)
 -   [Supplementary Figure 4D](crispr-mm_2215_sgRNA-StealTHY.html#Supplementary_Figure_4D_:_K-S_test_table)
 -   [Supplementary Figure 4E](crispr-mm_2215_sgRNA-StealTHY.html#Supplementary_Figure_4E)
 -   [Supplementary Figure 4F](crispr-mm_2215_sgRNA-StealTHY.html#Figure_4C_and_Supplementary_Figure_4F)
 -   [Supplementary Figure 4G](crispr-mm_2215_sgRNA-StealTHY.html#Supplementary_figure_4G:_Proportion_of_non-expressed_hits)
--   [Supplementary Figure 4L](crispr-mm_2215_sgRNA-clonality.html#24_Supplementary_Figure_4L)
+-   [Supplementary Figure 4L](crispr-mm_2215_sgRNA-clonality.html#Supplementary_Figure_4L)
 -   [Supplementary Figure 4M](crispr-mm_2215_sgRNA-CMT167-LLC1-CT26.html#Supplementary_figure_4M:_Differential_abundance_of_selected_genes)
 -   [Supplementary Figure 4N](crispr-mm_2215_sgRNA-CMT167-LLC1-CT26.html#Supplementary_figure_4N:_Muller_plots_of_selected_genes)
     
@@ -132,6 +132,6 @@ Files containing pre-computed results from differential expression or gene-set e
 -   [Supplementary Figure 7M: Negative Galunisertib](rnaseq-amhr2_ko-deg.html#Mammary_epithelium_proliferation30)
 -   [Supplementary Figure 7P: Epithelial genes](rnaseq-amhr2_ko-deg.html#EMT_regulators_and_targets)
 -   [Supplementary Figure 7P: Proliferative genes](rnaseq-amhr2_ko-deg.html#Mammary_epithelium_proliferation)
--   [Supplementary Figure 7U: Negative Galunisertib](rnaseq-amhr2_ko-deg.html#Supplementary_Figure_7U_left)
+-   [Supplementary Figure 7U: Negative Galunisertib](rnaseq-amhr2_ko-deg.html#Supplementary_Figure_7U_left_(Galunisertib_negative))
 -   [Supplementary Figure 7U: Positive Galunisertib](rnaseq-amhr2_ko-deg.html#Supplementary_Figure_7U_right_(Galunisertib_positive))
 

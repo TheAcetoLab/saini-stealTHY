@@ -729,8 +729,18 @@ muller_plots <- foreach(i = names(comp_list)) %do% {
       ) +
       theme(
         panel.background = element_rect(fill = "grey90"),
-        plot.margin = margin(0.5, 1.5, 0.5, 0, "cm")
-        ) +
+        # plot.margin = margin(0.5, 1.5, 0.5, 0, "cm"),
+        plot.margin = margin(0, 0.5, 0, 0, "cm"),
+        axis.text =  element_text(size=3),
+        axis.title =  element_text(size=3),
+        plot.title = element_text(size=3, hjust = 0.5),
+        legend.text = element_text(size=3),
+        legend.title = element_text(size=3),
+        legend.position = 'bottom',
+        legend.key.size = unit(0.1, 'cm'),
+        legend.key.spacing.y = unit(0.1, 'mm'),
+        legend.key.spacing.x = unit(0.1, 'mm')
+      )+
       scale_x_discrete(expand = c(0, 0)) +
       scale_y_continuous(expand = c(0, 0), limits = c(0,1000000))
   }
